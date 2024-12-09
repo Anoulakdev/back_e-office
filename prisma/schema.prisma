@@ -1,0 +1,247 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id             Int           @id @default(autoincrement())
+  username            String        @unique
+  password            String
+  first_name          String
+  last_name           String
+  emp_code            String        @unique
+  status              String        @default("A")
+  gender              String?
+  rank_id             Int?
+  rank                Rank?         @relation(fields: [rank_id], references: [rank_id])
+  role_id             Int?
+  role                Role?         @relation(fields: [role_id], references: [role_id])
+  pos_id              Int?
+  position            Position?     @relation(fields: [pos_id], references: [pos_id])
+  department_id       Int?
+  department          Department?   @relation(fields: [department_id], references: [department_id])
+  division_id         Int?
+  division            Division?     @relation(fields: [division_id], references: [division_id])
+  office_id           Int?
+  office              Office?       @relation(fields: [office_id], references: [office_id])
+  unit_id             Int?
+  unit                Unit?         @relation(fields: [unit_id], references: [unit_id])
+  tel                 String?
+  telapp              String?
+  email               String?
+  user_image          String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  DocExternalCreator  DocExternal[] @relation("creatorRelation")
+  DocExternalDirector DocExternal[] @relation("directorRelation")
+  DocexTaskAssigner   DocexTask[]   @relation("AssignerRelation")
+  DocexTaskReceiver   DocexTask[]   @relation("ReceiverRelation")
+
+  @@index([emp_code])
+  @@index([department_id])
+}
+
+model Rank {
+  rank_id      Int           @id @default(autoincrement())
+  rank_name    String
+  docexternals DocExternal[]
+  docextasks   DocexTask[]
+  users        User[]
+}
+
+model Role {
+  role_id          Int              @id @default(autoincrement())
+  role_name        String
+  role_code        String?
+  role_description String?
+  users            User[]
+  rolepermissions  RolePermission[]
+  docexternals     DocExternal[]
+  docextasks       DocexTask[]
+}
+
+model RolePermission {
+  id            Int        @id @default(autoincrement())
+  role_id       Int
+  role          Role       @relation(fields: [role_id], references: [role_id])
+  permission_id Int
+  permission    Permission @relation(fields: [permission_id], references: [permission_id])
+}
+
+model Permission {
+  permission_id          Int              @id @default(autoincrement())
+  permission_name        String
+  permission_code        String?
+  permission_description String?
+  rolepermissions        RolePermission[]
+}
+
+model Department {
+  department_id     Int         @id @default(autoincrement())
+  department_name   String?
+  department_code   String?
+  department_status String      @default("A")
+  divisions         Division[]
+  users             User[]
+  docextasks        DocexTask[]
+}
+
+model Division {
+  division_id     Int         @id @default(autoincrement())
+  division_name   String?
+  division_code   String?
+  division_status String      @default("A")
+  department_id   Int
+  department      Department  @relation(fields: [department_id], references: [department_id])
+  offices         Office[]
+  units           Unit[]
+  users           User[]
+  docextasks      DocexTask[]
+}
+
+model Office {
+  office_id     Int         @id @default(autoincrement())
+  office_name   String?
+  office_code   String?
+  office_status String      @default("A")
+  division_id   Int
+  division      Division    @relation(fields: [division_id], references: [division_id])
+  units         Unit[]
+  users         User[]
+  docextasks    DocexTask[]
+}
+
+model Unit {
+  unit_id     Int         @id @default(autoincrement())
+  unit_name   String?
+  unit_code   String?
+  unit_status String      @default("A")
+  unit_type   String?
+  division_id Int?
+  division    Division?   @relation(fields: [division_id], references: [division_id])
+  office_id   Int?
+  office      Office?     @relation(fields: [office_id], references: [office_id])
+  users       User[]
+  docextasks  DocexTask[]
+}
+
+model PositionGroup {
+  pos_group_id   Int            @id @default(autoincrement())
+  pos_group_name String
+  positioncodes  PositionCode[]
+}
+
+model PositionCode {
+  pos_code_id     Int           @id @default(autoincrement())
+  pos_code_name   String
+  pos_code_status String        @default("A")
+  pos_group_id    Int
+  positiongroup   PositionGroup @relation(fields: [pos_group_id], references: [pos_group_id])
+  positions       Position[]
+}
+
+model Position {
+  pos_id       Int          @id @default(autoincrement())
+  pos_name     String
+  pos_status   String       @default("A")
+  pos_code_id  Int
+  positioncode PositionCode @relation(fields: [pos_code_id], references: [pos_code_id])
+  users        User[]
+}
+
+model DocExternal {
+  docex_id     Int         @id @default(autoincrement())
+  docex_no     String
+  datedocument DateTime?
+  dateline     DateTime?
+  title        String
+  description  String?
+  docex_file   String
+  outsider     String
+  creatorCode  String
+  creator      User        @relation(fields: [creatorCode], references: [emp_code], name: "creatorRelation")
+  directorCode String?
+  director     User?       @relation(fields: [directorCode], references: [emp_code], name: "directorRelation")
+  role_id      Int?
+  role         Role?       @relation(fields: [role_id], references: [role_id])
+  rank_id      Int?
+  rank         Rank?       @relation(fields: [rank_id], references: [rank_id])
+  priority_id  Int?
+  priority     Priority?   @relation(fields: [priority_id], references: [priority_id])
+  doctype_id   Int?
+  doctype      DocType?    @relation(fields: [doctype_id], references: [doctype_id])
+  docstatus_id Int?
+  docstatus    DocStatus?  @relation(fields: [docstatus_id], references: [docstatus_id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  docextasks   DocexTask[]
+  docexfiles   DocexFile[]
+}
+
+model DocexFile {
+  docex_file_id   Int         @id @default(autoincrement())
+  docex_id        Int
+  docexternal     DocExternal @relation(fields: [docex_id], references: [docex_id])
+  docex_file_name String
+  docex_file_size String
+  docex_file_type String?
+
+  @@index([docex_id])
+}
+
+model DocexTask {
+  docex_task_id Int         @id @default(autoincrement())
+  docex_id      Int
+  docexternal   DocExternal @relation(fields: [docex_id], references: [docex_id])
+  assignerCode  String
+  assigner      User        @relation(fields: [assignerCode], references: [emp_code], name: "AssignerRelation")
+  receiverCode  String?
+  receiver      User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
+  role_id       Int?
+  role          Role?       @relation(fields: [role_id], references: [role_id])
+  department_id Int
+  department    Department  @relation(fields: [department_id], references: [department_id])
+  division_id   Int?
+  division      Division?   @relation(fields: [division_id], references: [division_id])
+  office_id     Int?
+  office        Office?     @relation(fields: [office_id], references: [office_id])
+  unit_id       Int?
+  unit          Unit?       @relation(fields: [unit_id], references: [unit_id])
+  rank_id       Int?        @default(1)
+  rank          Rank?       @relation(fields: [rank_id], references: [rank_id])
+  active        Int?        @default(1)
+  comments      String?
+  docstatus_id  Int?
+  docstatus     DocStatus?  @relation(fields: [docstatus_id], references: [docstatus_id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([docex_id])
+  @@index([assignerCode])
+  @@index([receiverCode])
+}
+
+model DocType {
+  doctype_id   Int           @id @default(autoincrement())
+  doctype_name String
+  docexternals DocExternal[]
+}
+
+model Priority {
+  priority_id   Int           @id @default(autoincrement())
+  priority_name String
+  priority_code String
+  docexternals  DocExternal[]
+}
+
+model DocStatus {
+  docstatus_id   Int           @id @default(autoincrement())
+  docstatus_name String
+  docexternals   DocExternal[]
+  docextasks     DocexTask[]
+}
