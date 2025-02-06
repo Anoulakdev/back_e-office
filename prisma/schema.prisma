@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+model User {
+  id                    Int             @id @default(autoincrement())
+  username              String          @unique @db.VarChar(255)
+  password              String          @db.VarChar(255)
+  first_name            String          @db.VarChar(255)
+  last_name             String          @db.VarChar(255)
+  emp_code              String          @unique @db.VarChar(255)
+  status                String          @default("A") @db.VarChar(50)
+  gender                Gender
+  tel                   String?         @db.VarChar(255)
+  email                 String?         @db.VarChar(255)
+  userimg               String?         @db.VarChar(255)
+  rankId                Int?
+  rank                  Rank?           @relation(fields: [rankId], references: [id])
+  roleId                Int?
+  role                  Role?           @relation(fields: [roleId], references: [id])
+  posId                 Int?
+  position              Position?       @relation(fields: [posId], references: [id])
+  departmentId          Int?
+  department            Department?     @relation(fields: [departmentId], references: [id])
+  divisionId            Int?
+  division              Division?       @relation(fields: [divisionId], references: [id])
+  officeId              Int?
+  office                Office?         @relation(fields: [officeId], references: [id])
+  unitId                Int?
+  unit                  Unit?           @relation(fields: [unitId], references: [id])
+  createdAt             DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt             DateTime        @updatedAt @db.Timestamptz(0)
+  DocExternalCreator    DocExternal[]   @relation("creatorRelation")
+  DocexTrackingAssigner DocexTracking[] @relation("AssignerRelation")
+  DocexTrackingReceiver DocexTracking[] @relation("ReceiverRelation")
+  DocexLogAssigner      DocexLog[]      @relation("AssignerRelation")
+  DocexLogReceiver      DocexLog[]      @relation("ReceiverRelation")
+}
+
+model Rank {
+  id        Int        @id @default(autoincrement())
+  rank_name String     @db.VarChar(255)
+  users     User[]
+  docexlogs DocexLog[]
+}
+
+model Role {
+  id               Int        @id @default(autoincrement())
+  role_name        String     @db.VarChar(255)
+  role_code        String?    @db.VarChar(50)
+  role_description String?    @db.Text
+  users            User[]
+  docexlogs        DocexLog[]
+}
+
+model Department {
+  id                Int        @id @default(autoincrement())
+  department_name   String?    @db.VarChar(255)
+  department_code   String?    @db.VarChar(50)
+  department_status String     @default("A") @db.VarChar(50)
+  divisions         Division[]
+  users             User[]
+  docexlogs         DocexLog[]
+}
+
+model Division {
+  id              Int        @id @default(autoincrement())
+  division_name   String?    @db.VarChar(255)
+  division_code   String?    @db.VarChar(50)
+  division_status String     @default("A") @db.VarChar(50)
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id])
+  offices         Office[]
+  units           Unit[]
+  users           User[]
+  docexlogs       DocexLog[]
+}
+
+model Office {
+  id            Int        @id @default(autoincrement())
+  office_name   String?    @db.VarChar(255)
+  office_code   String?    @db.VarChar(50)
+  office_status String     @default("A") @db.VarChar(50)
+  divisionId    Int
+  division      Division   @relation(fields: [divisionId], references: [id])
+  units         Unit[]
+  users         User[]
+  docexlogs     DocexLog[]
+}
+
+model Unit {
+  id          Int        @id @default(autoincrement())
+  unit_name   String?    @db.VarChar(255)
+  unit_code   String?    @db.VarChar(50)
+  unit_status String     @default("A") @db.VarChar(50)
+  unit_type   String?    @db.VarChar(50)
+  divisionId  Int?
+  division    Division?  @relation(fields: [divisionId], references: [id])
+  officeId    Int?
+  office      Office?    @relation(fields: [officeId], references: [id])
+  users       User[]
+  docexlogs   DocexLog[]
+}
+
+model PositionGroup {
+  id             Int            @id @default(autoincrement())
+  pos_group_name String         @db.VarChar(255)
+  positioncodes  PositionCode[]
+}
+
+model PositionCode {
+  id              Int           @id @default(autoincrement())
+  pos_code_name   String        @db.VarChar(255)
+  pos_code_status String        @default("A") @db.VarChar(50)
+  posgroupId      Int
+  positiongroup   PositionGroup @relation(fields: [posgroupId], references: [id])
+  positions       Position[]
+}
+
+model Position {
+  id           Int          @id @default(autoincrement())
+  pos_name     String       @db.VarChar(255)
+  pos_status   String       @default("A") @db.VarChar(50)
+  poscodeId    Int
+  positioncode PositionCode @relation(fields: [poscodeId], references: [id])
+  users        User[]
+  docexlogs    DocexLog[]
+}
+
+model DocExternal {
+  id                Int             @id @default(autoincrement())
+  docex_no          String          @db.VarChar(255)
+  docex_date        DateTime?       @db.Timestamptz(0)
+  docex_dateline    DateTime?       @db.Timestamptz(0)
+  docex_title       String          @db.VarChar(255)
+  docex_description String?         @db.Text
+  docex_file        String          @db.VarChar(255)
+  docex_filetype    String          @db.VarChar(50)
+  docex_filesize    Int
+  outsider          String          @db.VarChar(255)
+  assignto          Int?
+  creatorCode       String          @db.VarChar(255)
+  creator           User            @relation(fields: [creatorCode], references: [emp_code], name: "creatorRelation")
+  priorityId        Int?
+  priority          Priority?       @relation(fields: [priorityId], references: [id])
+  doctypeId         Int?
+  doctype           DocType?        @relation(fields: [doctypeId], references: [id])
+  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
+  docextrackings    DocexTracking[]
+  docexlogs         DocexLog[]
+}
+
+model DocexTracking {
+  id            Int         @id @default(autoincrement())
+  docexId       Int
+  docexternal   DocExternal @relation(fields: [docexId], references: [id])
+  assignerCode  String?     @db.VarChar(255)
+  assigner      User?       @relation(fields: [assignerCode], references: [emp_code], name: "AssignerRelation")
+  receiverCode  String?     @db.VarChar(255)
+  receiver      User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
+  docstatusId   Int?
+  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  description   String?     @db.Text
+  active        String?     @db.VarChar(255)
+  docexlog_file String?     @db.VarChar(255)
+  docexlog_type String?     @db.VarChar(255)
+  docexlog_size Int?
+  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+}
+
+model DocexLog {
+  id            Int         @id @default(autoincrement())
+  docexId       Int
+  docexternal   DocExternal @relation(fields: [docexId], references: [id])
+  assignerCode  String?     @db.VarChar(255)
+  assigner      User?       @relation(fields: [assignerCode], references: [emp_code], name: "AssignerRelation")
+  receiverCode  String?     @db.VarChar(255)
+  receiver      User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
+  rankId        Int?
+  rank          Rank?       @relation(fields: [rankId], references: [id])
+  roleId        Int?
+  role          Role?       @relation(fields: [roleId], references: [id])
+  positionId    Int?
+  position      Position?   @relation(fields: [positionId], references: [id])
+  departmentId  Int?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  divisionId    Int?
+  division      Division?   @relation(fields: [divisionId], references: [id])
+  officeId      Int?
+  office        Office?     @relation(fields: [officeId], references: [id])
+  unitId        Int?
+  unit          Unit?       @relation(fields: [unitId], references: [id])
+  docstatusId   Int?
+  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  description   String?     @db.Text
+  direction     String?     @db.VarChar(255)
+  active        String?     @db.VarChar(255)
+  docexlog_file String?     @db.VarChar(255)
+  docexlog_type String?     @db.VarChar(255)
+  docexlog_size Int?
+  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+}
+
+model DocType {
+  id           Int           @id @default(autoincrement())
+  doctype_name String        @db.VarChar(255)
+  docexternals DocExternal[]
+}
+
+model Priority {
+  id            Int           @id @default(autoincrement())
+  priority_name String        @db.VarChar(255)
+  priority_code String?       @db.VarChar(50)
+  docexternals  DocExternal[]
+}
+
+model DocStatus {
+  id             Int             @id @default(autoincrement())
+  docstatus_name String          @db.VarChar(255)
+  docexlogs      DocexLog[]
+  docextrackings DocexTracking[]
+}
