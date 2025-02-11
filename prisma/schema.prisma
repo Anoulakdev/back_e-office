@@ -61,6 +61,26 @@ model Role {
   role_description String?    @db.Text
   users            User[]
   docexlogs        DocexLog[]
+  rolemenus        RoleMenu[]
+}
+
+model RoleMenu {
+  id          Int          @id @default(autoincrement())
+  roleId      Int
+  role        Role         @relation(fields: [roleId], references: [id])
+  title       String?      @db.VarChar(255)
+  path        String?      @db.VarChar(255)
+  permissions Permission[]
+}
+
+model Permission {
+  id         Int      @id @default(autoincrement())
+  rolemenuId Int
+  rolemenu   RoleMenu @relation(fields: [rolemenuId], references: [id])
+  C          Boolean  @default(false)
+  R          Boolean  @default(false)
+  U          Boolean  @default(false)
+  D          Boolean  @default(false)
 }
 
 model Department {
