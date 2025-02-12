@@ -160,14 +160,15 @@ model Position {
 model DocExternal {
   id                Int             @id @default(autoincrement())
   docex_no          String          @db.VarChar(255)
-  docex_date        DateTime?       @db.Timestamptz(0)
-  docex_dateline    DateTime?       @db.Timestamptz(0)
+  docex_date        DateTime?
+  docex_dateline    DateTime?
   docex_title       String          @db.VarChar(255)
   docex_description String?         @db.Text
   docex_file        String          @db.VarChar(255)
   docex_filetype    String          @db.VarChar(50)
   docex_filesize    Int
-  outsider          String          @db.VarChar(255)
+  outsiderId        Int?
+  outsider          Outsider?       @relation(fields: [outsiderId], references: [id])
   assignto          Int?
   creatorCode       String          @db.VarChar(255)
   creator           User            @relation(fields: [creatorCode], references: [emp_code], name: "creatorRelation")
@@ -252,4 +253,18 @@ model DocStatus {
   docstatus_name String          @db.VarChar(255)
   docexlogs      DocexLog[]
   docextrackings DocexTracking[]
+}
+
+model BelongTo {
+  id        Int        @id @default(autoincrement())
+  name      String?    @db.VarChar(255)
+  outsiders Outsider[]
+}
+
+model Outsider {
+  id           Int           @id @default(autoincrement())
+  belongId     Int?
+  belongto     BelongTo?     @relation(fields: [belongId], references: [id])
+  name         String?       @db.VarChar(255)
+  docexternals DocExternal[]
 }

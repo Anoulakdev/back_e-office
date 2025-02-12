@@ -35,7 +35,7 @@ exports.create = (req, res) => {
         docex_dateline,
         docex_title,
         docex_description,
-        outsider,
+        outsiderId,
         priorityId,
         doctypeId,
       } = req.body;
@@ -51,7 +51,7 @@ exports.create = (req, res) => {
           docex_dateline: new Date(docex_dateline),
           docex_title,
           docex_description,
-          outsider,
+          outsiderId: Number(outsiderId),
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.emp_code,
@@ -83,6 +83,7 @@ exports.list = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
+        outsider: true,
         creator: {
           select: {
             first_name: true,
@@ -122,6 +123,7 @@ exports.getById = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
+        outsider: true,
         creator: {
           select: {
             first_name: true,
@@ -195,7 +197,7 @@ exports.update = async (req, res) => {
         docex_dateline,
         docex_title,
         docex_description,
-        outsider,
+        outsiderId,
         priorityId,
         doctypeId,
       } = req.body;
@@ -246,7 +248,7 @@ exports.update = async (req, res) => {
           docex_dateline: new Date(docex_dateline),
           docex_title,
           docex_description,
-          outsider,
+          outsiderId: Number(outsiderId),
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.emp_code,
@@ -321,10 +323,10 @@ exports.assign = async (req, res) => {
     const {
       docexId,
       receiverCode,
+      departmentId,
       docstatusId,
       description,
       active,
-      departmentId,
     } = req.body;
 
     if (!docexId) {

@@ -110,6 +110,7 @@ exports.list = async (req, res) => {
       include: {
         docexternal: {
           include: {
+            outsider: true,
             priority: true,
             doctype: true,
           },
@@ -153,8 +154,14 @@ exports.list = async (req, res) => {
 
 exports.director = async (req, res) => {
   try {
-    const { docexId, departmentId, docstatusId, description, active } =
-      req.body;
+    const {
+      docexId,
+      departmentId,
+      priorityId,
+      docstatusId,
+      description,
+      active,
+    } = req.body;
 
     if (!docexId) {
       return res.status(400).json({ message: "docexId is required" });
@@ -178,28 +185,37 @@ exports.director = async (req, res) => {
       });
     }
 
-    const [docexlogs, existingTracking] = await prisma.$transaction([
-      prisma.docexLog.create({
-        data: {
-          docexId: Number(docexId),
-          assignerCode: req.user.emp_code,
-          receiverCode: user.emp_code,
-          rankId: user.rankId,
-          roleId: user.roleId,
-          positionId: user.posId,
-          departmentId: user.departmentId,
-          docstatusId: Number(docstatusId),
-          description,
-          active,
-        },
-      }),
-      prisma.docexTracking.findFirst({
-        where: {
-          docexId: Number(docexId),
-          receiverCode: req.user.emp_code,
-        },
-      }),
-    ]);
+    const [docexternals, docexlogs, existingTracking] =
+      await prisma.$transaction([
+        prisma.docExternal.update({
+          where: {
+            id: Number(docexId),
+          },
+          data: {
+            priorityId: Number(priorityId),
+          },
+        }),
+        prisma.docexLog.create({
+          data: {
+            docexId: Number(docexId),
+            assignerCode: req.user.emp_code,
+            receiverCode: user.emp_code,
+            rankId: user.rankId,
+            roleId: user.roleId,
+            positionId: user.posId,
+            departmentId: user.departmentId,
+            docstatusId: Number(docstatusId),
+            description,
+            active,
+          },
+        }),
+        prisma.docexTracking.findFirst({
+          where: {
+            docexId: Number(docexId),
+            receiverCode: req.user.emp_code,
+          },
+        }),
+      ]);
 
     const docextrackings = await prisma.docexTracking.update({
       where: {
@@ -216,7 +232,7 @@ exports.director = async (req, res) => {
 
     res.status(201).json({
       message: "Document created successfully",
-      data: { docexlogs, docextrackings },
+      data: { docexternals, docexlogs, docextrackings },
     });
   } catch (error) {
     console.error("Error creating document:", error);
