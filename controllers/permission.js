@@ -9,8 +9,8 @@ exports.create = async (req, res) => {
       return res.status(400).json({ message: "Invalid input fields" });
     }
 
-    const checkRolemenu = await prisma.roleMenu.findUnique({
-      where: { id: rolemenuId },
+    const checkRolemenu = await prisma.permission.findFirst({
+      where: { rolemenuId: Number(rolemenuId) },
     });
     if (checkRolemenu) {
       return res.status(409).json({ message: "rolemenu already exists" });
@@ -39,12 +39,18 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const permissions = await prisma.permission.findMany();
+    const { rolemenuId } = req.query;
+
+    const filter = rolemenuId
+      ? { where: { rolemenuId: Number(rolemenuId) } }
+      : {};
+
+    const permissions = await prisma.permission.findMany(filter);
 
     res.json(permissions);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Server error:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
 

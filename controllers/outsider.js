@@ -29,13 +29,20 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const belongtos = await prisma.outsider.findMany({
-      include: {
-        belongto: true,
-      }
-    });
+    const { belongId } = req.query;
 
-    res.json(belongtos);
+    const filter = belongId
+      ? {
+          where: { belongId: Number(belongId) },
+          include: {
+            belongto: true,
+          },
+        }
+      : {};
+
+    const outsiders = await prisma.outsider.findMany(filter);
+
+    res.json(outsiders);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server Error" });
