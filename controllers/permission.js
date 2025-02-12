@@ -9,6 +9,13 @@ exports.create = async (req, res) => {
       return res.status(400).json({ message: "Invalid input fields" });
     }
 
+    const checkRolemenu = await prisma.roleMenu.findUnique({
+      where: { id: rolemenuId },
+    });
+    if (checkRolemenu) {
+      return res.status(409).json({ message: "rolemenu already exists" });
+    }
+
     // Create new user in the database
     const newPermission = await prisma.permission.create({
       data: {
