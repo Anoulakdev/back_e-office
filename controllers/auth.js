@@ -7,11 +7,11 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
     if (!username) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "ກະ​ລຸ​ນາ​ເພີ່ມຊື່​ເຂົ້າ​ລະ​ບົບ" });
     }
     if (!password) {
-      return res.status(400).json({ message: "ກະ​ລຸ​ນາ​ເພີ່ມລະ​ຫັດ" });
+      return res.status(401).json({ message: "ກະ​ລຸ​ນາ​ເພີ່ມລະ​ຫັດ" });
     }
     // Step 1 Check Email in DB
     const user = await prisma.user.findUnique({
@@ -20,7 +20,7 @@ exports.login = async (req, res) => {
       },
     });
     if (!user) {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "ບໍ່​ມີ​ຂໍ້​ມູນຜູ້​ໃຊ້",
       });
     }
@@ -34,7 +34,7 @@ exports.login = async (req, res) => {
     // Step 2 Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "​ລະ​ຫັດ​ບໍ່​ຕົງ",
       });
     }

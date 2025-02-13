@@ -48,7 +48,7 @@ exports.create = (req, res) => {
         data: {
           docex_no,
           docex_date: new Date(docex_date),
-          docex_dateline: new Date(docex_dateline),
+          docex_dateline: docex_dateline ? new Date(docex_dateline) : null,
           docex_title,
           docex_description,
           outsiderId: Number(outsiderId),
@@ -245,7 +245,7 @@ exports.update = async (req, res) => {
         data: {
           docex_no,
           docex_date: new Date(docex_date),
-          docex_dateline: new Date(docex_dateline),
+          docex_dateline: docex_dateline ? new Date(docex_dateline) : null,
           docex_title,
           docex_description,
           outsiderId: Number(outsiderId),
