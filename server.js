@@ -10,6 +10,7 @@ const { readdirSync } = require("fs");
 const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
+const { auth } = require("./middleware/auth");
 
 // middleware
 app.use(morgan("dev"));
@@ -20,7 +21,7 @@ app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // File route
-app.get("/upload/user/:filename", (req, res) => {
+app.get("/upload/user/:filename", auth, (req, res) => {
   const filePath = path.join(__dirname, "uploads/user", req.params.filename);
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
@@ -29,7 +30,7 @@ app.get("/upload/user/:filename", (req, res) => {
   }
 });
 
-app.get("/upload/document/:filename", (req, res) => {
+app.get("/upload/document/:filename", auth, (req, res) => {
   const filePath = path.join(
     __dirname,
     "uploads/document",
@@ -42,7 +43,7 @@ app.get("/upload/document/:filename", (req, res) => {
   }
 });
 
-app.get("/upload/documentlog/:filename", (req, res) => {
+app.get("/upload/documentlog/:filename", auth, (req, res) => {
   const filePath = path.join(
     __dirname,
     "uploads/documentlog",

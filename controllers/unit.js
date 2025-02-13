@@ -30,15 +30,28 @@ const prisma = require("../prisma/prisma");
 
 exports.list = async (req, res) => {
   try {
-    const unit = await prisma.unit.findMany({
-      include: {
-        division: true,
-        office: true,
-      },
-      orderBy: {
-        unit_code: "asc",
-      },
-    });
+    const { divisionId } = req.query;
+    const filter = divisionId
+      ? {
+          where: { divisionId: Number(divisionId) },
+          include: {
+            division: true,
+            office: true,
+          },
+          orderBy: {
+            unit_code: "asc",
+          },
+        }
+      : {
+          include: {
+            division: true,
+            office: true,
+          },
+          orderBy: {
+            unit_code: "asc",
+          },
+        };
+    const unit = await prisma.unit.findMany(filter);
 
     res.json(unit);
   } catch (err) {

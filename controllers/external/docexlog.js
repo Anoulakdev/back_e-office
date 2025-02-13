@@ -3,30 +3,54 @@ const moment = require("moment-timezone");
 
 exports.listdocexternal = async (req, res) => {
   try {
-    const docexlogs = await prisma.docexLog.findMany({
-      where: {
-        rankId: req.user.rankId,
-        roleId: req.user.roleId,
-        // positionId: req.user.posId,
-        departmentId: req.user.departmentId,
-        divisionId: req.user.divisionId,
-        officeId: req.user.officeId,
-        unitId: req.user.unitId,
-      },
-      orderBy: {
-        docexId: "desc",
-      },
-      distinct: ["docexId"],
-      include: {
-        docexternal: {
-          include: {
-            priority: true,
-            doctype: true,
+    let docexlogs;
+
+    if (req.user.roleId === 10) {
+      // กรณี roleId === 10 ใช้ receiverCode
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          receiverCode: req.user.emp_code,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+            },
           },
         },
-      },
-    });
+      });
+    } else {
+      // กรณีอื่น ๆ ใช้ rankId, roleId, departmentId, divisionId, officeId, unitId
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          rankId: req.user.rankId,
+          roleId: req.user.roleId,
+          departmentId: req.user.departmentId,
+          divisionId: req.user.divisionId,
+          officeId: req.user.officeId,
+          unitId: req.user.unitId,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+            },
+          },
+        },
+      });
+    }
 
+    // แปลงเวลาเป็น Asia/Vientiane
     const formattedDocs = docexlogs.map((doc) => ({
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
@@ -44,7 +68,7 @@ exports.listdocexternal = async (req, res) => {
 
     res.json(formattedDocs);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
