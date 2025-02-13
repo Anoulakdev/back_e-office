@@ -40,7 +40,7 @@ exports.create = (req, res) => {
         doctypeId,
       } = req.body;
 
-      if (!docex_no || !docex_date || !docex_dateline) {
+      if (!docex_no || !docex_date) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
