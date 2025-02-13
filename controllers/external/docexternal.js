@@ -59,6 +59,21 @@ exports.create = (req, res) => {
           docex_filetype: req.file ? req.file.mimetype : null,
           docex_filesize: req.file ? req.file.size : null,
         },
+        include: {
+          priority: true,
+          doctype: true,
+          outsider: true,
+          creator: {
+            select: {
+              first_name: true,
+              last_name: true,
+              emp_code: true,
+              gender: true,
+              tel: true,
+              email: true,
+            },
+          },
+        },
       });
 
       // console.log("New document external:", newDocExternal);
@@ -92,7 +107,6 @@ exports.list = async (req, res) => {
             gender: true,
             tel: true,
             email: true,
-            userimg: true,
           },
         },
       },
@@ -255,6 +269,21 @@ exports.update = async (req, res) => {
           docex_file: docexfile,
           docex_filetype: docextype,
           docex_filesize: docexsize,
+        },
+        include: {
+          priority: true,
+          doctype: true,
+          outsider: true,
+          creator: {
+            select: {
+              first_name: true,
+              last_name: true,
+              emp_code: true,
+              gender: true,
+              tel: true,
+              email: true,
+            },
+          },
         },
       });
 

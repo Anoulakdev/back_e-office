@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
-        message: "​ລະ​ຫັດ​ບໍ່​ຕົງ",
+        message: "​ລະ​ຫັດ​ບໍ່​ຖືກ​ຕ້ອງ",
       });
     }
 
