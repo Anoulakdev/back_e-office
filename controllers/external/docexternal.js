@@ -32,7 +32,6 @@ exports.create = (req, res) => {
       const {
         docex_no,
         docex_date,
-        docex_dateline,
         docex_title,
         docex_description,
         outsiderId,
@@ -40,7 +39,7 @@ exports.create = (req, res) => {
         doctypeId,
       } = req.body;
 
-      if (!docex_no || !docex_date) {
+      if (!docex_no) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -48,7 +47,6 @@ exports.create = (req, res) => {
         data: {
           docex_no,
           docex_date: new Date(docex_date),
-          docex_dateline: docex_dateline ? new Date(docex_dateline) : null,
           docex_title,
           docex_description,
           outsiderId: Number(outsiderId),
@@ -208,7 +206,6 @@ exports.update = async (req, res) => {
       const {
         docex_no,
         docex_date,
-        docex_dateline,
         docex_title,
         docex_description,
         outsiderId,
@@ -259,7 +256,6 @@ exports.update = async (req, res) => {
         data: {
           docex_no,
           docex_date: new Date(docex_date),
-          docex_dateline: docex_dateline ? new Date(docex_dateline) : null,
           docex_title,
           docex_description,
           outsiderId: Number(outsiderId),
@@ -299,7 +295,6 @@ exports.remove = async (req, res) => {
   try {
     const { docexternalId } = req.params;
 
-    // Step 1: Find the user by ID
     const docex = await prisma.docExternal.findUnique({
       where: {
         id: Number(docexternalId),
@@ -310,7 +305,6 @@ exports.remove = async (req, res) => {
       return res.status(404).json({ message: "Document not found" });
     }
 
-    // Step 2: Delete the photo file if it exists
     if (docex.docex_file) {
       const filedocPath = path.join(
         __dirname,
@@ -325,6 +319,27 @@ exports.remove = async (req, res) => {
       });
     }
 
+    const docexLogs = await prisma.docexLog.findMany({
+      where: { docexId: Number(docexternalId) },
+    });
+
+    for (const log of docexLogs) {
+      if (log.docexlog_file) {
+        const logFilePath = path.join(
+          __dirname,
+          "../../uploads/documentlog",
+          log.docexlog_file
+        );
+
+        fs.unlink(logFilePath, (err) => {
+          if (err) {
+            console.error("Error deleting file: ", err);
+            return res.status(500).json({ message: "Error deleting file" });
+          }
+        });
+      }
+    }
+
     await prisma.docexLog.deleteMany({
       where: { docexId: Number(docexternalId) },
     });
@@ -333,7 +348,6 @@ exports.remove = async (req, res) => {
       where: { docexId: Number(docexternalId) },
     });
 
-    // Step 3: Delete the document from the database
     await prisma.docExternal.delete({
       where: {
         id: Number(docexternalId),

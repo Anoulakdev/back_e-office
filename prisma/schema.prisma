@@ -161,7 +161,6 @@ model DocExternal {
   id                Int             @id @default(autoincrement())
   docex_no          String          @db.VarChar(255)
   docex_date        DateTime?
-  docex_dateline    DateTime?
   docex_title       String          @db.VarChar(255)
   docex_description String?         @db.Text
   docex_file        String          @db.VarChar(255)
@@ -192,6 +191,7 @@ model DocexTracking {
   receiver      User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
   docstatusId   Int?
   docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline      DateTime?
   description   String?     @db.Text
   active        String?     @db.VarChar(255)
   docexlog_file String?     @db.VarChar(255)
@@ -225,6 +225,7 @@ model DocexLog {
   unit          Unit?       @relation(fields: [unitId], references: [id])
   docstatusId   Int?
   docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline      DateTime?
   description   String?     @db.Text
   direction     String?     @db.VarChar(255)
   active        String?     @db.VarChar(255)

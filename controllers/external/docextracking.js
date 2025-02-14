@@ -28,8 +28,14 @@ exports.create = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docexId, receiverCode, docstatusId, description, active } =
-        req.body;
+      const {
+        docexId,
+        receiverCode,
+        docstatusId,
+        dateline,
+        description,
+        active,
+      } = req.body;
 
       if (!docexId || !receiverCode) {
         return res.status(400).json({ message: "Required fields are missing" });
@@ -45,6 +51,16 @@ exports.create = async (req, res) => {
           .json({ message: "User not found with the provided receiverCode" });
       }
 
+      const datel = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId) },
+      });
+
+      const datelineValue = dateline
+        ? new Date(dateline)
+        : datel?.dateline
+        ? new Date(datel.dateline)
+        : null;
+
       const [docexlogs, existingTracking] = await prisma.$transaction([
         prisma.docexLog.create({
           data: {
@@ -59,6 +75,7 @@ exports.create = async (req, res) => {
             officeId: user.officeId,
             unitId: user.unitId,
             docstatusId: Number(docstatusId),
+            dateline: datelineValue,
             description,
             active,
             docexlog_file: req.file ? req.file.filename : null,
@@ -82,6 +99,7 @@ exports.create = async (req, res) => {
           assignerCode: req.user.emp_code,
           receiverCode,
           docstatusId: Number(docstatusId),
+          dateline: datelineValue,
           description,
           active,
           docexlog_file: req.file ? req.file.filename : null,
@@ -145,7 +163,7 @@ exports.list = async (req, res) => {
       },
     }));
 
-    res.json(formattedDocs);
+    res.status(200).json(formattedDocs);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server Error" });
@@ -159,6 +177,7 @@ exports.director = async (req, res) => {
       departmentId,
       priorityId,
       docstatusId,
+      dateline,
       description,
       active,
     } = req.body;
@@ -205,6 +224,7 @@ exports.director = async (req, res) => {
             positionId: user.posId,
             departmentId: user.departmentId,
             docstatusId: Number(docstatusId),
+            dateline: dateline ? new Date(dateline) : null,
             description,
             active,
           },
@@ -225,6 +245,7 @@ exports.director = async (req, res) => {
         assignerCode: req.user.emp_code,
         receiverCode: user.emp_code,
         docstatusId: Number(docstatusId),
+        dateline: dateline ? new Date(dateline) : null,
         description,
         active,
       },

@@ -22,7 +22,7 @@ exports.auth = (req, res, next) => {
     // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
       if (err) {
-        return res.status(401).json({ message: "Token is invalid" });
+        return res.status(401).json({ message: "Token is expired" });
       }
       // Set the decoded user information in the request object
       req.user = decode;
