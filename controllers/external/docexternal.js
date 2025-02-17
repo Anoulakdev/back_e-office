@@ -89,7 +89,57 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
+    const {
+      search,
+      priority,
+      outsider,
+      selectDateStart,
+      selectDateEnd,
+      page,
+      limit,
+    } = req.query;
+
+    // แปลงค่า page & limit เป็นตัวเลข
+    const pageNumber = Number(page) || 1;
+    const pageSize = Number(limit) || 10;
+
+    // คำนวณค่าการแบ่งหน้า
+    const skip = (pageNumber - 1) * pageSize;
+    const take = pageSize;
+
+    // สร้างเงื่อนไข where
+    const where = {};
+
+    if (search) {
+      where.OR = [
+        { docex_no: { contains: search, mode: "insensitive" } },
+        { docex_title: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (priority) {
+      where.priorityId = Number(priority);
+    }
+
+    if (outsider) {
+      where.outsider = {
+        is: {
+          name: { contains: outsider, mode: "insensitive" },
+        },
+      };
+    }
+
+    if (selectDateStart && selectDateEnd) {
+      where.createdAt = {
+        gte: new Date(selectDateStart),
+        lte: new Date(selectDateEnd),
+      };
+    }
+
     const docexternals = await prisma.docExternal.findMany({
+      where,
+      skip,
+      take,
       orderBy: {
         createdAt: "desc",
       },
@@ -110,6 +160,8 @@ exports.list = async (req, res) => {
       },
     });
 
+    const total = await prisma.docExternal.count({ where });
+
     // Format dates
     const formattedDocs = docexternals.map((doc) => ({
       ...doc,
@@ -117,7 +169,13 @@ exports.list = async (req, res) => {
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
     }));
 
-    res.json(formattedDocs);
+    res.json({
+      total,
+      page: pageNumber,
+      limit: pageSize,
+      totalPages: Math.ceil(total / pageSize),
+      formattedDocs,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server Error" });
