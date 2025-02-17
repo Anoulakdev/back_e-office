@@ -31,6 +31,7 @@ exports.create = async (req, res) => {
       const {
         docexId,
         receiverCode,
+        departmentId,
         docstatusId,
         dateline,
         description,
@@ -55,7 +56,7 @@ exports.create = async (req, res) => {
         where: { docexId: Number(docexId) },
       });
 
-      const datelineValue = dateline
+      const ສ = dateline
         ? new Date(dateline)
         : datel?.dateline
         ? new Date(datel.dateline)

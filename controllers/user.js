@@ -103,20 +103,39 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      orderBy: {
-        createdAt: "desc", // Change this to the field you want to sort by
-      },
-      include: {
-        rank: true,
-        role: true,
-        position: true,
-        department: true,
-        division: true,
-        office: true,
-        unit: true,
-      },
-    });
+    const { roleId } = req.query;
+
+    const filter = roleId
+      ? {
+          where: { roleId: Number(roleId) },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            rank: true,
+            role: true,
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        }
+      : {
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            rank: true,
+            role: true,
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        };
+    const users = await prisma.user.findMany(filter);
 
     // Format dates
     const formattedUsers = users.map((user) => ({
