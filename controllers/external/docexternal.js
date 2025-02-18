@@ -97,6 +97,7 @@ exports.list = async (req, res) => {
       selectDateEnd,
       page,
       limit,
+      assignto,
     } = req.query;
 
     // แปลงค่า page & limit เป็นตัวเลข
@@ -119,6 +120,12 @@ exports.list = async (req, res) => {
 
     if (priority) {
       where.priorityId = Number(priority);
+    }
+
+    if (assignto) {
+      where.assignto = Number(assignto);
+    } else if (assignto === null || assignto === "null") {
+      where.assignto = null;
     }
 
     if (outsider) {
