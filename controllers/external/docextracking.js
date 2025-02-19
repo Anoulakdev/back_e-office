@@ -91,15 +91,18 @@ exports.create = async (req, res) => {
         ? new Date(datel.dateline)
         : null;
 
+      const updateData = {};
+      if (priorityId) {
+        updateData.priorityId = Number(priorityId);
+      }
+
       const [docexternals, docexlogs, existingTracking] =
         await prisma.$transaction([
           prisma.docExternal.update({
             where: {
               id: Number(docexId),
             },
-            data: {
-              priorityId: Number(priorityId),
-            },
+            data: updateData,
           }),
           prisma.docexLog.create({
             data: {
