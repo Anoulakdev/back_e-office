@@ -32,6 +32,7 @@ exports.create = async (req, res) => {
         docexId,
         receiverCode,
         departmentId,
+        priorityId,
         docstatusId,
         dateline,
         description,
@@ -90,35 +91,44 @@ exports.create = async (req, res) => {
         ? new Date(datel.dateline)
         : null;
 
-      const [docexlogs, existingTracking] = await prisma.$transaction([
-        prisma.docexLog.create({
-          data: {
-            docexId: Number(docexId),
-            assignerCode: req.user.emp_code,
-            receiverCode: user.emp_code,
-            rankId: user.rankId,
-            roleId: user.roleId,
-            positionId: user.posId,
-            departmentId: user.departmentId,
-            divisionId: user.divisionId,
-            officeId: user.officeId,
-            unitId: user.unitId,
-            docstatusId: Number(docstatusId),
-            dateline: datelineValue,
-            description,
-            active,
-            docexlog_file: req.file ? req.file.filename : null,
-            docexlog_type: req.file ? req.file.mimetype : null,
-            docexlog_size: req.file ? req.file.size : null,
-          },
-        }),
-        prisma.docexTracking.findFirst({
-          where: {
-            docexId: Number(docexId),
-            receiverCode: req.user.emp_code,
-          },
-        }),
-      ]);
+      const [docexternals, docexlogs, existingTracking] =
+        await prisma.$transaction([
+          prisma.docExternal.update({
+            where: {
+              id: Number(docexId),
+            },
+            data: {
+              priorityId: Number(priorityId),
+            },
+          }),
+          prisma.docexLog.create({
+            data: {
+              docexId: Number(docexId),
+              assignerCode: req.user.emp_code,
+              receiverCode: user.emp_code,
+              rankId: user.rankId,
+              roleId: user.roleId,
+              positionId: user.posId,
+              departmentId: user.departmentId,
+              divisionId: user.divisionId,
+              officeId: user.officeId,
+              unitId: user.unitId,
+              docstatusId: Number(docstatusId),
+              dateline: datelineValue,
+              description,
+              active,
+              docexlog_file: req.file ? req.file.filename : null,
+              docexlog_type: req.file ? req.file.mimetype : null,
+              docexlog_size: req.file ? req.file.size : null,
+            },
+          }),
+          prisma.docexTracking.findFirst({
+            where: {
+              docexId: Number(docexId),
+              receiverCode: req.user.emp_code,
+            },
+          }),
+        ]);
 
       const docextrackings = await prisma.docexTracking.update({
         where: {
@@ -139,7 +149,7 @@ exports.create = async (req, res) => {
 
       res.status(201).json({
         message: "Document created successfully",
-        data: { docexlogs, docextrackings },
+        data: { docexternals, docexlogs, docextrackings },
       });
     } catch (error) {
       console.error("Error creating document :", error);
@@ -199,93 +209,93 @@ exports.list = async (req, res) => {
   }
 };
 
-// exports.director = async (req, res) => {
-//   try {
-//     const {
-//       docexId,
-//       departmentId,
-//       priorityId,
-//       docstatusId,
-//       dateline,
-//       description,
-//       active,
-//     } = req.body;
+exports.director = async (req, res) => {
+  try {
+    const {
+      docexId,
+      departmentId,
+      priorityId,
+      docstatusId,
+      dateline,
+      description,
+      active,
+    } = req.body;
 
-//     if (!docexId) {
-//       return res.status(400).json({ message: "docexId is required" });
-//     }
+    if (!docexId) {
+      return res.status(400).json({ message: "docexId is required" });
+    }
 
-//     const department = await prisma.department.findUnique({
-//       where: { id: Number(departmentId) },
-//       include: { users: true },
-//     });
+    const department = await prisma.department.findUnique({
+      where: { id: Number(departmentId) },
+      include: { users: true },
+    });
 
-//     if (!department || !department.users.length) {
-//       return res.status(404).json({ message: "Department or users not found" });
-//     }
+    if (!department || !department.users.length) {
+      return res.status(404).json({ message: "Department or users not found" });
+    }
 
-//     user = department.users.find((u) => u.rankId === 1 && u.roleId === 6);
+    user = department.users.find((u) => u.rankId === 1 && u.roleId === 6);
 
-//     if (!user) {
-//       return res.status(404).json({
-//         message:
-//           "No matching user found with specified rank, role, and position",
-//       });
-//     }
+    if (!user) {
+      return res.status(404).json({
+        message:
+          "No matching user found with specified rank, role, and position",
+      });
+    }
 
-//     const [docexternals, docexlogs, existingTracking] =
-//       await prisma.$transaction([
-//         prisma.docExternal.update({
-//           where: {
-//             id: Number(docexId),
-//           },
-//           data: {
-//             priorityId: Number(priorityId),
-//           },
-//         }),
-//         prisma.docexLog.create({
-//           data: {
-//             docexId: Number(docexId),
-//             assignerCode: req.user.emp_code,
-//             receiverCode: user.emp_code,
-//             rankId: user.rankId,
-//             roleId: user.roleId,
-//             positionId: user.posId,
-//             departmentId: user.departmentId,
-//             docstatusId: Number(docstatusId),
-//             dateline: dateline ? new Date(dateline) : null,
-//             description,
-//             active,
-//           },
-//         }),
-//         prisma.docexTracking.findFirst({
-//           where: {
-//             docexId: Number(docexId),
-//             receiverCode: req.user.emp_code,
-//           },
-//         }),
-//       ]);
+    const [docexternals, docexlogs, existingTracking] =
+      await prisma.$transaction([
+        prisma.docExternal.update({
+          where: {
+            id: Number(docexId),
+          },
+          data: {
+            priorityId: Number(priorityId),
+          },
+        }),
+        prisma.docexLog.create({
+          data: {
+            docexId: Number(docexId),
+            assignerCode: req.user.emp_code,
+            receiverCode: user.emp_code,
+            rankId: user.rankId,
+            roleId: user.roleId,
+            positionId: user.posId,
+            departmentId: user.departmentId,
+            docstatusId: Number(docstatusId),
+            dateline: dateline ? new Date(dateline) : null,
+            description,
+            active,
+          },
+        }),
+        prisma.docexTracking.findFirst({
+          where: {
+            docexId: Number(docexId),
+            receiverCode: req.user.emp_code,
+          },
+        }),
+      ]);
 
-//     const docextrackings = await prisma.docexTracking.update({
-//       where: {
-//         id: existingTracking.id,
-//       },
-//       data: {
-//         assignerCode: req.user.emp_code,
-//         receiverCode: user.emp_code,
-//         docstatusId: Number(docstatusId),
-//         dateline: dateline ? new Date(dateline) : null,
-//         description,
-//         active,
-//       },
-//     });
+    const docextrackings = await prisma.docexTracking.update({
+      where: {
+        id: existingTracking.id,
+      },
+      data: {
+        assignerCode: req.user.emp_code,
+        receiverCode: user.emp_code,
+        docstatusId: Number(docstatusId),
+        dateline: dateline ? new Date(dateline) : null,
+        description,
+        active,
+      },
+    });
 
-//     res.status(201).json({
-//       message: "Document created successfully",
-//       data: { docexternals, docexlogs, docextrackings },
-//     });
-//   } catch (error) {
-//     console.error("Error creating document:", error);
-//     res.status(500).json({ message: "Server Error", error: error.message });
-//   }
-// };
+    res.status(201).json({
+      message: "Document created successfully",
+      data: { docexternals, docexlogs, docextrackings },
+    });
+  } catch (error) {
+    console.error("Error creating document:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
