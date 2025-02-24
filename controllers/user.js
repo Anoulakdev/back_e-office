@@ -103,41 +103,54 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { roleId } = req.query;
+    const { roleId, departmentId, divisionId, officeId, unitId } = req.query;
 
-    const filter = roleId
-      ? {
-          where: { roleId: Number(roleId) },
-          orderBy: {
-            createdAt: "desc",
-          },
-          include: {
-            rank: true,
-            role: true,
-            position: true,
-            department: true,
-            division: true,
-            office: true,
-            unit: true,
-          },
-        }
-      : {
-          orderBy: {
-            createdAt: "desc",
-          },
-          include: {
-            rank: true,
-            role: true,
-            position: true,
-            department: true,
-            division: true,
-            office: true,
-            unit: true,
-          },
-        };
+    // สร้าง filter สำหรับการกรองข้อมูลตาม query params
+    const filter = {
+      where: {},
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        rank: true,
+        role: true,
+        position: true,
+        department: true,
+        division: true,
+        office: true,
+        unit: true,
+      },
+    };
+
+    // เพิ่มการกรองตาม roleId
+    if (roleId) {
+      filter.where.roleId = Number(roleId);
+    }
+
+    // เพิ่มการกรองตาม departmentId
+    if (departmentId) {
+      filter.where.departmentId = Number(departmentId);
+    }
+
+    // เพิ่มการกรองตาม divisionId
+    if (divisionId) {
+      filter.where.divisionId = Number(divisionId);
+    }
+
+    // เพิ่มการกรองตาม officeId
+    if (officeId) {
+      filter.where.officeId = Number(officeId);
+    }
+
+    // เพิ่มการกรองตาม unitId
+    if (unitId) {
+      filter.where.unitId = Number(unitId);
+    }
+
+    // ดึงข้อมูลจาก Prisma
     const users = await prisma.user.findMany(filter);
 
-    // Format dates
+    // การฟอร์แมตวันที่
     const formattedUsers = users.map((user) => ({
       ...user,
       createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
