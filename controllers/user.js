@@ -128,7 +128,7 @@ exports.list = async (req, res) => {
     }
 
     if (rankId) {
-      filter.where.roleId = Number(rankId);
+      filter.where.rankId = Number(rankId);
     }
 
     // เพิ่มการกรองตาม departmentId
