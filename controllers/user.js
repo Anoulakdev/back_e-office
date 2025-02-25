@@ -127,6 +127,10 @@ exports.list = async (req, res) => {
       filter.where.roleId = Number(roleId);
     }
 
+    if (rankId) {
+      filter.where.roleId = Number(rankId);
+    }
+
     // เพิ่มการกรองตาม departmentId
     if (departmentId) {
       filter.where.departmentId = Number(departmentId);
