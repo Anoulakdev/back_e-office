@@ -103,7 +103,7 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { roleId, departmentId, divisionId, officeId, unitId } = req.query;
+    const { roleId, rankId, departmentId, divisionId, officeId, unitId } = req.query;
 
     // สร้าง filter สำหรับการกรองข้อมูลตาม query params
     const filter = {
