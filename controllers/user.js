@@ -103,13 +103,21 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { roleId, rankId, departmentId, divisionId, officeId, unitId } = req.query;
+    const {
+      docstatusId,
+      roleId,
+      rankId,
+      departmentId,
+      divisionId,
+      officeId,
+      unitId,
+    } = req.query;
 
     // สร้าง filter สำหรับการกรองข้อมูลตาม query params
     const filter = {
       where: {},
       orderBy: {
-        createdAt: "desc",
+        rankId: "asc",
       },
       include: {
         rank: true,
@@ -122,33 +130,159 @@ exports.list = async (req, res) => {
       },
     };
 
-    // เพิ่มการกรองตาม roleId
-    if (roleId) {
-      filter.where.roleId = Number(roleId);
-    }
-
-    if (rankId) {
-      filter.where.rankId = { gt: Number(rankId) };
-    }
-
-    // เพิ่มการกรองตาม departmentId
-    if (departmentId) {
-      filter.where.departmentId = Number(departmentId);
-    }
-
-    // เพิ่มการกรองตาม divisionId
-    if (divisionId) {
-      filter.where.divisionId = Number(divisionId);
-    }
-
-    // เพิ่มการกรองตาม officeId
-    if (officeId) {
-      filter.where.officeId = Number(officeId);
-    }
-
-    // เพิ่มการกรองตาม unitId
-    if (unitId) {
-      filter.where.unitId = Number(unitId);
+    switch (Number(docstatusId)) {
+      case 2:
+        switch (Number(roleId)) {
+          case 6:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
+            if (departmentId) {
+              filter.where.departmentId = Number(departmentId);
+            }
+            break;
+          case 7:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
+            if (divisionId) {
+              filter.where.divisionId = Number(divisionId);
+            }
+            break;
+          case 8:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
+            if (officeId) {
+              filter.where.officeId = Number(officeId);
+            }
+            break;
+          case 9:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
+            if (unitId) {
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          case 10:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (unitId) {
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          default:
+            break;
+        }
+        break;
+      case 3:
+        switch (Number(roleId)) {
+          case 6:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { lt: Number(rankId) };
+            }
+            if (departmentId) {
+              filter.where.departmentId = Number(departmentId);
+            }
+            break;
+          case 7:
+            if (roleId) {
+              filter.where.roleId = { lt: Number(roleId) };
+            }
+            if (departmentId) {
+              filter.where.departmentId = Number(departmentId);
+            }
+            break;
+          case 8:
+            if (roleId) {
+              filter.where.roleId = { lt: Number(roleId) };
+            }
+            if (divisionId) {
+              filter.where.divisionId = Number(divisionId);
+            }
+            break;
+          case 9:
+            if (roleId) {
+              filter.where.roleId = { lt: Number(roleId) };
+            }
+            if (divisionId) {
+              filter.where.divisionId = Number(divisionId);
+            }
+            if (officeId) {
+              filter.where.officeId = Number(officeId);
+            }
+            break;
+          case 10:
+            if (roleId) {
+              filter.where.roleId = { lt: Number(roleId) };
+            }
+            if (unitId) {
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          default:
+            break;
+        }
+        break;
+      case 4:
+        switch (Number(roleId)) {
+          case 6:
+            if (roleId) {
+              filter.where.roleId = Number(roleId) + 1;
+            }
+            if (divisionId) {
+              filter.where.divisionId = Number(divisionId);
+            }
+            break;
+          case 7:
+            if (officeId) {
+              filter.where.roleId = Number(roleId) + 1;
+              filter.where.officeId = Number(officeId);
+            }
+            if (unitId) {
+              filter.where.roleId = Number(roleId) + 2;
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          case 8:
+            if (roleId) {
+              filter.where.roleId = Number(roleId) + 1;
+            }
+            if (unitId) {
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          case 9:
+            if (roleId) {
+              filter.where.roleId = Number(roleId) + 1;
+            }
+            if (unitId) {
+              filter.where.unitId = Number(unitId);
+            }
+            break;
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
     }
 
     // ดึงข้อมูลจาก Prisma
