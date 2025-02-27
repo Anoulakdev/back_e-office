@@ -131,17 +131,16 @@ exports.list = async (req, res) => {
     };
 
     switch (Number(docstatusId)) {
-      case 1:
-        switch (Number(roleId)) {
-          case 2:
-            filter.where.roleId = 4;
-            break;
-          default:
-            break;
-        }
-        break;
       case 2:
         switch (Number(roleId)) {
+          case 4:
+            if (roleId) {
+              filter.where.roleId = Number(roleId);
+            }
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
+            break;
           case 6:
             if (roleId) {
               filter.where.roleId = Number(roleId);
