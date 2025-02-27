@@ -5,11 +5,11 @@ exports.listdocexternal = async (req, res) => {
   try {
     let docexlogs;
 
-    if (req.user.roleId === 10) {
-      // กรณี roleId === 10 ใช้ receiverCode
+    if (req.user.roleId === 4) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          receiverCode: req.user.emp_code,
+          rankId: req.user.rankId,
+          roleId: req.user.roleId,
         },
         orderBy: {
           docexId: "desc",
@@ -33,16 +33,126 @@ exports.listdocexternal = async (req, res) => {
           },
         },
       });
-    } else {
-      // กรณีอื่น ๆ ใช้ rankId, roleId, departmentId, divisionId, officeId, unitId
+    } else if (req.user.roleId === 6) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
           rankId: req.user.rankId,
           roleId: req.user.roleId,
           departmentId: req.user.departmentId,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          assigner: {
+            select: {
+              first_name: true,
+              last_name: true,
+              gender: true,
+              tel: true,
+            },
+          },
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+              outsider: true,
+            },
+          },
+        },
+      });
+    } else if (req.user.roleId === 7) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          rankId: req.user.rankId,
+          roleId: req.user.roleId,
           divisionId: req.user.divisionId,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          assigner: {
+            select: {
+              first_name: true,
+              last_name: true,
+              gender: true,
+              tel: true,
+            },
+          },
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+              outsider: true,
+            },
+          },
+        },
+      });
+    } else if (req.user.roleId === 8) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          rankId: req.user.rankId,
+          roleId: req.user.roleId,
           officeId: req.user.officeId,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          assigner: {
+            select: {
+              first_name: true,
+              last_name: true,
+              gender: true,
+              tel: true,
+            },
+          },
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+              outsider: true,
+            },
+          },
+        },
+      });
+    } else if (req.user.roleId === 9) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          rankId: req.user.rankId,
+          roleId: req.user.roleId,
           unitId: req.user.unitId,
+        },
+        orderBy: {
+          docexId: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          assigner: {
+            select: {
+              first_name: true,
+              last_name: true,
+              gender: true,
+              tel: true,
+            },
+          },
+          docexternal: {
+            include: {
+              priority: true,
+              doctype: true,
+              outsider: true,
+            },
+          },
+        },
+      });
+    } else if (req.user.roleId === 10) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          receiverCode: req.user.emp_code,
         },
         orderBy: {
           docexId: "desc",

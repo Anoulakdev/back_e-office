@@ -32,6 +32,9 @@ exports.create = async (req, res) => {
         docexId,
         receiverCode,
         departmentId,
+        divisionId,
+        officeId,
+        unitId,
         priorityId,
         docstatusId,
         dateline,
@@ -58,6 +61,62 @@ exports.create = async (req, res) => {
         }
 
         user = department.users.find((u) => u.rankId === 1 && u.roleId === 6);
+
+        if (!user) {
+          return res.status(404).json({
+            message:
+              "No matching user found with specified rank, role, and position",
+          });
+        }
+      } else if (divisionId && !isNaN(Number(divisionId))) {
+        const division = await prisma.division.findUnique({
+          where: { id: Number(divisionId) },
+          include: { users: true },
+        });
+
+        if (!division || !division.users.length) {
+          return res
+            .status(404)
+            .json({ message: "division or users not found" });
+        }
+
+        user = division.users.find((u) => u.rankId === 1 && u.roleId === 7);
+
+        if (!user) {
+          return res.status(404).json({
+            message:
+              "No matching user found with specified rank, role, and position",
+          });
+        }
+      } else if (officeId && !isNaN(Number(officeId))) {
+        const office = await prisma.office.findUnique({
+          where: { id: Number(officeId) },
+          include: { users: true },
+        });
+
+        if (!office || !office.users.length) {
+          return res.status(404).json({ message: "office or users not found" });
+        }
+
+        user = office.users.find((u) => u.rankId === 1 && u.roleId === 8);
+
+        if (!user) {
+          return res.status(404).json({
+            message:
+              "No matching user found with specified rank, role, and position",
+          });
+        }
+      } else if (unitId && !isNaN(Number(unitId))) {
+        const unit = await prisma.unit.findUnique({
+          where: { id: Number(unitId) },
+          include: { users: true },
+        });
+
+        if (!unit || !unit.users.length) {
+          return res.status(404).json({ message: "unit or users not found" });
+        }
+
+        user = unit.users.find((u) => u.rankId === 1 && u.roleId === 9);
 
         if (!user) {
           return res.status(404).json({
