@@ -186,23 +186,19 @@ exports.list = async (req, res) => {
             }
             break;
           case 9:
-            if (roleId) {
-              filter.where.roleId = Number(roleId);
-            }
-            if (rankId) {
-              filter.where.rankId = Number(rankId);
-            }
-            if (unitId) {
-              filter.where.unitId = Number(unitId);
-            }
-            break;
-          case 10:
-            if (roleId) {
-              filter.where.roleId = Number(roleId);
-            }
-            if (unitId) {
-              filter.where.unitId = Number(unitId);
-            }
+            filter.where = {
+              OR: [
+                {
+                  roleId: 9,
+                  rankId: { gt: Number(rankId) },
+                  unitId: Number(unitId),
+                },
+                {
+                  roleId: 10,
+                  unitId: Number(unitId),
+                },
+              ],
+            };
             break;
           default:
             break;
