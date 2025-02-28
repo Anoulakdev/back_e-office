@@ -186,19 +186,28 @@ exports.list = async (req, res) => {
             }
             break;
           case 9:
-            filter.where = {
-              OR: [
-                {
-                  roleId: 9,
-                  rankId: { gt: Number(rankId) },
-                  unitId: Number(unitId),
-                },
-                {
-                  roleId: 10,
-                  unitId: Number(unitId),
-                },
-              ],
-            };
+            if (!rankId) {
+              // ถ้าไม่มี rankId ให้ใช้แค่ roleId และ unitId
+              filter.where = {
+                roleId: Number(roleId),
+                unitId: Number(unitId),
+              };
+            } else {
+              // ถ้ามี rankId ให้ใช้ OR เงื่อนไขทั้ง roleId = 9 และ roleId = 10
+              filter.where = {
+                OR: [
+                  {
+                    roleId: 9,
+                    rankId: { gt: Number(rankId) },
+                    unitId: Number(unitId),
+                  },
+                  {
+                    roleId: 10,
+                    unitId: Number(unitId),
+                  },
+                ],
+              };
+            }
             break;
           default:
             break;
