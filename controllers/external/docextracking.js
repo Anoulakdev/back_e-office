@@ -271,6 +271,65 @@ exports.list = async (req, res) => {
   }
 };
 
+exports.getById = async (req, res) => {
+  try {
+    const { doctrackingId } = req.params;
+    const doctrackings = await prisma.docexTracking.findUnique({
+      where: {
+        id: Number(doctrackingId),
+      },
+      include: {
+        docexternal: {
+          include: {
+            outsider: true,
+            priority: true,
+            doctype: true,
+          },
+        },
+        assigner: {
+          select: {
+            first_name: true,
+            last_name: true,
+            gender: true,
+            tel: true,
+          },
+        },
+      },
+    });
+
+    if (!doctrackings) {
+      return res.status(404).json({ message: "Document tracking not found" });
+    }
+
+    // Format dates
+    const formattedDoc = {
+      ...doctrackings,
+      createdAt: moment(doctrackings.createdAt)
+        .tz("Asia/Vientiane")
+        .format("YYYY-MM-DD HH:mm:ss"),
+      updatedAt: moment(doctrackings.updatedAt)
+        .tz("Asia/Vientiane")
+        .format("YYYY-MM-DD HH:mm:ss"),
+      docexternal: doctrackings.docexternal
+        ? {
+            ...doctrackings.docexternal,
+            createdAt: moment(doctrackings.docexternal.createdAt)
+              .tz("Asia/Vientiane")
+              .format("YYYY-MM-DD HH:mm:ss"),
+            updatedAt: moment(doctrackings.docexternal.updatedAt)
+              .tz("Asia/Vientiane")
+              .format("YYYY-MM-DD HH:mm:ss"),
+          }
+        : null,
+    };
+
+    res.status(200).json(formattedDoc);
+  } catch (err) {
+    console.error("Error fetching document tracking:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 // exports.director = async (req, res) => {
 //   try {
 //     const {
