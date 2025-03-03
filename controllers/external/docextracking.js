@@ -227,6 +227,7 @@ exports.list = async (req, res) => {
         receiverCode: req.user.emp_code,
       },
       include: {
+        docstatus: true,
         docexternal: {
           include: {
             outsider: true,
@@ -279,6 +280,7 @@ exports.getById = async (req, res) => {
         id: Number(doctrackingId),
       },
       include: {
+        docstatus: true,
         docexternal: {
           include: {
             outsider: true,
