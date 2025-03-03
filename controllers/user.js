@@ -216,78 +216,83 @@ exports.list = async (req, res) => {
       case 3:
         switch (Number(roleId)) {
           case 6:
-            if (roleId) {
-              filter.where.roleId = Number(roleId);
-            }
-            if (rankId) {
-              filter.where.rankId = { lt: Number(rankId) };
-            }
-            if (departmentId) {
-              filter.where.departmentId = Number(departmentId);
-            }
+            filter.where = {
+              OR: [
+                {
+                  roleId: Number(roleId),
+                  rankId: { lt: Number(rankId) },
+                  departmentId: Number(departmentId),
+                },
+                {
+                  roleId: 4,
+                },
+              ],
+            };
+
+            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
           case 7:
-            if (rankId) {
-              if (roleId) {
-                filter.where.roleId = Number(roleId);
-              }
-              if (rankId) {
-                filter.where.rankId = { lt: Number(rankId) };
-              }
-              if (divisionId) {
-                filter.where.divisionId = Number(divisionId);
-              }
-            } else {
-              if (roleId) {
-                filter.where.roleId = { lt: Number(roleId) };
-              }
-              if (departmentId) {
-                filter.where.departmentId = Number(departmentId);
-              }
-            }
+            filter.where = {
+              OR: [
+                {
+                  roleId: Number(roleId),
+                  rankId: { lt: Number(rankId) },
+                  divisionId: Number(divisionId),
+                },
+                {
+                  roleId: { lt: Number(roleId) },
+                  departmentId: Number(departmentId),
+                },
+              ],
+            };
+
+            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
           case 8:
-            if (rankId) {
-              if (roleId) {
-                filter.where.roleId = Number(roleId);
-              }
-              if (rankId) {
-                filter.where.rankId = { lt: Number(rankId) };
-              }
-              if (officeId) {
-                filter.where.officeId = Number(officeId);
-              }
-            } else {
-              if (roleId) {
-                filter.where.roleId = { lt: Number(roleId) };
-              }
-              if (divisionId) {
-                filter.where.divisionId = Number(divisionId);
-              }
-            }
+            filter.where = {
+              OR: [
+                {
+                  roleId: Number(roleId),
+                  rankId: { lt: Number(rankId) },
+                  officeId: Number(officeId),
+                },
+                {
+                  roleId: 7,
+                  divisionId: Number(divisionId),
+                },
+              ],
+            };
+
+            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
           case 9:
-            if (rankId) {
-              if (roleId) {
-                filter.where.roleId = Number(roleId);
-              }
-              if (rankId) {
-                filter.where.rankId = { lt: Number(rankId) };
-              }
-              if (unitId) {
-                filter.where.unitId = Number(unitId);
-              }
-            } else {
-              if (roleId) {
-                filter.where.roleId = { lt: Number(roleId) };
-              }
-              if (divisionId) {
-                filter.where.divisionId = Number(divisionId);
-              }
-              if (officeId) {
-                filter.where.officeId = Number(officeId);
-              }
+            const conditions = [
+              {
+                roleId: Number(roleId),
+                rankId: { lt: Number(rankId) },
+                unitId: Number(unitId),
+              },
+            ];
+
+            // ตรวจสอบเงื่อนไขแล้วเพิ่มเข้าไปใน OR
+            if (divisionId) {
+              conditions.push({
+                roleId: 7,
+                divisionId: Number(divisionId),
+              });
+            } else if (officeId) {
+              conditions.push({
+                roleId: 8,
+                officeId: Number(officeId),
+              });
             }
+
+            filter.where = {
+              OR: conditions,
+            };
+
+            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
+
             break;
           case 10:
             if (roleId) {
