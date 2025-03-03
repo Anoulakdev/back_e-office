@@ -227,30 +227,66 @@ exports.list = async (req, res) => {
             }
             break;
           case 7:
-            if (roleId) {
-              filter.where.roleId = { lt: Number(roleId) };
-            }
-            if (departmentId) {
-              filter.where.departmentId = Number(departmentId);
+            if (rankId) {
+              if (roleId) {
+                filter.where.roleId = Number(roleId);
+              }
+              if (rankId) {
+                filter.where.rankId = { lt: Number(rankId) };
+              }
+              if (divisionId) {
+                filter.where.divisionId = Number(divisionId);
+              }
+            } else {
+              if (roleId) {
+                filter.where.roleId = { lt: Number(roleId) };
+              }
+              if (departmentId) {
+                filter.where.departmentId = Number(departmentId);
+              }
             }
             break;
           case 8:
-            if (roleId) {
-              filter.where.roleId = { lt: Number(roleId) };
-            }
-            if (divisionId) {
-              filter.where.divisionId = Number(divisionId);
+            if (rankId) {
+              if (roleId) {
+                filter.where.roleId = Number(roleId);
+              }
+              if (rankId) {
+                filter.where.rankId = { lt: Number(rankId) };
+              }
+              if (officeId) {
+                filter.where.officeId = Number(officeId);
+              }
+            } else {
+              if (roleId) {
+                filter.where.roleId = { lt: Number(roleId) };
+              }
+              if (divisionId) {
+                filter.where.divisionId = Number(divisionId);
+              }
             }
             break;
           case 9:
-            if (roleId) {
-              filter.where.roleId = { lt: Number(roleId) };
-            }
-            if (divisionId) {
-              filter.where.divisionId = Number(divisionId);
-            }
-            if (officeId) {
-              filter.where.officeId = Number(officeId);
+            if (rankId) {
+              if (roleId) {
+                filter.where.roleId = Number(roleId);
+              }
+              if (rankId) {
+                filter.where.rankId = { lt: Number(rankId) };
+              }
+              if (unitId) {
+                filter.where.unitId = Number(unitId);
+              }
+            } else {
+              if (roleId) {
+                filter.where.roleId = { lt: Number(roleId) };
+              }
+              if (divisionId) {
+                filter.where.divisionId = Number(divisionId);
+              }
+              if (officeId) {
+                filter.where.officeId = Number(officeId);
+              }
             }
             break;
           case 10:
