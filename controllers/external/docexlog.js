@@ -212,6 +212,7 @@ exports.gethistory = async (req, res) => {
       include: {
         docexlogs: {
           include: {
+            docstatus: true,
             assigner: {
               select: {
                 first_name: true,
