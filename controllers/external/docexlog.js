@@ -16,16 +16,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,
@@ -45,16 +44,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,
@@ -74,16 +72,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,
@@ -103,16 +100,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,
@@ -132,16 +128,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,
@@ -159,16 +154,15 @@ exports.listdocexternal = async (req, res) => {
         },
         distinct: ["docexId"],
         include: {
-          assigner: {
-            select: {
-              first_name: true,
-              last_name: true,
-              gender: true,
-              tel: true,
-            },
-          },
           docexternal: {
             include: {
+              docexlogs: {
+                include: {
+                  docstatus: true,
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
               priority: true,
               doctype: true,
               outsider: true,

@@ -151,6 +151,13 @@ exports.list = async (req, res) => {
         createdAt: "desc",
       },
       include: {
+        docexlogs: {
+          include: {
+            docstatus: true,
+          },
+          take: 1,
+          orderBy: { createdAt: "desc" },
+        },
         priority: true,
         doctype: true,
         outsider: true,
@@ -214,6 +221,7 @@ exports.getById = async (req, res) => {
         },
         docexlogs: {
           include: {
+            docstatus: true,
             assigner: {
               select: {
                 first_name: true,
