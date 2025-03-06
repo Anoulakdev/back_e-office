@@ -19,8 +19,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
@@ -47,8 +61,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
@@ -75,8 +103,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
@@ -103,8 +145,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
@@ -131,8 +187,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
@@ -157,8 +227,22 @@ exports.listdocexternal = async (req, res) => {
           docexternal: {
             include: {
               docexlogs: {
-                include: {
+                select: {
                   docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
                 },
                 take: 1,
                 orderBy: { createdAt: "desc" },
