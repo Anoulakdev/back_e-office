@@ -215,6 +215,12 @@ exports.list = async (req, res) => {
         break;
       case 3:
         switch (Number(roleId)) {
+          case 4:
+            filter.where.roleId = Number(roleId);
+            if (rankId) {
+              filter.where.rankId = { lt: Number(rankId) };
+            }
+            break;
           case 6:
             filter.where = {
               OR: [
