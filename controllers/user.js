@@ -34,8 +34,8 @@ exports.create = (req, res) => {
     }
 
     try {
-      // Destructure body values
       const {
+        username,
         emp_code,
         first_name,
         last_name,
@@ -57,8 +57,10 @@ exports.create = (req, res) => {
       }
 
       // Step 2: Check if the username already exists
-      const checkUser = await prisma.user.findUnique({
-        where: { username: emp_code },
+      const checkUser = await prisma.user.findFirst({
+        where: {
+          OR: [{ username: username }, { emp_code: emp_code }],
+        },
       });
       if (checkUser) {
         return res.status(409).json({ message: "Username already exists" });
@@ -71,7 +73,7 @@ exports.create = (req, res) => {
       // Step 4: Create new user
       const newUser = await prisma.user.create({
         data: {
-          username: emp_code,
+          username: username || emp_code,
           password: hashPassword,
           emp_code,
           first_name,
@@ -211,7 +213,7 @@ exports.list = async (req, res) => {
             break;
         }
         break;
-      case 3:
+      case 5:
         switch (Number(roleId)) {
           case 4:
             filter.where.roleId = Number(roleId);
@@ -310,7 +312,8 @@ exports.list = async (req, res) => {
             break;
         }
         break;
-      case 4:
+      case 6:
+      case 7:
         switch (Number(roleId)) {
           case 4:
             filter.where = {

@@ -439,40 +439,21 @@ exports.assign = async (req, res) => {
     const {
       docexId,
       receiverCode,
-      departmentId,
+      departmentId1 = [],
+      departmentId2 = [],
       docstatusId,
       description,
-      active,
     } = req.body;
 
     if (!docexId) {
       return res.status(400).json({ message: "docexId is required" });
     }
 
-    let user = null;
+    let logTransactions = [];
 
-    if (departmentId && !isNaN(Number(departmentId))) {
-      const department = await prisma.department.findUnique({
-        where: { id: Number(departmentId) },
-        include: { users: true },
-      });
-
-      if (!department || !department.users.length) {
-        return res
-          .status(404)
-          .json({ message: "Department or users not found" });
-      }
-
-      user = department.users.find((u) => u.rankId === 1 && u.roleId === 6);
-
-      if (!user) {
-        return res.status(404).json({
-          message:
-            "No matching user found with specified rank, role, and position",
-        });
-      }
-    } else if (receiverCode) {
-      user = await prisma.user.findUnique({
+    if (receiverCode) {
+      // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
+      const user = await prisma.user.findUnique({
         where: { emp_code: receiverCode },
       });
 
@@ -481,22 +462,8 @@ exports.assign = async (req, res) => {
           .status(404)
           .json({ message: "User not found with the provided receiverCode" });
       }
-    } else {
-      return res.status(400).json({
-        message: "Either departmentId or receiverCode is required",
-      });
-    }
 
-    const [docexternals, docexlogs, docextrackings] = await prisma.$transaction(
-      [
-        prisma.docExternal.update({
-          where: {
-            id: Number(docexId),
-          },
-          data: {
-            assignto: 1,
-          },
-        }),
+      logTransactions.push(
         prisma.docexLog.create({
           data: {
             docexId: Number(docexId),
@@ -507,8 +474,8 @@ exports.assign = async (req, res) => {
             positionId: Number(user.posId),
             docstatusId: Number(docstatusId),
             description,
-            active,
-            departmentId: departmentId ? Number(departmentId) : null,
+            departmentId: user.departmentId ?? null,
+            departmentactive: null, // 🔸 ไม่มีค่า departmentactive เพราะใช้ receiverCode
           },
         }),
         prisma.docexTracking.create({
@@ -518,18 +485,97 @@ exports.assign = async (req, res) => {
             receiverCode: user.emp_code,
             docstatusId: Number(docstatusId),
             description,
-            active,
           },
-        }),
-      ]
-    );
+        })
+      );
+    } else {
+      // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
+      const allDepartments = [
+        ...(Array.isArray(departmentId1) && departmentId1.length
+          ? departmentId1.map((id) => ({ id: Number(id), departmentactive: 1 }))
+          : []),
+        ...(Array.isArray(departmentId2) && departmentId2.length
+          ? departmentId2.map((id) => ({ id: Number(id), departmentactive: 2 }))
+          : []),
+      ];
+
+      if (!allDepartments.length) {
+        return res
+          .status(400)
+          .json({ message: "At least one departmentId is required" });
+      }
+
+      for (const { id: departmentId, departmentactive } of allDepartments) {
+        const department = await prisma.department.findUnique({
+          where: { id: departmentId },
+          include: { users: true },
+        });
+
+        if (!department || !department.users.length) {
+          return res
+            .status(404)
+            .json({ message: `Department ${departmentId} or users not found` });
+        }
+
+        const depUser = department.users.find(
+          (u) => u.rankId === 1 && u.roleId === 6
+        );
+
+        if (!depUser) {
+          return res.status(404).json({
+            message: `No matching user found in department ${departmentId} with specified rank and role`,
+          });
+        }
+
+        logTransactions.push(
+          prisma.docexLog.create({
+            data: {
+              docexId: Number(docexId),
+              assignerCode: req.user.emp_code,
+              receiverCode: depUser.emp_code,
+              rankId: Number(depUser.rankId),
+              roleId: Number(depUser.roleId),
+              positionId: Number(depUser.posId),
+              docstatusId: Number(docstatusId),
+              description,
+              departmentId,
+              departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group
+            },
+          }),
+          prisma.docexTracking.create({
+            data: {
+              docexId: Number(docexId),
+              assignerCode: req.user.emp_code,
+              receiverCode: depUser.emp_code,
+              docstatusId: Number(docstatusId),
+              description,
+              departmentactive,
+            },
+          })
+        );
+      }
+    }
+
+    // อัปเดตสถานะของ docexternal
+    const updateDocExternal = prisma.docExternal.update({
+      where: {
+        id: Number(docexId),
+      },
+      data: {
+        assignto: 1,
+      },
+    });
+
+    const transactions = [updateDocExternal, ...logTransactions];
+
+    const results = await prisma.$transaction(transactions);
 
     res.status(201).json({
-      message: "Document departments created successfully",
-      data: { docexternals, docexlogs, docextrackings },
+      message: "Document assigned successfully",
+      data: results,
     });
   } catch (error) {
-    console.error("Error creating document departments:", error);
+    console.error("Error assigning document:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

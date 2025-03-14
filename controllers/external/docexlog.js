@@ -12,7 +12,7 @@ exports.listdocexternal = async (req, res) => {
           roleId: req.user.roleId,
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -49,12 +49,12 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 6) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          rankId: req.user.rankId,
+          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           departmentId: req.user.departmentId,
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -91,12 +91,12 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 7) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          rankId: req.user.rankId,
+          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           divisionId: req.user.divisionId,
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -133,12 +133,12 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 8) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          rankId: req.user.rankId,
+          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           officeId: req.user.officeId,
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -180,7 +180,7 @@ exports.listdocexternal = async (req, res) => {
           unitId: req.user.unitId,
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -217,10 +217,13 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 10) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          receiverCode: req.user.emp_code,
+          OR: [
+            { assignerCode: req.user.emp_code },
+            { receiverCode: req.user.emp_code },
+          ],
         },
         orderBy: {
-          docexId: "desc",
+          id: "desc",
         },
         distinct: ["docexId"],
         include: {
@@ -255,6 +258,10 @@ exports.listdocexternal = async (req, res) => {
         },
       });
     }
+
+    // docexlogs.forEach((log) => {
+    //   log.docexternal.docexlogs = log.docexternal.docexlogs[0] || null;
+    // });
 
     // แปลงเวลาเป็น Asia/Vientiane
     const formattedDocs = docexlogs.map((doc) => ({

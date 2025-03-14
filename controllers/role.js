@@ -2,7 +2,7 @@ const prisma = require("../prisma/prisma");
 
 exports.create = async (req, res) => {
   try {
-    const { role_name, role_code, role_description } = req.body;
+    const { role_name, role_code, role_description, authrole } = req.body;
 
     // Validate input fields
     if (!role_name) {
@@ -15,6 +15,7 @@ exports.create = async (req, res) => {
         role_name,
         role_code,
         role_description,
+        authrole,
       },
     });
 
@@ -68,7 +69,7 @@ exports.getById = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { roleId } = req.params;
-    const { role_name, role_code, role_description } = req.body;
+    const { role_name, role_code, role_description, authrole } = req.body;
 
     const updated = await prisma.role.update({
       where: {
@@ -78,6 +79,7 @@ exports.update = async (req, res) => {
         role_name: role_name,
         role_code: role_code,
         role_description: role_description,
+        authrole: authrole,
       },
     });
 

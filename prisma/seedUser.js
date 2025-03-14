@@ -34,7 +34,7 @@ async function seedUser() {
           tel: userData.phone || null,
           email: userData.email || null,
           user_image: userData.image
-            ? `https://uat-api.edl.com.la/api_v1/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+            ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
             : null,
           createdAt: userData.created_at,
           updatedAt: userData.created_at,
@@ -55,7 +55,7 @@ async function seedUser() {
           tel: userData.phone || null,
           email: userData.email || null,
           user_image: userData.image
-            ? `https://uat-api.edl.com.la/api_v1/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+            ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
             : null,
           createdAt: userData.created_at,
           updatedAt: userData.created_at,
