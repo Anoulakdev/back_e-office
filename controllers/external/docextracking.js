@@ -582,6 +582,19 @@ exports.department = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
+        const docexlogfileData =
+          Number(docstatusId) === 7
+            ? {
+                docexlog_file: existingTracking?.docexlog_file ?? null,
+                docexlog_type: existingTracking?.docexlog_type ?? null,
+                docexlog_size: existingTracking?.docexlog_size ?? null,
+              }
+            : {
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              };
+
         logTransactions.push(
           prisma.docexLog.create({
             data: {
@@ -596,9 +609,7 @@ exports.department = async (req, res) => {
               description,
               departmentId: Number(user.departmentId),
               departmentactive: Number(existingTracking.departmentactive),
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
@@ -613,9 +624,7 @@ exports.department = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                ...docexlogfileData,
               },
             })
           );
@@ -783,6 +792,19 @@ exports.division = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
+        const docexlogfileData =
+          Number(docstatusId) === 7
+            ? {
+                docexlog_file: existingTracking?.docexlog_file ?? null,
+                docexlog_type: existingTracking?.docexlog_type ?? null,
+                docexlog_size: existingTracking?.docexlog_size ?? null,
+              }
+            : {
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              };
+
         logTransactions.push(
           prisma.docexLog.create({
             data: {
@@ -800,9 +822,7 @@ exports.division = async (req, res) => {
               unitId: Number(unitId),
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
@@ -817,9 +837,7 @@ exports.division = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                ...docexlogfileData,
               },
             })
           );
@@ -1059,6 +1077,19 @@ exports.office = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
+        const docexlogfileData =
+          Number(docstatusId) === 7
+            ? {
+                docexlog_file: existingTracking?.docexlog_file ?? null,
+                docexlog_type: existingTracking?.docexlog_type ?? null,
+                docexlog_size: existingTracking?.docexlog_size ?? null,
+              }
+            : {
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              };
+
         logTransactions.push(
           prisma.docexLog.create({
             data: {
@@ -1078,9 +1109,7 @@ exports.office = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
@@ -1095,9 +1124,7 @@ exports.office = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                ...docexlogfileData,
               },
             })
           );
@@ -1230,6 +1257,19 @@ exports.unit = async (req, res) => {
         ? new Date(existingTracking.dateline)
         : null;
 
+      const docexlogfileData =
+        Number(docstatusId) === 7
+          ? {
+              docexlog_file: existingTracking?.docexlog_file ?? null,
+              docexlog_type: existingTracking?.docexlog_type ?? null,
+              docexlog_size: existingTracking?.docexlog_size ?? null,
+            }
+          : {
+              docexlog_file: req.file ? req.file.filename : null,
+              docexlog_type: req.file ? req.file.mimetype : null,
+              docexlog_size: req.file ? req.file.size : null,
+            };
+
       logTransactions.push(
         prisma.docexLog.create({
           data: {
@@ -1249,9 +1289,7 @@ exports.unit = async (req, res) => {
             departmentactive: existingTracking?.departmentactive ?? null,
             divisionactive: existingTracking?.divisionactive ?? null,
             officeactive: existingTracking?.officeactive ?? null,
-            docexlog_file: req.file ? req.file.filename : null,
-            docexlog_type: req.file ? req.file.mimetype : null,
-            docexlog_size: req.file ? req.file.size : null,
+            ...docexlogfileData,
           },
         })
       );
@@ -1266,9 +1304,7 @@ exports.unit = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
@@ -1286,7 +1322,6 @@ exports.unit = async (req, res) => {
     }
   });
 };
-
 
 exports.staff = async (req, res) => {
   upload(req, res, async function (err) {
@@ -1329,6 +1364,19 @@ exports.staff = async (req, res) => {
         ? new Date(existingTracking.dateline)
         : null;
 
+      const docexlogfileData =
+        Number(docstatusId) === 7
+          ? {
+              docexlog_file: existingTracking?.docexlog_file ?? null,
+              docexlog_type: existingTracking?.docexlog_type ?? null,
+              docexlog_size: existingTracking?.docexlog_size ?? null,
+            }
+          : {
+              docexlog_file: req.file ? req.file.filename : null,
+              docexlog_type: req.file ? req.file.mimetype : null,
+              docexlog_size: req.file ? req.file.size : null,
+            };
+
       logTransactions.push(
         prisma.docexLog.create({
           data: {
@@ -1348,9 +1396,7 @@ exports.staff = async (req, res) => {
             departmentactive: existingTracking?.departmentactive ?? null,
             divisionactive: existingTracking?.divisionactive ?? null,
             officeactive: existingTracking?.officeactive ?? null,
-            docexlog_file: req.file ? req.file.filename : null,
-            docexlog_type: req.file ? req.file.mimetype : null,
-            docexlog_size: req.file ? req.file.size : null,
+            ...docexlogfileData,
           },
         })
       );
@@ -1365,9 +1411,7 @@ exports.staff = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
