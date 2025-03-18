@@ -621,7 +621,6 @@ exports.department = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              departmentId: Number(user.departmentId),
               departmentactive: Number(existingTracking.departmentactive),
               ...docexlogfileData,
               ...(user.roleId === 6 || (docstatusId === 7 && user.roleId === 6)
@@ -835,7 +834,6 @@ exports.division = async (req, res) => {
               dateline: datelineValue,
               description,
               departmentId: Number(user.departmentId),
-              divisionId: Number(user.divisionId),
               unitId: Number(unitId),
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
