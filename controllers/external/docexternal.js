@@ -137,9 +137,13 @@ exports.list = async (req, res) => {
     }
 
     if (selectDateStart && selectDateEnd) {
+      const startDate = new Date(`${selectDateStart}T00:00:00+07:00`);
+
+      const endDate = new Date(`${selectDateEnd}T23:59:59+07:00`);
+
       where.createdAt = {
-        gte: new Date(selectDateStart),
-        lte: new Date(selectDateEnd),
+        gte: new Date(startDate.toISOString()),
+        lte: new Date(endDate.toISOString()),
       };
     }
 

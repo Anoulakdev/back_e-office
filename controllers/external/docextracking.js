@@ -201,8 +201,22 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
+    const { selectDateStart, selectDateEnd } = req.query;
+    const where = {};
+
+    if (selectDateStart && selectDateEnd) {
+      const startDate = new Date(`${selectDateStart}T00:00:00+07:00`);
+
+      const endDate = new Date(`${selectDateEnd}T23:59:59+07:00`);
+
+      where.createdAt = {
+        gte: new Date(startDate.toISOString()),
+        lte: new Date(endDate.toISOString()),
+      };
+    }
     const doctrackings = await prisma.docexTracking.findMany({
       where: {
+        ...where,
         receiverCode: req.user.emp_code,
       },
       include: {
@@ -610,6 +624,9 @@ exports.department = async (req, res) => {
               departmentId: Number(user.departmentId),
               departmentactive: Number(existingTracking.departmentactive),
               ...docexlogfileData,
+              ...(user.roleId === 6 || (docstatusId === 7 && user.roleId === 6)
+                ? { departmentId: Number(user.departmentId) }
+                : {}),
             },
           })
         );
@@ -823,6 +840,9 @@ exports.division = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               ...docexlogfileData,
+              ...(user.roleId === 7 || (docstatusId === 7 && user.roleId === 7)
+                ? { divisionId: Number(user.divisionId) }
+                : {}),
             },
           })
         );
@@ -1104,12 +1124,14 @@ exports.office = async (req, res) => {
               description,
               departmentId: Number(user.departmentId),
               divisionId: Number(user.divisionId),
-              officeId: Number(user.officeId),
               unitId: Number(user.unitId),
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
               ...docexlogfileData,
+              ...(user.roleId === 8 || (docstatusId === 7 && user.roleId === 8)
+                ? { officeId: Number(user.officeId) }
+                : {}),
             },
           })
         );
@@ -1285,11 +1307,13 @@ exports.unit = async (req, res) => {
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
-            unitId: user.unitId ? Number(user.unitId) : null,
             departmentactive: existingTracking?.departmentactive ?? null,
             divisionactive: existingTracking?.divisionactive ?? null,
             officeactive: existingTracking?.officeactive ?? null,
             ...docexlogfileData,
+            ...(user.roleId === 9 || (docstatusId === 7 && user.roleId === 9)
+              ? { unitId: user.unitId ? Number(user.unitId) : null }
+              : {}),
           },
         })
       );
