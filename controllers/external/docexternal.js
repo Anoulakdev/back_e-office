@@ -93,20 +93,20 @@ exports.list = async (req, res) => {
       search,
       priority,
       outsider,
+      assignto,
       selectDateStart,
       selectDateEnd,
-      page,
-      limit,
-      assignto,
+      // page,
+      // limit,
     } = req.query;
 
     // แปลงค่า page & limit เป็นตัวเลข
-    const pageNumber = Number(page) || 1;
-    const pageSize = Number(limit) || 10;
+    // const pageNumber = Number(page) || 1;
+    // const pageSize = Number(limit) || 10;
 
     // คำนวณค่าการแบ่งหน้า
-    const skip = (pageNumber - 1) * pageSize;
-    const take = pageSize;
+    // const skip = (pageNumber - 1) * pageSize;
+    // const take = pageSize;
 
     // สร้างเงื่อนไข where
     const where = {};
@@ -145,8 +145,8 @@ exports.list = async (req, res) => {
 
     const docexternals = await prisma.docExternal.findMany({
       where,
-      skip,
-      take,
+      // skip,
+      // take,
       orderBy: {
         createdAt: "desc",
       },
@@ -174,7 +174,7 @@ exports.list = async (req, res) => {
       },
     });
 
-    const total = await prisma.docExternal.count({ where });
+    // const total = await prisma.docExternal.count({ where });
 
     // Format dates
     const formattedDocs = docexternals.map((doc) => ({
@@ -183,13 +183,15 @@ exports.list = async (req, res) => {
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
     }));
 
-    res.json({
-      total,
-      page: pageNumber,
-      limit: pageSize,
-      totalPages: Math.ceil(total / pageSize),
-      formattedDocs,
-    });
+    res.json(formattedDocs);
+
+    // res.json({
+    //   total,
+    //   page: pageNumber,
+    //   limit: pageSize,
+    //   totalPages: Math.ceil(total / pageSize),
+    //   formattedDocs,
+    // });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server Error" });
