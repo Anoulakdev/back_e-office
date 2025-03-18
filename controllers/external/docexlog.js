@@ -5,9 +5,41 @@ exports.listdocexternal = async (req, res) => {
   try {
     let docexlogs;
 
+    const existingTracking = await prisma.docexTracking.findFirst({
+      where: {
+        receiverCode: req.user.emp_code,
+        OR: [{ docstatusId: 1 }, { docstatusId: 2 }],
+      },
+      select: {
+        docexId: true,
+        receiverCode: true,
+        docstatusId: true,
+      },
+    });
+
+    // console.log(existingTracking);
+
+    const existinglog = existingTracking
+      ? await prisma.docexLog.findFirst({
+          where: {
+            docexId: existingTracking.docexId,
+            receiverCode: existingTracking.receiverCode,
+            docstatusId: existingTracking.docstatusId,
+          },
+          select: {
+            id: true,
+          },
+        })
+      : null;
+
+    const idFilter = existinglog ? { id: { not: existinglog.id } } : {};
+
+    // console.log(existinglog);
+
     if (req.user.roleId === 4) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
+          ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
         },
@@ -49,6 +81,7 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 6) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
+          ...idFilter,
           ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           departmentId: req.user.departmentId,
@@ -91,6 +124,7 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 7) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
+          ...idFilter,
           ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           divisionId: req.user.divisionId,
@@ -133,6 +167,7 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 8) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
+          ...idFilter,
           ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
           roleId: req.user.roleId,
           officeId: req.user.officeId,
@@ -175,6 +210,7 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 9) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
+          ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
           unitId: req.user.unitId,
@@ -217,10 +253,8 @@ exports.listdocexternal = async (req, res) => {
     } else if (req.user.roleId === 10) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
-          OR: [
-            { assignerCode: req.user.emp_code },
-            { receiverCode: req.user.emp_code },
-          ],
+          ...idFilter,
+          receiverCode: req.user.emp_code,
         },
         orderBy: {
           id: "desc",
