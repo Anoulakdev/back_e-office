@@ -384,24 +384,25 @@ exports.remove = async (req, res) => {
       return res.status(404).json({ message: "Document not found" });
     }
 
+    // ลบไฟล์ของ docExternal
     if (docex.docex_file) {
       const filedocPath = path.join(
         __dirname,
         "../../uploads/document",
         docex.docex_file
       );
-      fs.unlink(filedocPath, (err) => {
-        if (err) {
-          console.error("Error deleting file: ", err);
-          return res.status(500).json({ message: "Error deleting file" });
-        }
-      });
+      if (fs.existsSync(filedocPath)) {
+        fs.unlinkSync(filedocPath);
+      }
     }
 
+    // ค้นหา logs ที่เกี่ยวข้อง
     const docexLogs = await prisma.docexLog.findMany({
       where: { docexId: Number(docexternalId) },
     });
 
+    // ลบไฟล์ของแต่ละ log โดยไม่ให้เกิด error ถ้าไฟล์ถูกลบไปแล้ว
+    const deletedFiles = new Set(); // ใช้ Set เพื่อตรวจสอบชื่อไฟล์ที่เคยลบไปแล้ว
     for (const log of docexLogs) {
       if (log.docexlog_file) {
         const logFilePath = path.join(
@@ -410,12 +411,13 @@ exports.remove = async (req, res) => {
           log.docexlog_file
         );
 
-        fs.unlink(logFilePath, (err) => {
-          if (err) {
-            console.error("Error deleting file: ", err);
-            return res.status(500).json({ message: "Error deleting file" });
-          }
-        });
+        if (
+          !deletedFiles.has(log.docexlog_file) &&
+          fs.existsSync(logFilePath)
+        ) {
+          fs.unlinkSync(logFilePath);
+          deletedFiles.add(log.docexlog_file); // บันทึกชื่อไฟล์ที่ลบแล้ว
+        }
       }
     }
 

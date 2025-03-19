@@ -434,6 +434,7 @@ exports.person = async (req, res) => {
         orderBy: {
           id: "desc",
         },
+        take: 1,
         include: {
           assigner: {
             select: {
@@ -444,7 +445,6 @@ exports.person = async (req, res) => {
             },
           },
         },
-        take: 1,
       });
     } else if (docstatus === 6 || docstatus === 3) {
       persons = await prisma.docexLog.findMany({
@@ -456,6 +456,7 @@ exports.person = async (req, res) => {
         orderBy: {
           id: "desc",
         },
+        take: 1,
         include: {
           assigner: {
             select: {
@@ -466,7 +467,6 @@ exports.person = async (req, res) => {
             },
           },
         },
-        take: 1,
       });
     }
 
