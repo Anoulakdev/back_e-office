@@ -381,6 +381,19 @@ exports.director = async (req, res) => {
           updateData.priorityId = Number(priorityId);
         }
 
+        const docexlogfileData =
+          Number(docstatusId) === 7
+            ? {
+                docexlog_file: existingTracking?.docexlog_file ?? null,
+                docexlog_type: existingTracking?.docexlog_type ?? null,
+                docexlog_size: existingTracking?.docexlog_size ?? null,
+              }
+            : {
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              };
+
         logTransactions.push(
           prisma.docExternal.update({
             where: { id: Number(docexId) },
@@ -397,9 +410,7 @@ exports.director = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              ...docexlogfileData,
             },
           })
         );
@@ -414,9 +425,7 @@ exports.director = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                ...docexlogfileData,
               },
             })
           );
@@ -621,11 +630,14 @@ exports.department = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
+              departmentId: user.departmentId
+                ? Number(user.departmentId)
+                : null,
               departmentactive: Number(existingTracking.departmentactive),
               ...docexlogfileData,
-              ...(user.roleId === 6 || (docstatusId === 7 && user.roleId === 6)
-                ? { departmentId: Number(user.departmentId) }
-                : {}),
+              // ...(user.roleId === 6 || (docstatusId === 7 && user.roleId === 6)
+              //   ? { departmentId: Number(user.departmentId) }
+              //   : {}),
             },
           })
         );
@@ -833,14 +845,17 @@ exports.division = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              departmentId: Number(user.departmentId),
+              departmentId: user.departmentId
+                ? Number(user.departmentId)
+                : null,
+              divisionId: user.divisionId ? Number(user.divisionId) : null,
               unitId: Number(unitId),
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               ...docexlogfileData,
-              ...(user.roleId === 7 || (docstatusId === 7 && user.roleId === 7)
-                ? { divisionId: Number(user.divisionId) }
-                : {}),
+              // ...(user.roleId === 7 || (docstatusId === 7 && user.roleId === 7)
+              //   ? { divisionId: Number(user.divisionId) }
+              //   : {}),
             },
           })
         );
@@ -1120,16 +1135,19 @@ exports.office = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              departmentId: Number(user.departmentId),
-              divisionId: Number(user.divisionId),
-              unitId: Number(user.unitId),
+              departmentId: user.departmentId
+                ? Number(user.departmentId)
+                : null,
+              divisionId: user.divisionId ? Number(user.divisionId) : null,
+              officeId: user.officeId ? Number(user.officeId) : null,
+              unitId: user.unitId ? Number(user.unitId) : null,
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
               ...docexlogfileData,
-              ...(user.roleId === 8 || (docstatusId === 7 && user.roleId === 8)
-                ? { officeId: Number(user.officeId) }
-                : {}),
+              // ...(user.roleId === 8 || (docstatusId === 7 && user.roleId === 8)
+              //   ? { officeId: Number(user.officeId) }
+              //   : {}),
             },
           })
         );
@@ -1305,13 +1323,14 @@ exports.unit = async (req, res) => {
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
+            unitId: user.unitId ? Number(user.unitId) : null,
             departmentactive: existingTracking?.departmentactive ?? null,
             divisionactive: existingTracking?.divisionactive ?? null,
             officeactive: existingTracking?.officeactive ?? null,
             ...docexlogfileData,
-            ...(user.roleId === 9 || (docstatusId === 7 && user.roleId === 9)
-              ? { unitId: user.unitId ? Number(user.unitId) : null }
-              : {}),
+            // ...(user.roleId === 9 || (docstatusId === 7 && user.roleId === 9)
+            //   ? { unitId: user.unitId ? Number(user.unitId) : null }
+            //   : {}),
           },
         })
       );
