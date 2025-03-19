@@ -633,11 +633,10 @@ exports.department = async (req, res) => {
               departmentId: user.departmentId
                 ? Number(user.departmentId)
                 : null,
-              departmentactive: Number(existingTracking.departmentactive),
+              departmentactive: user.departmentId
+                ? Number(existingTracking.departmentactive)
+                : null,
               ...docexlogfileData,
-              // ...(user.roleId === 6 || (docstatusId === 7 && user.roleId === 6)
-              //   ? { departmentId: Number(user.departmentId) }
-              //   : {}),
             },
           })
         );

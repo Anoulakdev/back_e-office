@@ -334,6 +334,65 @@ exports.listdocexternal = async (req, res) => {
   }
 };
 
+exports.person = async (req, res) => {
+  try {
+    const { docexId, docstatusId } = req.query;
+    const docstatus = Number(docstatusId);
+    let persons = [];
+
+    if (docstatus === 5 || docstatus === 7) {
+      persons = await prisma.docexLog.findMany({
+        where: {
+          docexId: Number(docexId),
+          receiverCode: req.user.emp_code,
+          OR: [{ docstatusId: 2 }, { docstatusId: 6 }],
+        },
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
+        include: {
+          assigner: {
+            select: {
+              gender: true,
+              first_name: true,
+              last_name: true,
+              emp_code: true,
+            },
+          },
+        },
+      });
+    } else if (docstatus === 6 || docstatus === 3) {
+      persons = await prisma.docexLog.findMany({
+        where: {
+          docexId: Number(docexId),
+          receiverCode: req.user.emp_code,
+          OR: [{ docstatusId: 5 }, { docstatusId: 7 }],
+        },
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
+        include: {
+          assigner: {
+            select: {
+              gender: true,
+              first_name: true,
+              last_name: true,
+              emp_code: true,
+            },
+          },
+        },
+      });
+    }
+
+    res.json(persons);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 exports.gethistory = async (req, res) => {
   try {
     const { docexId } = req.params;
@@ -417,62 +476,3 @@ exports.gethistory = async (req, res) => {
 //     res.status(500).json({ message: "Server Error" });
 //   }
 // };
-
-exports.person = async (req, res) => {
-  try {
-    const { docexId, docstatusId } = req.query;
-    const docstatus = Number(docstatusId);
-    let persons = [];
-
-    if (docstatus === 5 || docstatus === 7) {
-      persons = await prisma.docexLog.findMany({
-        where: {
-          docexId: Number(docexId),
-          receiverCode: req.user.emp_code,
-          OR: [{ docstatusId: 2 }, { docstatusId: 6 }],
-        },
-        orderBy: {
-          id: "desc",
-        },
-        take: 1,
-        include: {
-          assigner: {
-            select: {
-              gender: true,
-              first_name: true,
-              last_name: true,
-              emp_code: true,
-            },
-          },
-        },
-      });
-    } else if (docstatus === 6 || docstatus === 3) {
-      persons = await prisma.docexLog.findMany({
-        where: {
-          docexId: Number(docexId),
-          receiverCode: req.user.emp_code,
-          OR: [{ docstatusId: 5 }, { docstatusId: 7 }],
-        },
-        orderBy: {
-          id: "desc",
-        },
-        take: 1,
-        include: {
-          assigner: {
-            select: {
-              gender: true,
-              first_name: true,
-              last_name: true,
-              emp_code: true,
-            },
-          },
-        },
-      });
-    }
-
-    res.json(persons);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
