@@ -416,7 +416,7 @@ exports.remove = async (req, res) => {
           fs.existsSync(logFilePath)
         ) {
           fs.unlinkSync(logFilePath);
-          deletedFiles.add(log.docexlog_file); // บันทึกชื่อไฟล์ที่ลบแล้ว
+          deletedFiles.add(log.docexlog_file);
         }
       }
     }
