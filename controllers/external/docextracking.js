@@ -381,18 +381,41 @@ exports.director = async (req, res) => {
           updateData.priorityId = Number(priorityId);
         }
 
-        const docexlogfileData =
-          Number(docstatusId) === 7
-            ? {
-                docexlog_file: existingTracking?.docexlog_file ?? null,
-                docexlog_type: existingTracking?.docexlog_type ?? null,
-                docexlog_size: existingTracking?.docexlog_size ?? null,
-              }
-            : {
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+        let docexlogfileData = {
+          docexlog_file: null,
+          docexlog_type: null,
+          docexlog_size: null,
+        };
+
+        if (req.file) {
+          docexlogfileData = {
+            docexlog_file: req.file.filename,
+            docexlog_type: req.file.mimetype,
+            docexlog_size: req.file.size,
+          };
+        } else if (Number(docstatusId) === 6) {
+          if (existingTracking) {
+            if (existingTracking.docstatusId === 5) {
+              docexlogfileData = {
+                docexlog_file: null,
+                docexlog_type: null,
+                docexlog_size: null,
               };
+            } else if (existingTracking.docstatusId === 6) {
+              docexlogfileData = {
+                docexlog_file: existingTracking.docexlog_file ?? null,
+                docexlog_type: existingTracking.docexlog_type ?? null,
+                docexlog_size: existingTracking.docexlog_size ?? null,
+              };
+            }
+          }
+        } else if (Number(docstatusId) === 7) {
+          docexlogfileData = {
+            docexlog_file: existingTracking?.docexlog_file ?? null,
+            docexlog_type: existingTracking?.docexlog_type ?? null,
+            docexlog_size: existingTracking?.docexlog_size ?? null,
+          };
+        }
 
         logTransactions.push(
           prisma.docExternal.update({
@@ -605,18 +628,41 @@ exports.department = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
-        const docexlogfileData =
-          Number(docstatusId) === 7
-            ? {
-                docexlog_file: existingTracking?.docexlog_file ?? null,
-                docexlog_type: existingTracking?.docexlog_type ?? null,
-                docexlog_size: existingTracking?.docexlog_size ?? null,
-              }
-            : {
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+        let docexlogfileData = {
+          docexlog_file: null,
+          docexlog_type: null,
+          docexlog_size: null,
+        };
+
+        if (req.file) {
+          docexlogfileData = {
+            docexlog_file: req.file.filename,
+            docexlog_type: req.file.mimetype,
+            docexlog_size: req.file.size,
+          };
+        } else if (Number(docstatusId) === 6) {
+          if (existingTracking) {
+            if (existingTracking.docstatusId === 5) {
+              docexlogfileData = {
+                docexlog_file: null,
+                docexlog_type: null,
+                docexlog_size: null,
               };
+            } else if (existingTracking.docstatusId === 6) {
+              docexlogfileData = {
+                docexlog_file: existingTracking.docexlog_file ?? null,
+                docexlog_type: existingTracking.docexlog_type ?? null,
+                docexlog_size: existingTracking.docexlog_size ?? null,
+              };
+            }
+          }
+        } else if (Number(docstatusId) === 7) {
+          docexlogfileData = {
+            docexlog_file: existingTracking?.docexlog_file ?? null,
+            docexlog_type: existingTracking?.docexlog_type ?? null,
+            docexlog_size: existingTracking?.docexlog_size ?? null,
+          };
+        }
 
         logTransactions.push(
           prisma.docexLog.create({
@@ -819,18 +865,41 @@ exports.division = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
-        const docexlogfileData =
-          Number(docstatusId) === 7
-            ? {
-                docexlog_file: existingTracking?.docexlog_file ?? null,
-                docexlog_type: existingTracking?.docexlog_type ?? null,
-                docexlog_size: existingTracking?.docexlog_size ?? null,
-              }
-            : {
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+        let docexlogfileData = {
+          docexlog_file: null,
+          docexlog_type: null,
+          docexlog_size: null,
+        };
+
+        if (req.file) {
+          docexlogfileData = {
+            docexlog_file: req.file.filename,
+            docexlog_type: req.file.mimetype,
+            docexlog_size: req.file.size,
+          };
+        } else if (Number(docstatusId) === 6) {
+          if (existingTracking) {
+            if (existingTracking.docstatusId === 5) {
+              docexlogfileData = {
+                docexlog_file: null,
+                docexlog_type: null,
+                docexlog_size: null,
               };
+            } else if (existingTracking.docstatusId === 6) {
+              docexlogfileData = {
+                docexlog_file: existingTracking.docexlog_file ?? null,
+                docexlog_type: existingTracking.docexlog_type ?? null,
+                docexlog_size: existingTracking.docexlog_size ?? null,
+              };
+            }
+          }
+        } else if (Number(docstatusId) === 7) {
+          docexlogfileData = {
+            docexlog_file: existingTracking?.docexlog_file ?? null,
+            docexlog_type: existingTracking?.docexlog_type ?? null,
+            docexlog_size: existingTracking?.docexlog_size ?? null,
+          };
+        }
 
         logTransactions.push(
           prisma.docexLog.create({
@@ -852,9 +921,6 @@ exports.division = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               ...docexlogfileData,
-              // ...(user.roleId === 7 || (docstatusId === 7 && user.roleId === 7)
-              //   ? { divisionId: Number(user.divisionId) }
-              //   : {}),
             },
           })
         );
@@ -1109,18 +1175,41 @@ exports.office = async (req, res) => {
           ? new Date(existingTracking.dateline)
           : null;
 
-        const docexlogfileData =
-          Number(docstatusId) === 7
-            ? {
-                docexlog_file: existingTracking?.docexlog_file ?? null,
-                docexlog_type: existingTracking?.docexlog_type ?? null,
-                docexlog_size: existingTracking?.docexlog_size ?? null,
-              }
-            : {
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+        let docexlogfileData = {
+          docexlog_file: null,
+          docexlog_type: null,
+          docexlog_size: null,
+        };
+
+        if (req.file) {
+          docexlogfileData = {
+            docexlog_file: req.file.filename,
+            docexlog_type: req.file.mimetype,
+            docexlog_size: req.file.size,
+          };
+        } else if (Number(docstatusId) === 6) {
+          if (existingTracking) {
+            if (existingTracking.docstatusId === 5) {
+              docexlogfileData = {
+                docexlog_file: null,
+                docexlog_type: null,
+                docexlog_size: null,
               };
+            } else if (existingTracking.docstatusId === 6) {
+              docexlogfileData = {
+                docexlog_file: existingTracking.docexlog_file ?? null,
+                docexlog_type: existingTracking.docexlog_type ?? null,
+                docexlog_size: existingTracking.docexlog_size ?? null,
+              };
+            }
+          }
+        } else if (Number(docstatusId) === 7) {
+          docexlogfileData = {
+            docexlog_file: existingTracking?.docexlog_file ?? null,
+            docexlog_type: existingTracking?.docexlog_type ?? null,
+            docexlog_size: existingTracking?.docexlog_size ?? null,
+          };
+        }
 
         logTransactions.push(
           prisma.docexLog.create({
@@ -1294,18 +1383,41 @@ exports.unit = async (req, res) => {
         ? new Date(existingTracking.dateline)
         : null;
 
-      const docexlogfileData =
-        Number(docstatusId) === 7
-          ? {
-              docexlog_file: existingTracking?.docexlog_file ?? null,
-              docexlog_type: existingTracking?.docexlog_type ?? null,
-              docexlog_size: existingTracking?.docexlog_size ?? null,
-            }
-          : {
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+      let docexlogfileData = {
+        docexlog_file: null,
+        docexlog_type: null,
+        docexlog_size: null,
+      };
+
+      if (req.file) {
+        docexlogfileData = {
+          docexlog_file: req.file.filename,
+          docexlog_type: req.file.mimetype,
+          docexlog_size: req.file.size,
+        };
+      } else if (Number(docstatusId) === 6) {
+        if (existingTracking) {
+          if (existingTracking.docstatusId === 5) {
+            docexlogfileData = {
+              docexlog_file: null,
+              docexlog_type: null,
+              docexlog_size: null,
             };
+          } else if (existingTracking.docstatusId === 6) {
+            docexlogfileData = {
+              docexlog_file: existingTracking.docexlog_file ?? null,
+              docexlog_type: existingTracking.docexlog_type ?? null,
+              docexlog_size: existingTracking.docexlog_size ?? null,
+            };
+          }
+        }
+      } else if (Number(docstatusId) === 7) {
+        docexlogfileData = {
+          docexlog_file: existingTracking?.docexlog_file ?? null,
+          docexlog_type: existingTracking?.docexlog_type ?? null,
+          docexlog_size: existingTracking?.docexlog_size ?? null,
+        };
+      }
 
       logTransactions.push(
         prisma.docexLog.create({
@@ -1404,18 +1516,41 @@ exports.staff = async (req, res) => {
         ? new Date(existingTracking.dateline)
         : null;
 
-      const docexlogfileData =
-        Number(docstatusId) === 7
-          ? {
-              docexlog_file: existingTracking?.docexlog_file ?? null,
-              docexlog_type: existingTracking?.docexlog_type ?? null,
-              docexlog_size: existingTracking?.docexlog_size ?? null,
-            }
-          : {
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+      let docexlogfileData = {
+        docexlog_file: null,
+        docexlog_type: null,
+        docexlog_size: null,
+      };
+
+      if (req.file) {
+        docexlogfileData = {
+          docexlog_file: req.file.filename,
+          docexlog_type: req.file.mimetype,
+          docexlog_size: req.file.size,
+        };
+      } else if (Number(docstatusId) === 6) {
+        if (existingTracking) {
+          if (existingTracking.docstatusId === 5) {
+            docexlogfileData = {
+              docexlog_file: null,
+              docexlog_type: null,
+              docexlog_size: null,
             };
+          } else if (existingTracking.docstatusId === 6) {
+            docexlogfileData = {
+              docexlog_file: existingTracking.docexlog_file ?? null,
+              docexlog_type: existingTracking.docexlog_type ?? null,
+              docexlog_size: existingTracking.docexlog_size ?? null,
+            };
+          }
+        }
+      } else if (Number(docstatusId) === 7) {
+        docexlogfileData = {
+          docexlog_file: existingTracking?.docexlog_file ?? null,
+          docexlog_type: existingTracking?.docexlog_type ?? null,
+          docexlog_size: existingTracking?.docexlog_size ?? null,
+        };
+      }
 
       logTransactions.push(
         prisma.docexLog.create({

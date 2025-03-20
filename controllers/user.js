@@ -264,6 +264,7 @@ exports.listorganize = async (req, res) => {
         }
         break;
       case 5:
+      case 7:
         switch (Number(roleId)) {
           case 4:
             filter.where.roleId = Number(roleId);
@@ -362,8 +363,8 @@ exports.listorganize = async (req, res) => {
             break;
         }
         break;
+      case 3:
       case 6:
-      case 7:
         switch (Number(roleId)) {
           case 4:
             filter.where = {
