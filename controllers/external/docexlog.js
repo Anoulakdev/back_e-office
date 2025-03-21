@@ -452,27 +452,45 @@ exports.gethistory = async (req, res) => {
 //   try {
 //     const { docexId } = req.params;
 
-//     const docex = await prisma.docexLog.findMany({
+//     const docexLogs = await prisma.docexLog.findMany({
 //       where: {
 //         docexId: Number(docexId),
 //       },
+//       orderBy: {
+//         departmentactive: "asc",
+//       },
+//       include: {
+//         department: true, // สมมติว่ามี relation ไปที่ department
+//       },
 //     });
 
-//     if (!docex) {
+//     if (!docexLogs || docexLogs.length === 0) {
 //       return res.status(404).json({ message: "document not found" });
 //     }
 
-//     // Format dates
-//     const formattedDocs = {
-//       ...docex,
-//       createdAt: moment(docex.createdAt).tz("Asia/Vientiane").format(),
-//       updatedAt: moment(docex.updatedAt).tz("Asia/Vientiane").format(),
-//     };
+//     // จัดกลุ่มตาม departmentId
+//     const groupedData = docexLogs.reduce((acc, doc) => {
+//       const deptId = doc.departmentId || "unknown"; // กรณีไม่มี departmentId
+//       if (!acc[deptId]) {
+//         acc[deptId] = {
+//           departmentId: deptId,
+//           department_name: doc.department?.department_name || "Unknown", // ใช้ข้อมูลชื่อ department
+//           logs: [],
+//         };
+//       }
 
-//     res.json(formattedDocs);
+//       acc[deptId].logs.push({
+//         ...doc,
+//         createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
+//         updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
+//       });
+
+//       return acc;
+//     }, {});
+
+//     res.json(Object.values(groupedData));
 //   } catch (err) {
-//     // err
-//     console.log(err);
+//     console.error(err);
 //     res.status(500).json({ message: "Server Error" });
 //   }
 // };
