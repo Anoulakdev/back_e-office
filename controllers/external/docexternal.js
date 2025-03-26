@@ -37,6 +37,7 @@ exports.create = (req, res) => {
         outsiderId,
         priorityId,
         doctypeId,
+        extype,
       } = req.body;
 
       if (!docex_no) {
@@ -52,6 +53,7 @@ exports.create = (req, res) => {
           outsiderId: Number(outsiderId),
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          extype: Number(extype),
           creatorCode: req.user.emp_code,
           docex_file: req.file ? req.file.filename : null,
           docex_filetype: req.file ? req.file.mimetype : null,
@@ -483,19 +485,32 @@ exports.assign = async (req, res) => {
             .json({ message: "User not found with the provided receiverCode" });
         }
 
+        const docex = await prisma.docExternal.findUnique({
+          where: {
+            id: Number(docexId),
+          },
+        });
+
+        if (!docex) {
+          return res
+            .status(404)
+            .json({ message: "Document not found with the provided docexId" });
+        }
+
         logTransactions.push(
           prisma.docexLog.create({
             data: {
               docexId: Number(docexId),
               assignerCode: req.user.emp_code,
               receiverCode: user.emp_code,
-              rankId: Number(user.rankId),
-              roleId: Number(user.roleId),
-              positionId: Number(user.posId),
+              rankId: Number(user.rankId) ?? null,
+              roleId: Number(user.roleId) ?? null,
+              positionId: Number(user.posId) ?? null,
               docstatusId: Number(docstatusId),
+              extype: Number(docex.extype) ?? null,
               description,
               departmentId: user.departmentId ?? null,
-              departmentactive: null, // 🔸 ไม่มีค่า departmentactive เพราะใช้ receiverCode
+              departmentactive: null,
             },
           }),
           prisma.docexTracking.create({
@@ -538,11 +553,9 @@ exports.assign = async (req, res) => {
           });
 
           if (!department || !department.users.length) {
-            return res
-              .status(404)
-              .json({
-                message: `Department ${departmentId} or users not found`,
-              });
+            return res.status(404).json({
+              message: `Department ${departmentId} or users not found`,
+            });
           }
 
           const depUser = department.users.find(
@@ -555,16 +568,31 @@ exports.assign = async (req, res) => {
             });
           }
 
+          const docex = await prisma.docExternal.findUnique({
+            where: {
+              id: Number(docexId),
+            },
+          });
+
+          if (!docex) {
+            return res
+              .status(404)
+              .json({
+                message: "Document not found with the provided docexId",
+              });
+          }
+
           logTransactions.push(
             prisma.docexLog.create({
               data: {
                 docexId: Number(docexId),
                 assignerCode: req.user.emp_code,
                 receiverCode: depUser.emp_code,
-                rankId: Number(depUser.rankId),
-                roleId: Number(depUser.roleId),
-                positionId: Number(depUser.posId),
-                docstatusId: Number(docstatusId),
+                rankId: Number(depUser.rankId) ?? null,
+                roleId: Number(depUser.roleId) ?? null,
+                positionId: Number(depUser.posId) ?? null,
+                docstatusId: Number(docstatusId) ?? null,
+                extype: Number(docex.extype) ?? null,
                 description,
                 departmentId,
                 departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group

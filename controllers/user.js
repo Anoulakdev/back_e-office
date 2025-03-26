@@ -68,11 +68,18 @@ exports.create = (req, res) => {
 
       // Step 3: Hash default password (you might want to allow password as input)
       const salt = await bcrypt.genSalt(10);
-      const hashPassword = await bcrypt.hash("EDL1234", salt); // Default password can be changed as needed
+      const hashPassword = await bcrypt.hash("EDL1234", salt);
+
+      const maxId = await prisma.user.aggregate({
+        _max: { id: true },
+      });
+
+      const nextId = (maxId._max.id || 0) + 1;
 
       // Step 4: Create new user
       const newUser = await prisma.user.create({
         data: {
+          id: nextId,
           username: username || emp_code,
           password: hashPassword,
           emp_code,
@@ -105,7 +112,8 @@ exports.create = (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { search, departmentId, divisionId, officeId, unitId } = req.query;
+    const { search, roleId, departmentId, divisionId, officeId, unitId } =
+      req.query;
 
     const where = {};
 
@@ -117,6 +125,7 @@ exports.list = async (req, res) => {
       ];
     }
 
+    if (roleId) where.roleId = Number(roleId);
     if (departmentId) where.departmentId = Number(departmentId);
     if (divisionId) where.divisionId = Number(divisionId);
     if (officeId) where.officeId = Number(officeId);
@@ -124,9 +133,7 @@ exports.list = async (req, res) => {
 
     const filter = {
       where,
-      orderBy: {
-        rankId: "asc",
-      },
+      orderBy: [{ roleId: "asc" }, { rankId: "asc" }],
       include: {
         rank: true,
         role: true,
@@ -168,9 +175,7 @@ exports.listorganize = async (req, res) => {
     // สร้าง filter สำหรับการกรองข้อมูลตาม query params
     const filter = {
       where: {},
-      orderBy: {
-        rankId: "asc",
-      },
+      orderBy: [{ roleId: "asc" }, { rankId: "asc" }],
       include: {
         rank: true,
         role: true,

@@ -33,7 +33,7 @@ exports.list = async (req, res) => {
   try {
     const roles = await prisma.role.findMany({
       orderBy: {
-        id: "asc",
+        role_code: "asc",
       },
     });
 

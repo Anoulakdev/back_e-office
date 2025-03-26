@@ -62,7 +62,7 @@ model Role {
   role_name        String     @db.VarChar(255)
   role_code        String?    @db.VarChar(50)
   role_description String?    @db.Text
-  authrole         String?     @db.VarChar(255)
+  authrole         String?    @db.VarChar(255)
   users            User[]
   docexlogs        DocexLog[]
   rolemenus        RoleMenu[]
@@ -179,6 +179,7 @@ model DocExternal {
   priority          Priority?       @relation(fields: [priorityId], references: [id])
   doctypeId         Int?
   doctype           DocType?        @relation(fields: [doctypeId], references: [id])
+  extype            Int?            @default(1)
   createdAt         DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
   docextrackings    DocexTracking[]
@@ -200,6 +201,7 @@ model DocexTracking {
   departmentactive Int?
   divisionactive   Int?
   officeactive     Int?
+  extype           Int?        @default(1)
   docexlog_file    String?     @db.VarChar(255)
   docexlog_type    String?     @db.VarChar(255)
   docexlog_size    Int?
@@ -237,6 +239,7 @@ model DocexLog {
   departmentactive Int?
   divisionactive   Int?
   officeactive     Int?
+  extype           Int?        @default(1)
   docexlog_file    String?     @db.VarChar(255)
   docexlog_type    String?     @db.VarChar(255)
   docexlog_size    Int?

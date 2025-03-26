@@ -353,22 +353,35 @@ exports.director = async (req, res) => {
       }
 
       let logTransactions = [];
+      const existingTracking = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+      });
 
-      if (receiverCode) {
+      if (!receiverCode && !departmentId1.length && !departmentId2.length) {
+        const existingLog = await prisma.docexLog.findFirst({
+          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+        });
+
+        if (existingLog) {
+          logTransactions.push(
+            prisma.docexLog.update({
+              where: { id: existingLog.id },
+              data: { docstatusId: Number(docstatusId), description },
+            })
+          );
+        }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docexTracking.delete({ where: { id: existingTracking.id } })
+          );
+        }
+      } else if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         const user = await prisma.user.findUnique({
           where: { emp_code: receiverCode },
         });
 
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
-        }
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
-        });
+        if (!user) return res.status(404).json({ message: "User not found" });
 
         const datelineValue = dateline
           ? new Date(dateline)
@@ -476,11 +489,6 @@ exports.director = async (req, res) => {
             .json({ message: "At least one departmentId is required" });
         }
 
-        // 🔹 เก็บ existingTracking ก่อน
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
-        });
-
         // 🔹 วนลูปเพื่อเพิ่มข้อมูลก่อน
         for (const { id: departmentId, departmentactive } of allDepartments) {
           const department = await prisma.department.findUnique({
@@ -580,15 +588,12 @@ exports.director = async (req, res) => {
 
 exports.department = async (req, res) => {
   upload(req, res, async function (err) {
-    if (err instanceof multer.MulterError) {
-      return res
-        .status(500)
-        .json({ message: "Multer error", error: err.message });
-    } else if (err) {
-      return res
-        .status(500)
-        .json({ message: "Unknown error", error: err.message });
+    if (err) {
+      const errorMsg =
+        err instanceof multer.MulterError ? "Multer error" : "Unknown error";
+      return res.status(500).json({ message: errorMsg, error: err.message });
     }
+
     try {
       const {
         docexId,
@@ -599,28 +604,37 @@ exports.department = async (req, res) => {
         description,
         dateline,
       } = req.body;
-
-      if (!docexId) {
+      if (!docexId)
         return res.status(400).json({ message: "docexId is required" });
-      }
 
       let logTransactions = [];
+      const existingTracking = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+      });
 
-      if (receiverCode) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
+      if (!receiverCode && !divisionId1.length && !divisionId2.length) {
+        const existingLog = await prisma.docexLog.findFirst({
+          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+        });
+
+        if (existingLog) {
+          logTransactions.push(
+            prisma.docexLog.update({
+              where: { id: existingLog.id },
+              data: { docstatusId: Number(docstatusId), description },
+            })
+          );
+        }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docexTracking.delete({ where: { id: existingTracking.id } })
+          );
+        }
+      } else if (receiverCode) {
         const user = await prisma.user.findUnique({
           where: { emp_code: receiverCode },
         });
-
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
-        }
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
-        });
+        if (!user) return res.status(404).json({ message: "User not found" });
 
         const datelineValue = dateline
           ? new Date(dateline)
@@ -670,23 +684,18 @@ exports.department = async (req, res) => {
               docexId: Number(docexId),
               assignerCode: req.user.emp_code,
               receiverCode: user.emp_code,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: user.posId ? Number(user.posId) : null,
+              rankId: user.rankId ?? null,
+              roleId: user.roleId ?? null,
+              positionId: user.posId ?? null,
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description,
-              departmentId: user.departmentId
-                ? Number(user.departmentId)
-                : null,
-              departmentactive: user.departmentId
-                ? Number(existingTracking.departmentactive)
-                : null,
+              departmentId: user.departmentId ?? null,
+              departmentactive: existingTracking?.departmentactive ?? null,
               ...docexlogfileData,
             },
           })
         );
-
         if (existingTracking) {
           logTransactions.push(
             prisma.docexTracking.update({
@@ -705,74 +714,70 @@ exports.department = async (req, res) => {
       } else {
         const allDivisions = [
           ...(Array.isArray(divisionId1) && divisionId1.length
-            ? divisionId1.map((id) => ({ id: Number(id), divisionactive: 1 }))
+            ? divisionId1.map((id) => ({
+                id: Number(id),
+                divisionactive: 1,
+              }))
             : []),
           ...(Array.isArray(divisionId2) && divisionId2.length
-            ? divisionId2.map((id) => ({ id: Number(id), divisionactive: 2 }))
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                divisionactive: 2,
+              }))
             : []),
         ];
 
-        if (!allDivisions.length) {
+        if (!allDivisions.length)
           return res
             .status(400)
             .json({ message: "At least one divisionId is required" });
-        }
 
-        // 🔹 เก็บ existingTracking ก่อน
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
-        });
-
-        // 🔹 วนลูปเพื่อเพิ่มข้อมูลก่อน
         for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
             where: { id: divisionId },
             include: { users: true },
           });
-
-          if (!division || !division.users.length) {
+          if (!division || !division.users.length)
             return res
               .status(404)
-              .json({ message: `Division ${divisionId} or users not found` });
-          }
+              .json({ message: `Division ${divisionId} not found` });
 
           const depUser = division.users.find(
             (u) => u.rankId === 1 && u.roleId === 7
           );
-
-          if (!depUser) {
-            return res.status(404).json({
-              message: `No matching user found in division ${divisionId} with specified rank and role`,
-            });
-          }
+          if (!depUser)
+            return res
+              .status(404)
+              .json({ message: `No matching user in division ${divisionId}` });
 
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
             ? new Date(existingTracking.dateline)
             : null;
-
           logTransactions.push(
             prisma.docexLog.create({
               data: {
                 docexId: Number(docexId),
                 assignerCode: req.user.emp_code,
                 receiverCode: depUser.emp_code,
-                rankId: depUser.rankId ? Number(depUser.rankId) : null,
-                roleId: depUser.roleId ? Number(depUser.roleId) : null,
-                positionId: depUser.posId ? Number(depUser.posId) : null,
+                rankId: depUser.rankId ?? null,
+                roleId: depUser.roleId ?? null,
+                positionId: depUser.posId ?? null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                departmentId: Number(depUser.departmentId),
-                departmentactive: Number(existingTracking.departmentactive),
+                departmentId: depUser.departmentId ?? null,
+                departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
                 divisionactive,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                docexlog_file: req.file?.filename ?? null,
+                docexlog_type: req.file?.mimetype ?? null,
+                docexlog_size: req.file?.size ?? null,
               },
-            }),
+            })
+          );
+          logTransactions.push(
             prisma.docexTracking.create({
               data: {
                 docexId: Number(docexId),
@@ -781,32 +786,26 @@ exports.department = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description,
-                departmentactive: Number(existingTracking.departmentactive),
+                departmentactive: existingTracking?.departmentactive ?? null,
                 divisionactive,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                docexlog_file: req.file?.filename ?? null,
+                docexlog_type: req.file?.mimetype ?? null,
+                docexlog_size: req.file?.size ?? null,
               },
             })
           );
         }
-
-        // 🔹 ลบ existingTracking **หลังจากเพิ่มข้อมูลเสร็จ**
         if (existingTracking) {
           logTransactions.push(
-            prisma.docexTracking.delete({
-              where: { id: existingTracking.id },
-            })
+            prisma.docexTracking.delete({ where: { id: existingTracking.id } })
           );
         }
       }
 
       const results = await prisma.$transaction(logTransactions);
-
-      res.status(201).json({
-        message: "Document assigned successfully",
-        data: results,
-      });
+      res
+        .status(201)
+        .json({ message: "Document assigned successfully", data: results });
     } catch (error) {
       console.error("Error assigning document:", error);
       res.status(500).json({ message: "Server Error", error: error.message });

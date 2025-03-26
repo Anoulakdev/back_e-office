@@ -23,6 +23,7 @@ CREATE TABLE "User" (
     "unitId" INTEGER,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
+    "createdById" INTEGER,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -41,8 +42,31 @@ CREATE TABLE "Role" (
     "role_name" VARCHAR(255) NOT NULL,
     "role_code" VARCHAR(50),
     "role_description" TEXT,
+    "authrole" VARCHAR(255),
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RoleMenu" (
+    "id" SERIAL NOT NULL,
+    "roleId" INTEGER NOT NULL,
+    "title" VARCHAR(255),
+    "path" VARCHAR(255),
+
+    CONSTRAINT "RoleMenu_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "id" SERIAL NOT NULL,
+    "rolemenuId" INTEGER NOT NULL,
+    "C" BOOLEAN NOT NULL DEFAULT false,
+    "R" BOOLEAN NOT NULL DEFAULT false,
+    "U" BOOLEAN NOT NULL DEFAULT false,
+    "D" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -122,18 +146,18 @@ CREATE TABLE "Position" (
 CREATE TABLE "DocExternal" (
     "id" SERIAL NOT NULL,
     "docex_no" VARCHAR(255) NOT NULL,
-    "docex_date" TIMESTAMPTZ(0),
-    "docex_dateline" TIMESTAMPTZ(0),
+    "docex_date" TIMESTAMP(3),
     "docex_title" VARCHAR(255) NOT NULL,
     "docex_description" TEXT,
     "docex_file" VARCHAR(255) NOT NULL,
     "docex_filetype" VARCHAR(50) NOT NULL,
     "docex_filesize" INTEGER NOT NULL,
-    "outsider" VARCHAR(255) NOT NULL,
+    "outsiderId" INTEGER,
     "assignto" INTEGER,
     "creatorCode" VARCHAR(255) NOT NULL,
     "priorityId" INTEGER,
     "doctypeId" INTEGER,
+    "extype" TEXT,
     "createdAt" TIMESTAMPTZ(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(0) NOT NULL,
 
@@ -147,8 +171,12 @@ CREATE TABLE "DocexTracking" (
     "assignerCode" VARCHAR(255),
     "receiverCode" VARCHAR(255),
     "docstatusId" INTEGER,
+    "dateline" TIMESTAMP(3),
     "description" TEXT,
-    "active" VARCHAR(255),
+    "departmentactive" INTEGER,
+    "divisionactive" INTEGER,
+    "officeactive" INTEGER,
+    "extype" TEXT,
     "docexlog_file" VARCHAR(255),
     "docexlog_type" VARCHAR(255),
     "docexlog_size" INTEGER,
@@ -167,14 +195,18 @@ CREATE TABLE "DocexLog" (
     "rankId" INTEGER,
     "roleId" INTEGER,
     "positionId" INTEGER,
-    "departmentId" INTEGER NOT NULL,
+    "departmentId" INTEGER,
     "divisionId" INTEGER,
     "officeId" INTEGER,
     "unitId" INTEGER,
     "docstatusId" INTEGER,
+    "dateline" TIMESTAMP(3),
     "description" TEXT,
     "direction" VARCHAR(255),
-    "active" VARCHAR(255),
+    "departmentactive" INTEGER,
+    "divisionactive" INTEGER,
+    "officeactive" INTEGER,
+    "extype" TEXT,
     "docexlog_file" VARCHAR(255),
     "docexlog_type" VARCHAR(255),
     "docexlog_size" INTEGER,
@@ -188,6 +220,8 @@ CREATE TABLE "DocexLog" (
 CREATE TABLE "DocType" (
     "id" SERIAL NOT NULL,
     "doctype_name" VARCHAR(255) NOT NULL,
+    "actionMax" INTEGER,
+    "followMax" INTEGER,
 
     CONSTRAINT "DocType_pkey" PRIMARY KEY ("id")
 );
@@ -207,6 +241,23 @@ CREATE TABLE "DocStatus" (
     "docstatus_name" VARCHAR(255) NOT NULL,
 
     CONSTRAINT "DocStatus_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "BelongTo" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255),
+
+    CONSTRAINT "BelongTo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Outsider" (
+    "id" SERIAL NOT NULL,
+    "belongId" INTEGER,
+    "name" VARCHAR(255),
+
+    CONSTRAINT "Outsider_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -237,6 +288,15 @@ ALTER TABLE "User" ADD CONSTRAINT "User_officeId_fkey" FOREIGN KEY ("officeId") 
 ALTER TABLE "User" ADD CONSTRAINT "User_unitId_fkey" FOREIGN KEY ("unitId") REFERENCES "Unit"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RoleMenu" ADD CONSTRAINT "RoleMenu_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Permission" ADD CONSTRAINT "Permission_rolemenuId_fkey" FOREIGN KEY ("rolemenuId") REFERENCES "RoleMenu"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Division" ADD CONSTRAINT "Division_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -253,6 +313,9 @@ ALTER TABLE "PositionCode" ADD CONSTRAINT "PositionCode_posgroupId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Position" ADD CONSTRAINT "Position_poscodeId_fkey" FOREIGN KEY ("poscodeId") REFERENCES "PositionCode"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DocExternal" ADD CONSTRAINT "DocExternal_outsiderId_fkey" FOREIGN KEY ("outsiderId") REFERENCES "Outsider"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DocExternal" ADD CONSTRAINT "DocExternal_creatorCode_fkey" FOREIGN KEY ("creatorCode") REFERENCES "User"("emp_code") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -294,7 +357,7 @@ ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_roleId_fkey" FOREIGN KEY ("roleI
 ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_positionId_fkey" FOREIGN KEY ("positionId") REFERENCES "Position"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_divisionId_fkey" FOREIGN KEY ("divisionId") REFERENCES "Division"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -307,3 +370,6 @@ ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_unitId_fkey" FOREIGN KEY ("unitI
 
 -- AddForeignKey
 ALTER TABLE "DocexLog" ADD CONSTRAINT "DocexLog_docstatusId_fkey" FOREIGN KEY ("docstatusId") REFERENCES "DocStatus"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Outsider" ADD CONSTRAINT "Outsider_belongId_fkey" FOREIGN KEY ("belongId") REFERENCES "BelongTo"("id") ON DELETE SET NULL ON UPDATE CASCADE;
