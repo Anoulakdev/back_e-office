@@ -444,6 +444,7 @@ exports.director = async (req, res) => {
               roleId: user.roleId ? Number(user.roleId) : null,
               positionId: user.posId ? Number(user.posId) : null,
               docstatusId: Number(docstatusId),
+              departmentId: user.departmentId ?? null,
               dateline: datelineValue,
               description,
               ...docexlogfileData,

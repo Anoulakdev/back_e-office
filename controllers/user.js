@@ -200,12 +200,20 @@ exports.listorganize = async (req, res) => {
       case 2:
         switch (Number(roleId)) {
           case 4:
-            if (roleId) {
-              filter.where.roleId = Number(roleId);
-            }
-            if (rankId) {
-              filter.where.rankId = { gt: Number(rankId) };
-            }
+            filter.where = {
+              OR: [
+                {
+                  roleId: Number(roleId),
+                  rankId: { gt: Number(rankId) },
+                },
+                {
+                  roleId: 11,
+                },
+              ],
+            };
+            break;
+          case 11:
+            filter.where.roleId = 11;
             break;
           case 6:
             if (roleId) {

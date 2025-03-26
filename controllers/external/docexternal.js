@@ -96,6 +96,7 @@ exports.list = async (req, res) => {
       priority,
       outsider,
       assignto,
+      extype,
       selectDateStart,
       selectDateEnd,
       // page,
@@ -122,6 +123,10 @@ exports.list = async (req, res) => {
 
     if (priority) {
       where.priorityId = Number(priority);
+    }
+
+    if (extype) {
+      where.extype = Number(extype);
     }
 
     if (assignto) {

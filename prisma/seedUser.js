@@ -66,9 +66,9 @@ async function seedUser() {
         } else if ([5, 6, 7, 9, 10, 11, 105].includes(posId)) {
           roleId = 6;
         } else if (
-          [13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 90, 103, 100].includes(
-            posId
-          )
+          [
+            13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 90, 99, 103, 100,
+          ].includes(posId)
         ) {
           roleId = 7;
         } else if (
