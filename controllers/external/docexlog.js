@@ -393,60 +393,60 @@ exports.person = async (req, res) => {
   }
 };
 
-// exports.gethistory = async (req, res) => {
-//   try {
-//     const { docexId } = req.params;
+exports.gethistory = async (req, res) => {
+  try {
+    const { docexId } = req.params;
 
-//     const docex = await prisma.docExternal.findUnique({
-//       where: {
-//         id: Number(docexId),
-//       },
-//       include: {
-//         docexlogs: {
-//           include: {
-//             docstatus: true,
-//             assigner: {
-//               select: {
-//                 first_name: true,
-//                 last_name: true,
-//                 gender: true,
-//               },
-//             },
-//             receiver: {
-//               select: {
-//                 first_name: true,
-//                 last_name: true,
-//                 gender: true,
-//               },
-//             },
-//           },
-//         },
-//       },
-//     });
+    const docex = await prisma.docExternal.findUnique({
+      where: {
+        id: Number(docexId),
+      },
+      include: {
+        docexlogs: {
+          include: {
+            docstatus: true,
+            assigner: {
+              select: {
+                first_name: true,
+                last_name: true,
+                gender: true,
+              },
+            },
+            receiver: {
+              select: {
+                first_name: true,
+                last_name: true,
+                gender: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-//     if (!docex) {
-//       return res.status(404).json({ message: "document not found" });
-//     }
+    if (!docex) {
+      return res.status(404).json({ message: "document not found" });
+    }
 
-//     // Format dates
-//     const formattedDocs = {
-//       ...docex,
-//       createdAt: moment(docex.createdAt).tz("Asia/Vientiane").format(),
-//       updatedAt: moment(docex.updatedAt).tz("Asia/Vientiane").format(),
-//       docexlogs: docex.docexlogs.map((log) => ({
-//         ...log,
-//         createdAt: moment(log.createdAt).tz("Asia/Vientiane").format(),
-//         updatedAt: moment(log.updatedAt).tz("Asia/Vientiane").format(),
-//       })),
-//     };
+    // Format dates
+    const formattedDocs = {
+      ...docex,
+      createdAt: moment(docex.createdAt).tz("Asia/Vientiane").format(),
+      updatedAt: moment(docex.updatedAt).tz("Asia/Vientiane").format(),
+      docexlogs: docex.docexlogs.map((log) => ({
+        ...log,
+        createdAt: moment(log.createdAt).tz("Asia/Vientiane").format(),
+        updatedAt: moment(log.updatedAt).tz("Asia/Vientiane").format(),
+      })),
+    };
 
-//     res.json(formattedDocs);
-//   } catch (err) {
-//     // err
-//     console.log(err);
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
+    res.json(formattedDocs);
+  } catch (err) {
+    // err
+    console.log(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 exports.history = async (req, res) => {
   try {
@@ -497,7 +497,7 @@ exports.history = async (req, res) => {
   }
 };
 
-exports.gethistory = async (req, res) => {
+exports.gethistoryall = async (req, res) => {
   try {
     const { docexId } = req.params;
 
