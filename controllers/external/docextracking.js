@@ -360,6 +360,8 @@ exports.director = async (req, res) => {
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
           where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+          orderBy: { id: "desc" },
+          take: 1,
         });
 
         if (existingLog) {
@@ -446,7 +448,7 @@ exports.director = async (req, res) => {
               docstatusId: Number(docstatusId),
               departmentId: user.departmentId ?? null,
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               ...docexlogfileData,
             },
           })
@@ -461,7 +463,7 @@ exports.director = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 ...docexlogfileData,
               },
             })
@@ -539,7 +541,7 @@ exports.director = async (req, res) => {
                 positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentId,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
@@ -554,7 +556,7 @@ exports.director = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
@@ -621,6 +623,8 @@ exports.assistantdirector = async (req, res) => {
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
           where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+          orderBy: { id: "desc" },
+          take: 1,
         });
 
         if (existingLog) {
@@ -698,7 +702,7 @@ exports.assistantdirector = async (req, res) => {
               docstatusId: Number(docstatusId),
               departmentId: user.departmentId ?? null,
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               ...docexlogfileData,
             },
           })
@@ -713,7 +717,7 @@ exports.assistantdirector = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 ...docexlogfileData,
               },
             })
@@ -782,7 +786,7 @@ exports.assistantdirector = async (req, res) => {
                 positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentId,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
@@ -797,7 +801,7 @@ exports.assistantdirector = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
@@ -859,6 +863,8 @@ exports.department = async (req, res) => {
       if (!receiverCode && !divisionId1.length && !divisionId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
           where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+          orderBy: { id: "desc" },
+          take: 1,
         });
 
         if (existingLog) {
@@ -933,8 +939,9 @@ exports.department = async (req, res) => {
               positionId: user.posId ?? null,
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               departmentId: user.departmentId ?? null,
+              divisionId: user.divisionId ?? null,
               departmentactive: existingTracking?.departmentactive ?? null,
               ...docexlogfileData,
             },
@@ -949,7 +956,7 @@ exports.department = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 ...docexlogfileData,
               },
             })
@@ -1010,7 +1017,7 @@ exports.department = async (req, res) => {
                 positionId: depUser.posId ?? null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentId: depUser.departmentId ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
@@ -1031,7 +1038,7 @@ exports.department = async (req, res) => {
                 dateline: datelineValue,
                 description,
                 departmentactive: existingTracking?.departmentactive ?? null,
-                divisionactive,
+                description: description ?? null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,
@@ -1155,12 +1162,13 @@ exports.division = async (req, res) => {
               positionId: Number(user.posId),
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               departmentId: user.departmentId
                 ? Number(user.departmentId)
                 : null,
               divisionId: user.divisionId ? Number(user.divisionId) : null,
-              unitId: Number(unitId),
+              officeId: user.officeId ?? null,
+              unitId: user.unitId ?? null,
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               ...docexlogfileData,
@@ -1177,7 +1185,7 @@ exports.division = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 ...docexlogfileData,
               },
             })
@@ -1224,7 +1232,7 @@ exports.division = async (req, res) => {
               positionId: Number(user.posId),
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               departmentId: Number(user.departmentId),
               divisionId: Number(user.divisionId),
               unitId: Number(user.unitId),
@@ -1246,7 +1254,7 @@ exports.division = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -1315,7 +1323,7 @@ exports.division = async (req, res) => {
                 positionId: Number(depUser.posId),
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentId: Number(depUser.departmentId),
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionId: Number(depUser.divisionId),
@@ -1334,7 +1342,7 @@ exports.division = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionactive: Number(existingTracking.divisionactive),
                 officeactive,
@@ -1465,7 +1473,7 @@ exports.office = async (req, res) => {
               positionId: Number(user.posId),
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               departmentId: user.departmentId
                 ? Number(user.departmentId)
                 : null,
@@ -1492,7 +1500,7 @@ exports.office = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 ...docexlogfileData,
               },
             })
@@ -1539,7 +1547,7 @@ exports.office = async (req, res) => {
               positionId: Number(user.posId),
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               departmentId: Number(user.departmentId),
               divisionId: Number(user.divisionId),
               unitId: Number(user.unitId),
@@ -1562,7 +1570,7 @@ exports.office = async (req, res) => {
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -1673,7 +1681,7 @@ exports.unit = async (req, res) => {
             positionId: user.posId ? Number(user.posId) : null,
             docstatusId: Number(docstatusId),
             dateline: datelineValue,
-            description,
+            description: description ?? null,
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
@@ -1698,7 +1706,7 @@ exports.unit = async (req, res) => {
               receiverCode: user.emp_code,
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               ...docexlogfileData,
             },
           })
@@ -1806,7 +1814,7 @@ exports.staff = async (req, res) => {
             positionId: user.posId ? Number(user.posId) : null,
             docstatusId: Number(docstatusId),
             dateline: datelineValue,
-            description,
+            description: description ?? null,
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
@@ -1828,7 +1836,7 @@ exports.staff = async (req, res) => {
               receiverCode: user.emp_code,
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
-              description,
+              description: description ?? null,
               ...docexlogfileData,
             },
           })

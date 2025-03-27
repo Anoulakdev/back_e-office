@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   listdocexternal,
   person,
+  history,
   gethistory,
 } = require("../controllers/external/docexlog");
 // middleware
@@ -12,6 +13,7 @@ const { auth } = require("../middleware/auth");
 
 router.get("/docexlogs", auth, listdocexternal);
 router.get("/docexlogs/person", auth, person);
+router.get("/docexlogs/history", auth, history);
 router.get("/docexlogs/:docexId", auth, gethistory);
 
 module.exports = router;
