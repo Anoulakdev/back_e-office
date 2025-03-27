@@ -7,6 +7,7 @@ const {
   getById,
   create,
   director,
+  assistantdirector,
   department,
   division,
   office,
@@ -20,6 +21,7 @@ router.get("/docextrackings", auth, list);
 router.get("/docextrackings/:doctrackingId", auth, getById);
 router.post("/docextrackings", auth, create);
 router.post("/docextrackings/director", auth, director);
+router.post("/docextrackings/assistantdirector", auth, assistantdirector);
 router.post("/docextrackings/department", auth, department);
 router.post("/docextrackings/division", auth, division);
 router.post("/docextrackings/office", auth, office);

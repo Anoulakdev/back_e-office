@@ -112,7 +112,9 @@ exports.list = async (req, res) => {
     // const take = pageSize;
 
     // สร้างเงื่อนไข where
-    const where = {};
+    const where = {
+      creatorCode: req.user.emp_code,
+    };
 
     if (search) {
       where.OR = [
@@ -580,11 +582,9 @@ exports.assign = async (req, res) => {
           });
 
           if (!docex) {
-            return res
-              .status(404)
-              .json({
-                message: "Document not found with the provided docexId",
-              });
+            return res.status(404).json({
+              message: "Document not found with the provided docexId",
+            });
           }
 
           logTransactions.push(
