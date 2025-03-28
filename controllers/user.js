@@ -239,16 +239,19 @@ exports.listorganize = async (req, res) => {
             }
             break;
           case 7:
-            if (roleId) {
-              filter.where.roleId = Number(roleId);
-            }
-            if (Number(extype) === 1) {
-              filter.where.rankId = { gt: Number(rankId) };
+            if (Number(rankId) === 1) {
+              filter.where.roleId = 6;
+              filter.where.departmentId = Number(departmentId);
             } else {
-              filter.where.rankId = { lt: Number(rankId) };
-            }
-            if (divisionId) {
-              filter.where.divisionId = Number(divisionId);
+              if (Number(extype) === 1) {
+                filter.where.roleId = Number(roleId);
+                filter.where.rankId = { gt: Number(rankId) };
+                filter.where.divisionId = Number(divisionId);
+              } else {
+                filter.where.roleId = Number(roleId);
+                filter.where.rankId = { lt: Number(rankId) };
+                filter.where.divisionId = Number(divisionId);
+              }
             }
             break;
           case 8:
