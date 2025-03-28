@@ -479,7 +479,12 @@ exports.assign = async (req, res) => {
       }
 
       let logTransactions = [];
-
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
+      
       if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         const user = await prisma.user.findUnique({
@@ -492,11 +497,6 @@ exports.assign = async (req, res) => {
             .json({ message: "User not found with the provided receiverCode" });
         }
 
-        const docex = await prisma.docExternal.findUnique({
-          where: {
-            id: Number(docexId),
-          },
-        });
 
         if (!docex) {
           return res
@@ -611,6 +611,7 @@ exports.assign = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,
+                extype: Number(docex.extype) ?? null,
                 departmentactive,
               },
             })
