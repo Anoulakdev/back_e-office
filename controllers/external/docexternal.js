@@ -526,6 +526,7 @@ exports.assign = async (req, res) => {
               assignerCode: req.user.emp_code,
               receiverCode: user.emp_code,
               docstatusId: Number(docstatusId),
+              extype: Number(docex.extype) ?? null,
               description,
             },
           })
