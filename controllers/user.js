@@ -163,6 +163,7 @@ exports.list = async (req, res) => {
 exports.listorganize = async (req, res) => {
   try {
     const {
+      extype,
       docstatusId,
       roleId,
       rankId,
@@ -197,6 +198,15 @@ exports.listorganize = async (req, res) => {
             break;
         }
         break;
+      case 10:
+        switch (Number(roleId)) {
+          case 6:
+            filter.where.roleId = 4;
+            break;
+          default:
+            break;
+        }
+        break;
       case 2:
         switch (Number(roleId)) {
           case 4:
@@ -219,8 +229,10 @@ exports.listorganize = async (req, res) => {
             if (roleId) {
               filter.where.roleId = Number(roleId);
             }
-            if (rankId) {
+            if (Number(extype) === 1) {
               filter.where.rankId = { gt: Number(rankId) };
+            } else {
+              filter.where.rankId = { lt: Number(rankId) };
             }
             if (departmentId) {
               filter.where.departmentId = Number(departmentId);
@@ -230,8 +242,10 @@ exports.listorganize = async (req, res) => {
             if (roleId) {
               filter.where.roleId = Number(roleId);
             }
-            if (rankId) {
+            if (Number(extype) === 1) {
               filter.where.rankId = { gt: Number(rankId) };
+            } else {
+              filter.where.rankId = { lt: Number(rankId) };
             }
             if (divisionId) {
               filter.where.divisionId = Number(divisionId);
@@ -376,7 +390,6 @@ exports.listorganize = async (req, res) => {
             break;
         }
         break;
-      case 3:
       case 6:
         switch (Number(roleId)) {
           case 4:
