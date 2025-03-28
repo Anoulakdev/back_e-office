@@ -357,6 +357,12 @@ exports.director = async (req, res) => {
         where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
       });
 
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
+
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
           where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
@@ -449,6 +455,7 @@ exports.director = async (req, res) => {
               departmentId: user.departmentId ?? null,
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               ...docexlogfileData,
             },
           })
@@ -464,6 +471,7 @@ exports.director = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 ...docexlogfileData,
               },
             })
@@ -542,6 +550,7 @@ exports.director = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentId,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
@@ -557,6 +566,7 @@ exports.director = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
@@ -618,6 +628,12 @@ exports.assistantdirector = async (req, res) => {
       let logTransactions = [];
       const existingTracking = await prisma.docexTracking.findFirst({
         where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+      });
+
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
       });
 
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
@@ -703,6 +719,7 @@ exports.assistantdirector = async (req, res) => {
               departmentId: user.departmentId ?? null,
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               ...docexlogfileData,
             },
           })
@@ -718,6 +735,7 @@ exports.assistantdirector = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 ...docexlogfileData,
               },
             })
@@ -787,6 +805,7 @@ exports.assistantdirector = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentId,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
@@ -802,6 +821,7 @@ exports.assistantdirector = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentactive,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
@@ -858,6 +878,12 @@ exports.department = async (req, res) => {
       let logTransactions = [];
       const existingTracking = await prisma.docexTracking.findFirst({
         where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+      });
+
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
       });
 
       if (!receiverCode && !divisionId1.length && !divisionId2.length) {
@@ -940,6 +966,7 @@ exports.department = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               departmentId: user.departmentId ?? null,
               divisionId: user.divisionId ?? null,
               departmentactive: existingTracking?.departmentactive ?? null,
@@ -955,6 +982,7 @@ exports.department = async (req, res) => {
                 assignerCode: req.user.emp_code,
                 receiverCode: user.emp_code,
                 docstatusId: Number(docstatusId),
+                extype: Number(docex.extype) ?? null,
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docexlogfileData,
@@ -1018,6 +1046,7 @@ exports.department = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentId: depUser.departmentId ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
@@ -1036,7 +1065,8 @@ exports.department = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
-                description,
+                description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 description: description ?? null,
                 docexlog_file: req.file?.filename ?? null,
@@ -1092,6 +1122,12 @@ exports.division = async (req, res) => {
       }
 
       let logTransactions = [];
+
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
 
       if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
@@ -1163,6 +1199,7 @@ exports.division = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               departmentId: user.departmentId
                 ? Number(user.departmentId)
                 : null,
@@ -1186,6 +1223,7 @@ exports.division = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 ...docexlogfileData,
               },
             })
@@ -1233,6 +1271,7 @@ exports.division = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               departmentId: Number(user.departmentId),
               divisionId: Number(user.divisionId),
               unitId: Number(user.unitId),
@@ -1255,6 +1294,7 @@ exports.division = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -1324,6 +1364,7 @@ exports.division = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentId: Number(depUser.departmentId),
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionId: Number(depUser.divisionId),
@@ -1343,6 +1384,7 @@ exports.division = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionactive: Number(existingTracking.divisionactive),
                 officeactive,
@@ -1403,6 +1445,11 @@ exports.office = async (req, res) => {
       }
 
       let logTransactions = [];
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
 
       if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
@@ -1474,6 +1521,7 @@ exports.office = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               departmentId: user.departmentId
                 ? Number(user.departmentId)
                 : null,
@@ -1501,6 +1549,7 @@ exports.office = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 ...docexlogfileData,
               },
             })
@@ -1548,6 +1597,7 @@ exports.office = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               departmentId: Number(user.departmentId),
               divisionId: Number(user.divisionId),
               unitId: Number(user.unitId),
@@ -1571,6 +1621,7 @@ exports.office = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                extype: Number(docex.extype) ?? null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -1613,6 +1664,11 @@ exports.unit = async (req, res) => {
       }
 
       let logTransactions = [];
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
 
       const user = await prisma.user.findUnique({
         where: { emp_code: receiverCode },
@@ -1682,6 +1738,7 @@ exports.unit = async (req, res) => {
             docstatusId: Number(docstatusId),
             dateline: datelineValue,
             description: description ?? null,
+            extype: Number(docex.extype) ?? null,
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
@@ -1707,6 +1764,7 @@ exports.unit = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               ...docexlogfileData,
             },
           })
@@ -1746,6 +1804,11 @@ exports.staff = async (req, res) => {
       }
 
       let logTransactions = [];
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
 
       const user = await prisma.user.findUnique({
         where: { emp_code: receiverCode },
@@ -1815,6 +1878,7 @@ exports.staff = async (req, res) => {
             docstatusId: Number(docstatusId),
             dateline: datelineValue,
             description: description ?? null,
+            extype: Number(docex.extype) ?? null,
             departmentId: user.departmentId ? Number(user.departmentId) : null,
             divisionId: user.divisionId ? Number(user.divisionId) : null,
             officeId: user.officeId ? Number(user.officeId) : null,
@@ -1837,6 +1901,7 @@ exports.staff = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
+              extype: Number(docex.extype) ?? null,
               ...docexlogfileData,
             },
           })
