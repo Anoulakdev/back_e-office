@@ -124,10 +124,17 @@ module.exports = async (req, res) => {
             break;
           case 9:
             if (!rankId) {
-              // ถ้าไม่มี rankId ให้ใช้แค่ roleId และ unitId
               filter.where = {
-                roleId: Number(roleId),
-                unitId: Number(unitId),
+                OR: [
+                  {
+                    roleId: 9,
+                    unitId: Number(unitId),
+                  },
+                  {
+                    roleId: 10,
+                    unitId: Number(unitId),
+                  },
+                ],
               };
             } else {
               // ถ้ามี rankId ให้ใช้ OR เงื่อนไขทั้ง roleId = 9 และ roleId = 10
