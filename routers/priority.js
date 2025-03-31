@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/priority");
+} = require("../controllers/priorityController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

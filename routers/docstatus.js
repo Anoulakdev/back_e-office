@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/docstatus");
+} = require("../controllers/docstatusController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

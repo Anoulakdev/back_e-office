@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/rolemenu");
+} = require("../controllers/rolemenuController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

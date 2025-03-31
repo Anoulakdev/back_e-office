@@ -9,7 +9,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/user");
+} = require("../controllers/userController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

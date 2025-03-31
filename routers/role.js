@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/role");
+} = require("../controllers/roleController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

@@ -173,7 +173,11 @@ exports.list = async (req, res) => {
         },
         priority: true,
         doctype: true,
-        outsider: true,
+        outsider: {
+          include: {
+            belongto: true,
+          },
+        },
         creator: {
           select: {
             first_name: true,
@@ -222,7 +226,11 @@ exports.getById = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
-        outsider: true,
+        outsider: {
+          include: {
+            belongto: true,
+          },
+        },
         creator: {
           select: {
             first_name: true,
@@ -484,7 +492,7 @@ exports.assign = async (req, res) => {
           id: Number(docexId),
         },
       });
-      
+
       if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         const user = await prisma.user.findUnique({
@@ -496,7 +504,6 @@ exports.assign = async (req, res) => {
             .status(404)
             .json({ message: "User not found with the provided receiverCode" });
         }
-
 
         if (!docex) {
           return res

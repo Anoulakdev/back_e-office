@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/belongto");
+} = require("../controllers/belongtoController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

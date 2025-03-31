@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/rank");
+} = require("../controllers/rankController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

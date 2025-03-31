@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/outsider");
+} = require("../controllers/outsiderController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

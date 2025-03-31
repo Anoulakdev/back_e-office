@@ -8,7 +8,7 @@ const {
   create,
   update,
   remove,
-} = require("../controllers/permission");
+} = require("../controllers/permissionController");
 // middleware
 // const { auth } = require("../middleware/auth");
 

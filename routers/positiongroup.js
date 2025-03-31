@@ -2,10 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // controllers
-const {
-  list,
-  getById,
-} = require("../controllers/positiongroup");
+const { list, getById } = require("../controllers/positiongroupController");
 // middleware
 // const { auth } = require("../middleware/auth");
 
