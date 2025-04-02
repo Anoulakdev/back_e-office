@@ -322,19 +322,34 @@ module.exports = async (req, res) => {
             filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
           case 9:
-            filter.where = {
-              OR: [
-                {
-                  roleId: Number(roleId),
-                  rankId: { gt: Number(rankId) },
-                  unitId: Number(unitId),
-                },
-                {
-                  roleId: 10,
-                  unitId: Number(unitId),
-                },
-              ],
-            };
+            if (!rankId) {
+              filter.where = {
+                OR: [
+                  {
+                    roleId: 9,
+                    unitId: Number(unitId),
+                  },
+                  {
+                    roleId: 10,
+                    unitId: Number(unitId),
+                  },
+                ],
+              };
+            } else {
+              filter.where = {
+                OR: [
+                  {
+                    roleId: Number(roleId),
+                    rankId: { gt: Number(rankId) },
+                    unitId: Number(unitId),
+                  },
+                  {
+                    roleId: 10,
+                    unitId: Number(unitId),
+                  },
+                ],
+              };
+            }
             filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
           default:
