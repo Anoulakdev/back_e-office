@@ -361,7 +361,10 @@ module.exports = async (req, res) => {
     }
 
     // ดึงข้อมูลจาก Prisma
-    const users = await prisma.user.findMany(filter);
+    const users =
+      Object.keys(filter.where || {}).length > 0
+        ? await prisma.user.findMany(filter)
+        : [];
 
     // การฟอร์แมตวันที่
     const formattedUsers = users.map((user) => ({
