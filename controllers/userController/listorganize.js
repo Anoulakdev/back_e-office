@@ -166,6 +166,9 @@ module.exports = async (req, res) => {
               filter.where.rankId = { lt: Number(rankId) };
             }
             break;
+          case 11:
+            filter.where.roleId = 4;
+            break;
           case 6:
             filter.where = {
               OR: [
@@ -177,10 +180,16 @@ module.exports = async (req, res) => {
                 {
                   roleId: 4,
                 },
+                {
+                  roleId: 11,
+                },
               ],
             };
 
-            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
+            filter.orderBy = [
+              { role: { role_code: "asc" } },
+              { rankId: "asc" },
+            ];
             break;
           case 7:
             filter.where = {
