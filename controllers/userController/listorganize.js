@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
             };
             break;
           case 11:
-            filter.where.roleId = 11;
+            filter.where.roleId = 6;
             break;
           case 6:
             if (roleId) {
@@ -277,10 +277,20 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: 6,
+                  departmentId: Number(departmentId),
+                },
+                {
+                  roleId: 11,
                 },
               ],
             };
-            filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
+            filter.orderBy = [
+              { role: { role_code: "asc" } },
+              { rankId: "asc" },
+            ];
+            break;
+          case 11:
+            filter.where.roleId = 6;
             break;
           case 6:
             filter.where = {
