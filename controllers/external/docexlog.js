@@ -92,6 +92,47 @@ exports.listdocexternal = async (req, res) => {
           },
         },
       });
+    } else if (req.user.roleId === 11) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          ...idFilter,
+          receiverCode: req.user.emp_code,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          docexternal: {
+            include: {
+              docexlogs: {
+                select: {
+                  docstatus: true,
+                  assigner: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      gender: true,
+                    },
+                  },
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
+              priority: true,
+              doctype: true,
+              outsider: true,
+            },
+          },
+        },
+      });
     } else if (req.user.roleId === 6) {
       docexlogs = await prisma.docexLog.findMany({
         where: {

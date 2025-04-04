@@ -476,7 +476,7 @@ exports.assign = async (req, res) => {
       const {
         docexId,
         receiverCode,
-        departmentId1 = [],
+        departmentId1,
         departmentId2 = [],
         docstatusId,
         description,
