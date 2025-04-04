@@ -266,6 +266,7 @@ module.exports = async (req, res) => {
             break;
         }
         break;
+      case 3:
       case 6:
         switch (Number(roleId)) {
           case 4:

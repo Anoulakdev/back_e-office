@@ -900,6 +900,17 @@ exports.department = async (req, res) => {
               data: { docstatusId: Number(docstatusId), description },
             })
           );
+          logTransactions.push(
+            prisma.docexLog.deleteMany({
+              where: {
+                AND: [
+                  { id: { not: existingLog.id } },
+                  { docexId: Number(docexId) },
+                  { departmentId: req.user.departmentId },
+                ],
+              },
+            })
+          );
         }
         if (existingTracking) {
           logTransactions.push(
