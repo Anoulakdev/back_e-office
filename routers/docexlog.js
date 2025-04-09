@@ -8,7 +8,7 @@ const {
   history,
   gethistory,
   gethistoryall,
-} = require("../controllers/external/docexlog");
+} = require("../controllers/external/docexlogController");
 // middleware
 const { auth } = require("../middleware/auth");
 

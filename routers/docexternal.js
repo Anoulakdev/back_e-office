@@ -9,7 +9,7 @@ const {
   update,
   remove,
   assign,
-} = require("../controllers/external/docexternal");
+} = require("../controllers/external/docexternalController");
 // middleware
 const { auth } = require("../middleware/auth");
 

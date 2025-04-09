@@ -13,7 +13,7 @@ const {
   office,
   unit,
   staff,
-} = require("../controllers/external/docextracking");
+} = require("../controllers/external/docextrackingController");
 // middleware
 const { auth } = require("../middleware/auth");
 

@@ -1,0 +1,157 @@
+const fs = require("fs");
+const prisma = require("../../../prisma/prisma");
+const multer = require("multer");
+const path = require("path");
+const moment = require("moment-timezone");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/documentlog");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage }).single("docexlog_file");
+
+module.exports = async (req, res) => {
+  upload(req, res, async function (err) {
+    if (err instanceof multer.MulterError) {
+      return res
+        .status(500)
+        .json({ message: "Multer error", error: err.message });
+    } else if (err) {
+      return res
+        .status(500)
+        .json({ message: "Unknown error", error: err.message });
+    }
+    try {
+      const { docexId, receiverCode, docstatusId, description, dateline } =
+        req.body;
+
+      if (!docexId) {
+        return res.status(400).json({ message: "docexId is required" });
+      }
+
+      let logTransactions = [];
+      const docex = await prisma.docExternal.findUnique({
+        where: {
+          id: Number(docexId),
+        },
+      });
+
+      const user = await prisma.user.findUnique({
+        where: { emp_code: receiverCode },
+      });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided receiverCode" });
+      }
+
+      const existingTracking = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+      });
+
+      const datelineValue = dateline
+        ? new Date(dateline)
+        : existingTracking?.dateline
+        ? new Date(existingTracking.dateline)
+        : null;
+
+      let docexlogfileData = {
+        docexlog_file: null,
+        docexlog_type: null,
+        docexlog_size: null,
+      };
+
+      if (req.file) {
+        docexlogfileData = {
+          docexlog_file: req.file.filename,
+          docexlog_type: req.file.mimetype,
+          docexlog_size: req.file.size,
+        };
+      } else if (Number(docstatusId) === 6) {
+        if (existingTracking) {
+          if (existingTracking.docstatusId === 5) {
+            docexlogfileData = {
+              docexlog_file: null,
+              docexlog_type: null,
+              docexlog_size: null,
+            };
+          } else if (existingTracking.docstatusId === 6) {
+            docexlogfileData = {
+              docexlog_file: existingTracking.docexlog_file ?? null,
+              docexlog_type: existingTracking.docexlog_type ?? null,
+              docexlog_size: existingTracking.docexlog_size ?? null,
+            };
+          }
+        }
+      } else if (Number(docstatusId) === 7) {
+        docexlogfileData = {
+          docexlog_file: existingTracking?.docexlog_file ?? null,
+          docexlog_type: existingTracking?.docexlog_type ?? null,
+          docexlog_size: existingTracking?.docexlog_size ?? null,
+        };
+      }
+
+      logTransactions.push(
+        prisma.docexLog.create({
+          data: {
+            docexId: Number(docexId),
+            assignerCode: req.user.emp_code,
+            receiverCode: user.emp_code,
+            rankId: user.rankId ? Number(user.rankId) : null,
+            roleId: user.roleId ? Number(user.roleId) : null,
+            positionId: user.posId ? Number(user.posId) : null,
+            docstatusId: Number(docstatusId),
+            dateline: datelineValue,
+            description: description ?? null,
+            extype: Number(docex.extype) ?? null,
+            departmentId: user.departmentId ? Number(user.departmentId) : null,
+            divisionId: user.divisionId ? Number(user.divisionId) : null,
+            officeId: user.officeId ? Number(user.officeId) : null,
+            unitId: user.unitId ? Number(user.unitId) : null,
+            departmentactive: existingTracking?.departmentactive ?? null,
+            divisionactive: existingTracking?.divisionactive ?? null,
+            officeactive: existingTracking?.officeactive ?? null,
+            ...docexlogfileData,
+            // ...(user.roleId === 9 || (docstatusId === 7 && user.roleId === 9)
+            //   ? { unitId: user.unitId ? Number(user.unitId) : null }
+            //   : {}),
+          },
+        })
+      );
+
+      if (existingTracking) {
+        logTransactions.push(
+          prisma.docexTracking.update({
+            where: { id: existingTracking.id },
+            data: {
+              assignerCode: req.user.emp_code,
+              receiverCode: user.emp_code,
+              docstatusId: Number(docstatusId),
+              dateline: datelineValue,
+              description: description ?? null,
+              extype: Number(docex.extype) ?? null,
+              ...docexlogfileData,
+            },
+          })
+        );
+      }
+
+      const results = await prisma.$transaction(logTransactions);
+
+      res.status(201).json({
+        message: "Document assigned successfully",
+        data: results,
+      });
+    } catch (error) {
+      console.error("Error assigning document:", error);
+      res.status(500).json({ message: "Server Error", error: error.message });
+    }
+  });
+};
