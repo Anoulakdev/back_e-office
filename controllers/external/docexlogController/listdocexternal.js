@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
 
     const existingTracking = await prisma.docexTracking.findFirst({
       where: {
-        receiverCode: req.user.emp_code,
+        receiverCode: req.user.username,
         OR: [{ docstatusId: 1 }, { docstatusId: 2 }],
       },
       select: {
@@ -71,16 +71,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -92,12 +106,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -109,7 +129,7 @@ module.exports = async (req, res) => {
         where: {
           ...where,
           ...idFilter,
-          receiverCode: req.user.emp_code,
+          receiverCode: req.user.username,
         },
         orderBy: {
           id: "desc",
@@ -123,16 +143,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -144,12 +178,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -163,8 +203,8 @@ module.exports = async (req, res) => {
           ...idFilter,
           docstatusId: { not: 4 },
           roleId: req.user.roleId,
-          departmentId: req.user.departmentId,
-          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
+          departmentId: req.user.employee.departmentId,
+          rankId: req.user.rankId,
         },
         orderBy: {
           id: "desc",
@@ -178,16 +218,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -199,12 +253,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -216,9 +276,9 @@ module.exports = async (req, res) => {
         where: {
           ...where,
           ...idFilter,
-          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
+          rankId: req.user.rankId,
           roleId: req.user.roleId,
-          divisionId: req.user.divisionId,
+          divisionId: req.user.employee.divisionId,
         },
         orderBy: {
           id: "desc",
@@ -232,16 +292,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -253,12 +327,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -270,9 +350,9 @@ module.exports = async (req, res) => {
         where: {
           ...where,
           ...idFilter,
-          ...(req.user.rankId !== 1 && { rankId: req.user.rankId }),
+          rankId: req.user.rankId,
           roleId: req.user.roleId,
-          officeId: req.user.officeId,
+          officeId: req.user.employee.officeId,
         },
         orderBy: {
           id: "desc",
@@ -286,16 +366,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -307,12 +401,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -326,7 +426,7 @@ module.exports = async (req, res) => {
           ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
-          unitId: req.user.unitId,
+          unitId: req.user.employee.unitId,
         },
         orderBy: {
           id: "desc",
@@ -340,16 +440,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -361,12 +475,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },
@@ -392,16 +512,30 @@ module.exports = async (req, res) => {
                   docstatus: true,
                   assigner: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                   receiver: {
                     select: {
-                      first_name: true,
-                      last_name: true,
-                      gender: true,
+                      // username: true,
+                      // name: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -413,12 +547,18 @@ module.exports = async (req, res) => {
               outsider: true,
               creator: {
                 select: {
-                  first_name: true,
-                  last_name: true,
-                  emp_code: true,
-                  gender: true,
-                  tel: true,
-                  email: true,
+                  username: true,
+                  name: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                    },
+                  },
                 },
               },
             },

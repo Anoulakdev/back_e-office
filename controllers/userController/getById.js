@@ -28,11 +28,17 @@ module.exports = async (req, res) => {
       include: {
         rank: true,
         role: true,
-        position: true,
-        department: true,
-        division: true,
-        office: true,
-        unit: true,
+        employee: {
+          include: {
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        },
+        // department: true,
+        // division: true,
       },
     });
 
@@ -45,6 +51,17 @@ module.exports = async (req, res) => {
       ...user,
       createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(user.updatedAt).tz("Asia/Vientiane").format(),
+      employee: user.employee
+        ? {
+            ...user.employee,
+            createdAt: moment(user.employee.createdAt)
+              .tz("Asia/Vientiane")
+              .format(),
+            updatedAt: moment(user.employee.updatedAt)
+              .tz("Asia/Vientiane")
+              .format(),
+          }
+        : null,
     };
 
     res.json(formattedUser);

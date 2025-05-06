@@ -1,6 +1,7 @@
 const prisma = require("../../prisma/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 module.exports = async (req, res) => {
   try {
@@ -12,6 +13,104 @@ module.exports = async (req, res) => {
     }
     if (!password) {
       return res.status(401).json({ message: "ກະ​ລຸ​ນາ​ເພີ່ມລະ​ຫັດ" });
+    }
+
+    async function loginAndGetToken() {
+      try {
+        const loginResponse = await axios.post(
+          `${process.env.URL_API}/auth-svc/auth/login`,
+          {
+            username: process.env.USERNAME_API,
+            password: process.env.PASSWORD_API,
+          }
+        );
+
+        return loginResponse.data.data.accessToken;
+      } catch (error) {
+        console.error("Error during login:", error.message);
+        throw error;
+      }
+    }
+
+    const token = await loginAndGetToken();
+
+    const response = await axios.get(
+      `${process.env.URL_API}/organization-svc/employee/get?search=${username}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const usersData = response.data.data.employees;
+
+    if (usersData.length > 0) {
+      const userData = usersData[0];
+
+      await prisma.employee.upsert({
+        where: { emp_code: userData.emp_code },
+        update: {
+          first_name: userData.first_name_la,
+          last_name: userData.last_name_la,
+          emp_code: userData.emp_code,
+          status: userData.status,
+          gender: userData.gender,
+          posId: Number(userData.office?.pos_id) || null,
+          departmentId: Number(userData.office?.department_id) || null,
+          divisionId: Number(userData.office?.division_id) || null,
+          officeId: Number(userData.office?.office_id) || null,
+          unitId:
+            userData.office.unit_id === 0 || userData.office.unit_id === null
+              ? null
+              : userData.office?.unit_id,
+          tel: userData.phone || null,
+          email: userData.email || null,
+          empimg: userData.image
+            ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+            : null,
+          createdAt: userData.created_at
+            ? new Date(userData.created_at)
+            : new Date(),
+          updatedAt: userData.created_at
+            ? new Date(userData.created_at)
+            : new Date(),
+        },
+        create: {
+          id: userData.emp_id,
+          first_name: userData.first_name_la,
+          last_name: userData.last_name_la,
+          emp_code: userData.emp_code,
+          status: userData.status,
+          gender: userData.gender,
+          posId: Number(userData.office?.pos_id) || null,
+          departmentId: Number(userData.office?.department_id) || null,
+          divisionId: Number(userData.office?.division_id) || null,
+          officeId: Number(userData.office?.office_id) || null,
+          unitId:
+            userData.office.unit_id === 0 || userData.office.unit_id === null
+              ? null
+              : userData.office?.unit_id,
+          tel: userData.phone || null,
+          email: userData.email || null,
+          empimg: userData.image
+            ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+            : null,
+          createdAt: userData.created_at
+            ? new Date(userData.created_at)
+            : new Date(),
+          updatedAt: userData.created_at
+            ? new Date(userData.created_at)
+            : new Date(),
+        },
+      });
+
+      await prisma.user.update({
+        where: { username: userData.emp_code },
+        data: {
+          employeeId: userData.emp_id,
+        },
+      });
+
+      // console.log(`Synchronized user: ${userData.first_name_la}`);
     }
     // Step 1 Check Email in DB
     const user = await prisma.user.findUnique({
@@ -44,40 +143,35 @@ module.exports = async (req, res) => {
       include: {
         rank: true,
         role: true,
-        position: true,
-        department: true,
-        division: true,
-        office: true,
-        unit: true,
+        employee: {
+          include: {
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        },
+        // department: true,
+        // division: true,
       },
     });
     // Step 3 Create payload
     const payload = {
       id: userWithAll.id,
-      emp_code: userWithAll.emp_code,
-      first_name: userWithAll.first_name,
-      last_name: userWithAll.last_name,
-      status: userWithAll.status,
-      gender: userWithAll.gender,
-      tel: userWithAll.tel,
-      email: userWithAll.email,
+      username: userWithAll.username,
+      name: userWithAll.name,
       userimg: userWithAll.userimg,
-      rankId: userWithAll.rankId,
+      status: userWithAll.status,
+      employeeId: userWithAll.employeeId,
       roleId: userWithAll.roleId,
-      posId: userWithAll.posId,
+      rankId: userWithAll.rankId,
       departmentId: userWithAll.departmentId,
       divisionId: userWithAll.divisionId,
-      officeId: userWithAll.officeId,
-      unitId: userWithAll.unitId,
 
       rank: userWithAll.rank,
       role: userWithAll.role,
-      position: userWithAll.position,
-      department: userWithAll.department,
-      division: userWithAll.division,
-      office: userWithAll.office,
-      unit: userWithAll.unit,
-      unit: userWithAll.unit,
+      employee: userWithAll.employee,
     };
     // Step 4 Create Token
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {

@@ -4,6 +4,7 @@ const router = express.Router();
 // controllers
 const {
   list,
+  listemployee,
   listorganize,
   getById,
   create,
@@ -14,6 +15,7 @@ const {
 // const { auth } = require("../middleware/auth");
 
 router.get("/users", list);
+router.get("/employees", listemployee);
 router.get("/users/organize", listorganize);
 router.get("/users/:userId", getById);
 router.post("/users", create);

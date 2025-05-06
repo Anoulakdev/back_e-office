@@ -12,15 +12,22 @@ module.exports = async (req, res) => {
     // Fetch the user data from the database using Prisma
     const user = await prisma.user.findUnique({
       where: {
-        emp_code: req.user.emp_code, // Use the user ID from the decoded token
+        id: req.user.id, // Use the user ID from the decoded token
       },
       include: {
         rank: true,
-        position: true,
-        department: true,
-        division: true,
-        office: true,
-        unit: true,
+        role: true,
+        employee: {
+          include: {
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        },
+        // department: true,
+        // division: true,
       },
     });
 
@@ -33,8 +40,6 @@ module.exports = async (req, res) => {
     const {
       username,
       password,
-      status,
-      roleId,
       createdAt,
       updatedAt,
       ...filteredUser

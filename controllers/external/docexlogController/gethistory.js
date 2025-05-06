@@ -15,16 +15,30 @@ module.exports = async (req, res) => {
             docstatus: true,
             assigner: {
               select: {
-                first_name: true,
-                last_name: true,
-                gender: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
             receiver: {
               select: {
-                first_name: true,
-                last_name: true,
-                gender: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
           },

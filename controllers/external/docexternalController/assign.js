@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
       const {
         docexId,
         receiverCode,
-        departmentId1,
+        departmentId1 = [],
         departmentId2 = [],
         docstatusId,
         description,
@@ -53,7 +53,10 @@ module.exports = async (req, res) => {
       if (receiverCode) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         const user = await prisma.user.findUnique({
-          where: { emp_code: receiverCode },
+          where: { username: receiverCode },
+          include: {
+            employee: true,
+          },
         });
 
         if (!user) {
@@ -72,23 +75,23 @@ module.exports = async (req, res) => {
           prisma.docexLog.create({
             data: {
               docexId: Number(docexId),
-              assignerCode: req.user.emp_code,
-              receiverCode: user.emp_code,
+              assignerCode: req.user.username,
+              receiverCode: user.employee.emp_code,
               rankId: Number(user.rankId) ?? null,
               roleId: Number(user.roleId) ?? null,
-              positionId: Number(user.posId) ?? null,
+              positionId: Number(user.employee.posId) ?? null,
               docstatusId: Number(docstatusId),
               extype: Number(docex.extype) ?? null,
               description,
-              departmentId: user.departmentId ?? null,
+              departmentId: user.employee.departmentId ?? null,
               departmentactive: null,
             },
           }),
           prisma.docexTracking.create({
             data: {
               docexId: Number(docexId),
-              assignerCode: req.user.emp_code,
-              receiverCode: user.emp_code,
+              assignerCode: req.user.username,
+              receiverCode: user.employee.emp_code,
               docstatusId: Number(docstatusId),
               extype: Number(docex.extype) ?? null,
               description,
@@ -121,17 +124,28 @@ module.exports = async (req, res) => {
         for (const { id: departmentId, departmentactive } of allDepartments) {
           const department = await prisma.department.findUnique({
             where: { id: departmentId },
-            include: { users: true },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
           });
 
-          if (!department || !department.users.length) {
+          if (!department || !department.employees.length) {
             return res.status(404).json({
-              message: `Department ${departmentId} or users not found`,
+              message: `Department ${departmentId} or employees not found`,
             });
           }
 
-          const depUser = department.users.find(
-            (u) => u.rankId === 1 && u.roleId === 6
+          const depUser = department.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
           );
 
           if (!depUser) {
@@ -156,10 +170,10 @@ module.exports = async (req, res) => {
             prisma.docexLog.create({
               data: {
                 docexId: Number(docexId),
-                assignerCode: req.user.emp_code,
+                assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
-                rankId: Number(depUser.rankId) ?? null,
-                roleId: Number(depUser.roleId) ?? null,
+                rankId: Number(depUser.user.rankId) ?? null,
+                roleId: Number(depUser.user.roleId) ?? null,
                 positionId: Number(depUser.posId) ?? null,
                 docstatusId: Number(docstatusId) ?? null,
                 extype: Number(docex.extype) ?? null,
@@ -171,7 +185,7 @@ module.exports = async (req, res) => {
             prisma.docexTracking.create({
               data: {
                 docexId: Number(docexId),
-                assignerCode: req.user.emp_code,
+                assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,

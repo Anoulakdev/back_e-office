@@ -43,6 +43,7 @@ async function seedDivision() {
           division_name: divisionData.division_name,
           division_code: divisionData.division_code,
           division_status: divisionData.division_status,
+          branch_id: divisionData.branch.branch_id,
           departmentId: divisionData.department_id,
         },
         create: {
@@ -50,6 +51,7 @@ async function seedDivision() {
           division_name: divisionData.division_name,
           division_code: divisionData.division_code,
           division_status: divisionData.division_status,
+          branch_id: divisionData.branch.branch_id,
           departmentId: divisionData.department_id,
         },
       });

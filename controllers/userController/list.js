@@ -26,17 +26,43 @@ module.exports = async (req, res) => {
 
     if (search) {
       where.OR = [
-        { first_name: { contains: search, mode: "insensitive" } },
-        { last_name: { contains: search, mode: "insensitive" } },
-        { emp_code: { contains: search, mode: "insensitive" } },
+        {
+          username: { contains: search, mode: "insensitive" },
+        },
+        {
+          employee: {
+            first_name: { contains: search, mode: "insensitive" },
+          },
+        },
+        {
+          employee: {
+            last_name: { contains: search, mode: "insensitive" },
+          },
+        },
       ];
     }
 
     if (roleId) where.roleId = Number(roleId);
-    if (departmentId) where.departmentId = Number(departmentId);
-    if (divisionId) where.divisionId = Number(divisionId);
-    if (officeId) where.officeId = Number(officeId);
-    if (unitId) where.unitId = Number(unitId);
+    if (departmentId) {
+      where.employee = {
+        departmentId: Number(departmentId),
+      };
+    }
+    if (divisionId) {
+      where.employee = {
+        divisionId: Number(divisionId),
+      };
+    }
+    if (officeId) {
+      where.employee = {
+        officeId: Number(officeId),
+      };
+    }
+    if (unitId) {
+      where.employee = {
+        unitId: Number(unitId),
+      };
+    }
 
     const filter = {
       where,
@@ -44,20 +70,37 @@ module.exports = async (req, res) => {
       include: {
         rank: true,
         role: true,
-        position: true,
-        department: true,
-        division: true,
-        office: true,
-        unit: true,
+        employee: {
+          include: {
+            position: true,
+            department: true,
+            division: true,
+            office: true,
+            unit: true,
+          },
+        },
+        // department: true,
+        // division: true,
       },
     };
 
     const users = await prisma.user.findMany(filter);
 
-    const formattedUsers = users.map((user) => ({
+    const formattedUsers = users.map(({ password, ...user }) => ({
       ...user,
       createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(user.updatedAt).tz("Asia/Vientiane").format(),
+      employee: user.employee
+        ? {
+            ...user.employee,
+            createdAt: moment(user.employee.createdAt)
+              .tz("Asia/Vientiane")
+              .format(),
+            updatedAt: moment(user.employee.updatedAt)
+              .tz("Asia/Vientiane")
+              .format(),
+          }
+        : null,
     }));
 
     res.json(formattedUsers);

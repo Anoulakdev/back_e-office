@@ -16,28 +16,19 @@ model User {
   id                    Int             @id @default(autoincrement())
   username              String          @unique @db.VarChar(255)
   password              String          @db.VarChar(255)
-  first_name            String          @db.VarChar(255)
-  last_name             String          @db.VarChar(255)
-  emp_code              String          @unique @db.VarChar(255)
-  status                String          @default("A") @db.VarChar(50)
-  gender                Gender
-  tel                   String?         @db.VarChar(255)
-  email                 String?         @db.VarChar(255)
+  name                  String?         @db.VarChar(255)
   userimg               String?         @db.VarChar(255)
+  status                String          @default("A") @db.VarChar(50)
+  employeeId            Int?            @unique
+  employee              Employee?       @relation(fields: [employeeId], references: [id])
   rankId                Int?
   rank                  Rank?           @relation(fields: [rankId], references: [id])
   roleId                Int?
   role                  Role?           @relation(fields: [roleId], references: [id])
-  posId                 Int?
-  position              Position?       @relation(fields: [posId], references: [id])
   departmentId          Int?
   department            Department?     @relation(fields: [departmentId], references: [id])
   divisionId            Int?
   division              Division?       @relation(fields: [divisionId], references: [id])
-  officeId              Int?
-  office                Office?         @relation(fields: [officeId], references: [id])
-  unitId                Int?
-  unit                  Unit?           @relation(fields: [unitId], references: [id])
   createdAt             DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt             DateTime        @updatedAt @db.Timestamptz(0)
   createdById           Int?
@@ -48,6 +39,36 @@ model User {
   DocexTrackingReceiver DocexTracking[] @relation("ReceiverRelation")
   DocexLogAssigner      DocexLog[]      @relation("AssignerRelation")
   DocexLogReceiver      DocexLog[]      @relation("ReceiverRelation")
+  DocInternalCreator    DocInternal[]   @relation("creatorRelation")
+  DocinTrackingAssigner DocinTracking[] @relation("AssignerRelation")
+  DocinTrackingReceiver DocinTracking[] @relation("ReceiverRelation")
+  DocinLogAssigner      DocinLog[]      @relation("AssignerRelation")
+  DocinLogReceiver      DocinLog[]      @relation("ReceiverRelation")
+}
+
+model Employee {
+  id           Int         @id @default(autoincrement())
+  first_name   String      @db.VarChar(255)
+  last_name    String      @db.VarChar(255)
+  emp_code     String      @unique @db.VarChar(255)
+  status       String      @default("A") @db.VarChar(50)
+  gender       Gender
+  tel          String?     @db.VarChar(255)
+  email        String?     @db.VarChar(255)
+  empimg       String?     @db.VarChar(255)
+  posId        Int?
+  position     Position?   @relation(fields: [posId], references: [id])
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  divisionId   Int?
+  division     Division?   @relation(fields: [divisionId], references: [id])
+  officeId     Int?
+  office       Office?     @relation(fields: [officeId], references: [id])
+  unitId       Int?
+  unit         Unit?       @relation(fields: [unitId], references: [id])
+  createdAt    DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime    @updatedAt @db.Timestamptz(0)
+  user         User?
 }
 
 model Rank {
@@ -55,6 +76,7 @@ model Rank {
   rank_name String     @db.VarChar(255)
   users     User[]
   docexlogs DocexLog[]
+  docinlogs DocinLog[]
 }
 
 model Role {
@@ -65,6 +87,7 @@ model Role {
   authrole         String?    @db.VarChar(255)
   users            User[]
   docexlogs        DocexLog[]
+  docinlogs        DocinLog[]
   rolemenus        RoleMenu[]
 }
 
@@ -93,8 +116,10 @@ model Department {
   department_code   String?    @db.VarChar(50)
   department_status String     @default("A") @db.VarChar(50)
   divisions         Division[]
+  employees         Employee[]
   users             User[]
   docexlogs         DocexLog[]
+  docinlogs         DocinLog[]
 }
 
 model Division {
@@ -102,12 +127,15 @@ model Division {
   division_name   String?    @db.VarChar(255)
   division_code   String?    @db.VarChar(50)
   division_status String     @default("A") @db.VarChar(50)
+  branch_id       Int?
   departmentId    Int
   department      Department @relation(fields: [departmentId], references: [id])
   offices         Office[]
   units           Unit[]
+  employees       Employee[]
   users           User[]
   docexlogs       DocexLog[]
+  docinlogs       DocinLog[]
 }
 
 model Office {
@@ -118,8 +146,9 @@ model Office {
   divisionId    Int
   division      Division   @relation(fields: [divisionId], references: [id])
   units         Unit[]
-  users         User[]
+  employees     Employee[]
   docexlogs     DocexLog[]
+  docinlogs     DocinLog[]
 }
 
 model Unit {
@@ -132,8 +161,9 @@ model Unit {
   division    Division?  @relation(fields: [divisionId], references: [id])
   officeId    Int?
   office      Office?    @relation(fields: [officeId], references: [id])
-  users       User[]
+  employees   Employee[]
   docexlogs   DocexLog[]
+  docinlogs   DocinLog[]
 }
 
 model PositionGroup {
@@ -157,8 +187,9 @@ model Position {
   pos_status   String       @default("A") @db.VarChar(50)
   poscodeId    Int
   positioncode PositionCode @relation(fields: [poscodeId], references: [id])
-  users        User[]
+  employees    Employee[]
   docexlogs    DocexLog[]
+  docinlogs    DocinLog[]
 }
 
 model DocExternal {
@@ -174,7 +205,7 @@ model DocExternal {
   outsider          Outsider?       @relation(fields: [outsiderId], references: [id])
   assignto          Int?
   creatorCode       String          @db.VarChar(255)
-  creator           User            @relation(fields: [creatorCode], references: [emp_code], name: "creatorRelation")
+  creator           User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
   priorityId        Int?
   priority          Priority?       @relation(fields: [priorityId], references: [id])
   doctypeId         Int?
@@ -191,9 +222,9 @@ model DocexTracking {
   docexId          Int
   docexternal      DocExternal @relation(fields: [docexId], references: [id])
   assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [emp_code], name: "AssignerRelation")
+  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
   receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
+  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
   docstatusId      Int?
   docstatus        DocStatus?  @relation(fields: [docstatusId], references: [id])
   dateline         DateTime?
@@ -214,9 +245,9 @@ model DocexLog {
   docexId          Int
   docexternal      DocExternal @relation(fields: [docexId], references: [id])
   assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [emp_code], name: "AssignerRelation")
+  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
   receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [emp_code], name: "ReceiverRelation")
+  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
   rankId           Int?
   rank             Rank?       @relation(fields: [rankId], references: [id])
   roleId           Int?
@@ -247,12 +278,88 @@ model DocexLog {
   updatedAt        DateTime    @updatedAt @db.Timestamptz(0)
 }
 
+model DocInternal {
+  id                Int             @id @default(autoincrement())
+  docin_no          String          @db.VarChar(255)
+  docin_date        DateTime?
+  docin_title       String          @db.VarChar(255)
+  docin_description String?         @db.Text
+  docin_file        String          @db.VarChar(255)
+  docin_filetype    String          @db.VarChar(50)
+  docin_filesize    Int
+  assignto          Int?
+  creatorCode       String          @db.VarChar(255)
+  creator           User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
+  priorityId        Int?
+  priority          Priority?       @relation(fields: [priorityId], references: [id])
+  doctypeId         Int?
+  doctype           DocType?        @relation(fields: [doctypeId], references: [id])
+  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
+  docintrackings    DocinTracking[]
+  docinlogs         DocinLog[]
+}
+
+model DocinTracking {
+  id            Int         @id @default(autoincrement())
+  docinId       Int
+  docinternal   DocInternal @relation(fields: [docinId], references: [id])
+  assignerCode  String?     @db.VarChar(255)
+  assigner      User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode  String?     @db.VarChar(255)
+  receiver      User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  docstatusId   Int?
+  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline      DateTime?
+  description   String?     @db.Text
+  docinlog_file String?     @db.VarChar(255)
+  docinlog_type String?     @db.VarChar(255)
+  docinlog_size Int?
+  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+}
+
+model DocinLog {
+  id            Int         @id @default(autoincrement())
+  docinId       Int
+  docinternal   DocInternal @relation(fields: [docinId], references: [id])
+  assignerCode  String?     @db.VarChar(255)
+  assigner      User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode  String?     @db.VarChar(255)
+  receiver      User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  rankId        Int?
+  rank          Rank?       @relation(fields: [rankId], references: [id])
+  roleId        Int?
+  role          Role?       @relation(fields: [roleId], references: [id])
+  positionId    Int?
+  position      Position?   @relation(fields: [positionId], references: [id])
+  departmentId  Int?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  divisionId    Int?
+  division      Division?   @relation(fields: [divisionId], references: [id])
+  officeId      Int?
+  office        Office?     @relation(fields: [officeId], references: [id])
+  unitId        Int?
+  unit          Unit?       @relation(fields: [unitId], references: [id])
+  docstatusId   Int?
+  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline      DateTime?
+  description   String?     @db.Text
+  direction     String?     @db.VarChar(255)
+  docinlog_file String?     @db.VarChar(255)
+  docinlog_type String?     @db.VarChar(255)
+  docinlog_size Int?
+  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+}
+
 model DocType {
   id           Int           @id @default(autoincrement())
   doctype_name String        @db.VarChar(255)
   actionMax    Int?
   followMax    Int?
   docexternals DocExternal[]
+  docinternals DocInternal[]
 }
 
 model Priority {
@@ -260,6 +367,7 @@ model Priority {
   priority_name String        @db.VarChar(255)
   priority_code String?       @db.VarChar(50)
   docexternals  DocExternal[]
+  docinternals  DocInternal[]
 }
 
 model DocStatus {
@@ -267,6 +375,8 @@ model DocStatus {
   docstatus_name String          @db.VarChar(255)
   docexlogs      DocexLog[]
   docextrackings DocexTracking[]
+  docinlogs      DocinLog[]
+  docintrackings DocinTracking[]
 }
 
 model BelongTo {

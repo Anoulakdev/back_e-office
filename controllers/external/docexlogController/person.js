@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
         persons = await prisma.docexLog.findMany({
           where: {
             docexId: Number(docexId),
-            receiverCode: req.user.emp_code,
+            receiverCode: req.user.username,
             OR: [{ docstatusId: 2 }, { docstatusId: 6 }],
           },
           orderBy: {
@@ -28,10 +28,16 @@ module.exports = async (req, res) => {
           include: {
             assigner: {
               select: {
-                gender: true,
-                first_name: true,
-                last_name: true,
-                emp_code: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
           },
@@ -40,7 +46,7 @@ module.exports = async (req, res) => {
         persons = await prisma.docexLog.findMany({
           where: {
             docexId: Number(docexId),
-            receiverCode: req.user.emp_code,
+            receiverCode: req.user.username,
             OR: [{ docstatusId: 5 }, { docstatusId: 7 }],
           },
           orderBy: {
@@ -50,10 +56,16 @@ module.exports = async (req, res) => {
           include: {
             assigner: {
               select: {
-                gender: true,
-                first_name: true,
-                last_name: true,
-                emp_code: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
           },
@@ -64,7 +76,7 @@ module.exports = async (req, res) => {
         persons = await prisma.docexLog.findMany({
           where: {
             docexId: Number(docexId),
-            receiverCode: req.user.emp_code,
+            receiverCode: req.user.username,
             OR: [{ docstatusId: 3 }],
           },
           orderBy: {
@@ -74,10 +86,16 @@ module.exports = async (req, res) => {
           include: {
             assigner: {
               select: {
-                gender: true,
-                first_name: true,
-                last_name: true,
-                emp_code: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
           },
@@ -86,7 +104,7 @@ module.exports = async (req, res) => {
         persons = await prisma.docexLog.findMany({
           where: {
             docexId: Number(docexId),
-            receiverCode: req.user.emp_code,
+            receiverCode: req.user.username,
             OR: [{ docstatusId: 1 }, { docstatusId: 2 }, { docstatusId: 10 }],
           },
           orderBy: {
@@ -96,10 +114,16 @@ module.exports = async (req, res) => {
           include: {
             assigner: {
               select: {
-                gender: true,
-                first_name: true,
-                last_name: true,
-                emp_code: true,
+                username: true,
+                name: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                    tel: true,
+                  },
+                },
               },
             },
           },

@@ -99,33 +99,13 @@ async function seedUser() {
         }
 
         await prisma.user.upsert({
-          where: { emp_code: userData.emp_code },
+          where: { username: userData.emp_code },
           update: {
             username: userData.emp_code,
-            first_name: userData.first_name_la,
-            last_name: userData.last_name_la,
-            emp_code: userData.emp_code,
+            employeeId: userData.emp_id,
             status: userData.status,
-            gender: userData.gender,
             ...(roleId !== undefined && { roleId }),
             ...(rankId !== undefined && { rankId }),
-            posId: Number(posId) || null,
-            departmentId: Number(userData.office?.department_id) || null,
-            // departmentId: [14, 15, 16].includes(userData.office.department_id)
-            //   ? null
-            //   : userData.office.department_id,
-            divisionId: Number(userData.office?.division_id) || null,
-            officeId: Number(userData.office?.office_id) || null,
-            // unitId: Number(userData?.office?.unit_id) || null,
-            unitId:
-              userData.office.unit_id === 0 || userData.office.unit_id === null
-                ? null
-                : userData.office.unit_id,
-            tel: userData.phone || null,
-            email: userData.email || null,
-            userimg: userData.image
-              ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
-              : null,
             createdAt: userData.created_at
               ? new Date(userData.created_at)
               : new Date(),
@@ -134,33 +114,12 @@ async function seedUser() {
               : new Date(),
           },
           create: {
-            id: userData.emp_id,
             username: userData.emp_code,
             password: hashPassword, // ตรวจสอบว่าค่านี้มีอยู่แล้ว
-            first_name: userData.first_name_la,
-            last_name: userData.last_name_la,
-            emp_code: userData.emp_code,
+            employeeId: userData.emp_id,
             status: userData.status,
-            gender: userData.gender,
             roleId: roleId,
             rankId: rankId,
-            posId: Number(posId) || null,
-            departmentId: Number(userData.office?.department_id) || null,
-            // departmentId: [14, 15, 16].includes(userData.office.department_id)
-            //   ? null
-            //   : userData.office.department_id,
-            divisionId: Number(userData.office?.division_id) || null,
-            officeId: Number(userData.office?.office_id) || null,
-            // unitId: Number(userData.office?.unit_id) || null,
-            unitId:
-              userData.office.unit_id === 0 || userData.office.unit_id === null
-                ? null
-                : userData.office.unit_id,
-            tel: userData.phone || null,
-            email: userData.email || null,
-            userimg: userData.image
-              ? `https://uat-api.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
-              : null,
             createdAt: userData.created_at
               ? new Date(userData.created_at)
               : new Date(),

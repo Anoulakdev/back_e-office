@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
 
     // สร้างเงื่อนไข where
     const where = {
-      creatorCode: req.user.emp_code,
+      creatorCode: req.user.username,
     };
 
     if (search) {
@@ -107,12 +107,18 @@ module.exports = async (req, res) => {
         },
         creator: {
           select: {
-            first_name: true,
-            last_name: true,
-            emp_code: true,
-            gender: true,
-            tel: true,
-            email: true,
+            username: true,
+            name: true,
+            employee: {
+              select: {
+                first_name: true,
+                last_name: true,
+                emp_code: true,
+                gender: true,
+                tel: true,
+                email: true,
+              },
+            },
           },
         },
       },

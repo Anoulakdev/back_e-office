@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
 
       let logTransactions = [];
       const existingTracking = await prisma.docexTracking.findFirst({
-        where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+        where: { docexId: Number(docexId), receiverCode: req.user.username },
       });
 
       const docex = await prisma.docExternal.findUnique({
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
 
       if (!receiverCode && !divisionId1.length && !divisionId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.emp_code },
+          where: { docexId: Number(docexId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
           take: 1,
         });
@@ -62,17 +62,19 @@ module.exports = async (req, res) => {
               data: { docstatusId: Number(docstatusId), description },
             })
           );
-          logTransactions.push(
-            prisma.docexLog.deleteMany({
-              where: {
-                AND: [
-                  { id: { not: existingLog.id } },
-                  { docexId: Number(docexId) },
-                  { departmentId: req.user.departmentId },
-                ],
-              },
-            })
-          );
+          if (docstatusId === 4) {
+            logTransactions.push(
+              prisma.docexLog.deleteMany({
+                where: {
+                  AND: [
+                    { id: { not: existingLog.id } },
+                    { docexId: Number(docexId) },
+                    { departmentId: req.user.employee.departmentId },
+                  ],
+                },
+              })
+            );
+          }
         }
         if (existingTracking) {
           logTransactions.push(
@@ -81,7 +83,10 @@ module.exports = async (req, res) => {
         }
       } else if (receiverCode) {
         const user = await prisma.user.findUnique({
-          where: { emp_code: receiverCode },
+          where: { username: receiverCode },
+          include: {
+            employee: true,
+          },
         });
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -131,17 +136,23 @@ module.exports = async (req, res) => {
           prisma.docexLog.create({
             data: {
               docexId: Number(docexId),
-              assignerCode: req.user.emp_code,
-              receiverCode: user.emp_code,
-              rankId: user.rankId ?? null,
-              roleId: user.roleId ?? null,
-              positionId: user.posId ?? null,
+              assignerCode: req.user.username,
+              receiverCode: user.employee.emp_code,
+              rankId: user.rankId ? Number(user.rankId) : null,
+              roleId: user.roleId ? Number(user.roleId) : null,
+              positionId: user.employee.posId
+                ? Number(user.employee.posId)
+                : null,
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
               extype: Number(docex.extype) ?? null,
-              departmentId: user.departmentId ?? null,
-              divisionId: user.divisionId ?? null,
+              departmentId: user.employee.departmentId
+                ? Number(user.employee.departmentId)
+                : null,
+              divisionId: user.employee.divisionId
+                ? Number(user.employee.divisionId)
+                : null,
               departmentactive: existingTracking?.departmentactive ?? null,
               ...docexlogfileData,
             },
@@ -152,8 +163,8 @@ module.exports = async (req, res) => {
             prisma.docexTracking.update({
               where: { id: existingTracking.id },
               data: {
-                assignerCode: req.user.emp_code,
-                receiverCode: user.emp_code,
+                assignerCode: req.user.username,
+                receiverCode: user.employee.emp_code,
                 docstatusId: Number(docstatusId),
                 extype: Number(docex.extype) ?? null,
                 dateline: datelineValue,
@@ -187,15 +198,26 @@ module.exports = async (req, res) => {
         for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
             where: { id: divisionId },
-            include: { users: true },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
           });
-          if (!division || !division.users.length)
+          if (!division || !division.employees.length)
             return res
               .status(404)
               .json({ message: `Division ${divisionId} not found` });
 
-          const depUser = division.users.find(
-            (u) => u.rankId === 1 && u.roleId === 7
+          const depUser = division.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 7
           );
           if (!depUser)
             return res
@@ -211,16 +233,22 @@ module.exports = async (req, res) => {
             prisma.docexLog.create({
               data: {
                 docexId: Number(docexId),
-                assignerCode: req.user.emp_code,
+                assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
-                rankId: depUser.rankId ?? null,
-                roleId: depUser.roleId ?? null,
-                positionId: depUser.posId ?? null,
+                rankId: depUser.user?.rankId
+                  ? Number(depUser.user?.rankId)
+                  : null,
+                roleId: depUser.user?.roleId
+                  ? Number(depUser.user?.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
-                departmentId: depUser.departmentId ?? null,
+                departmentId: depUser.departmentId
+                  ? Number(depUser.departmentId)
+                  : null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
                 divisionactive,
@@ -234,14 +262,13 @@ module.exports = async (req, res) => {
             prisma.docexTracking.create({
               data: {
                 docexId: Number(docexId),
-                assignerCode: req.user.emp_code,
+                assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
-                description: description ?? null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,

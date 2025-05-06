@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           extype: Number(extype),
-          creatorCode: req.user.emp_code,
+          creatorCode: req.user.username,
           docex_file: req.file ? req.file.filename : null,
           docex_filetype: req.file ? req.file.mimetype : null,
           docex_filesize: req.file ? req.file.size : null,
@@ -65,12 +65,7 @@ module.exports = async (req, res) => {
           outsider: true,
           creator: {
             select: {
-              first_name: true,
-              last_name: true,
-              emp_code: true,
-              gender: true,
-              tel: true,
-              email: true,
+              username: true,
             },
           },
         },

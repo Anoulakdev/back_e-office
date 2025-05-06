@@ -34,37 +34,33 @@ module.exports = (req, res) => {
     }
 
     try {
-      const {
-        username,
-        emp_code,
-        first_name,
-        last_name,
-        gender,
-        tel,
-        email,
-        rankId,
-        roleId,
-        posId,
-        departmentId,
-        divisionId,
-        officeId,
-        unitId,
-      } = req.body;
+      const { username, name, rankId, roleId, departmentId, divisionId } =
+        req.body;
 
       // Step 1: Validate input fields
-      if (!emp_code || !first_name || !last_name) {
-        return res.status(400).json({ message: "Missing required fields" });
+      if (!username) {
+        return res.status(400).json({ message: "Missing required username" });
+      }
+
+      if (!roleId) {
+        return res.status(400).json({ message: "Missing required roleId" });
       }
 
       // Step 2: Check if the username already exists
-      const checkUser = await prisma.user.findFirst({
+      const checkUser = await prisma.user.findUnique({
         where: {
-          OR: [{ username: username }, { emp_code: emp_code }],
+          username: username,
         },
       });
       if (checkUser) {
         return res.status(409).json({ message: "Username already exists" });
       }
+
+      const checkEmp = await prisma.employee.findUnique({
+        where: {
+          emp_code: username,
+        },
+      });
 
       // Step 3: Hash default password (you might want to allow password as input)
       const salt = await bcrypt.genSalt(10);
@@ -80,22 +76,15 @@ module.exports = (req, res) => {
       const newUser = await prisma.user.create({
         data: {
           id: nextId,
-          username: username || emp_code,
+          username: username,
           password: hashPassword,
-          emp_code,
-          first_name,
-          last_name,
-          gender,
-          tel,
-          email,
-          rankId: Number(rankId),
+          name,
+          employeeId: checkEmp ? Number(checkEmp.id) : null,
+          rankId: rankId ? Number(rankId) : null,
           roleId: Number(roleId),
-          posId: Number(posId),
-          departmentId: Number(departmentId),
-          divisionId: Number(divisionId),
-          officeId: Number(officeId),
-          unitId: Number(unitId),
-          userimg: req.file ? `${req.file.filename}` : null, // Path to the uploaded image
+          departmentId: departmentId ? Number(departmentId) : null,
+          divisionId: divisionId ? Number(divisionId) : null,
+          userimg: req.file ? `${req.file.filename}` : null,
         },
       });
 

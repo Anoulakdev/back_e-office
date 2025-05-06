@@ -33,20 +33,7 @@ module.exports = async (req, res) => {
 
     try {
       const { userId } = req.params;
-      const {
-        first_name,
-        last_name,
-        gender,
-        tel,
-        email,
-        rankId,
-        roleId,
-        posId,
-        departmentId,
-        divisionId,
-        officeId,
-        unitId,
-      } = req.body;
+      const { name, rankId, roleId, departmentId, divisionId } = req.body;
 
       // Step 1: Find the user to update
       const user = await prisma.user.findUnique({
@@ -86,18 +73,11 @@ module.exports = async (req, res) => {
           id: Number(userId),
         },
         data: {
-          first_name,
-          last_name,
-          gender,
-          tel,
-          email,
+          name,
           rankId: Number(rankId),
           roleId: Number(roleId),
-          posId: Number(posId),
           departmentId: Number(departmentId),
           divisionId: Number(divisionId),
-          officeId: Number(officeId),
-          unitId: Number(unitId),
           userimg: userimgPath,
         },
       });
