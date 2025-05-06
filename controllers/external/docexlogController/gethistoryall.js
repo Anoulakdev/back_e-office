@@ -21,9 +21,7 @@ module.exports = async (req, res) => {
         where: {
           docexId: Number(docexId),
         },
-        orderBy: [
-          { createdAt: "asc" }, // ไม่ต้อง order จาก department เพราะเราจะ group เอง
-        ],
+        orderBy: [{ createdAt: "asc" }],
         include: {
           docstatus: true,
           assigner: {
@@ -40,7 +38,17 @@ module.exports = async (req, res) => {
                     select: { id: true, department_name: true },
                   },
                   division: {
-                    select: { id: true, division_name: true },
+                    select: {
+                      id: true,
+                      division_name: true,
+                      branch_id: true, // เพิ่ม branch_id
+                    },
+                  },
+                  office: {
+                    select: {
+                      id: true,
+                      office_name: true,
+                    },
                   },
                 },
               },
@@ -60,7 +68,17 @@ module.exports = async (req, res) => {
                     select: { id: true, department_name: true },
                   },
                   division: {
-                    select: { id: true, division_name: true },
+                    select: {
+                      id: true,
+                      division_name: true,
+                      branch_id: true, // เพิ่ม branch_id
+                    },
+                  },
+                  office: {
+                    select: {
+                      id: true,
+                      office_name: true,
+                    },
                   },
                 },
               },
@@ -73,21 +91,25 @@ module.exports = async (req, res) => {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      // Group data by department and division
       const groupedData = docexlogs.reduce((acc, log) => {
-        const deptInfo =
-          log.receiver?.employee?.department ||
-          log.assigner?.employee?.department;
-        const divisionInfo =
-          log.receiver?.employee?.division || log.assigner?.employee?.division;
+        const emp = log.receiver?.employee || log.assigner?.employee;
+
+        const deptInfo = emp?.department;
+        const divisionInfo = emp?.division;
+        const officeInfo = emp?.office;
+        const branchId = divisionInfo?.branch_id || 1;
 
         const deptId = deptInfo?.id || "Unknown";
         const deptName = deptInfo?.department_name || "Unknown";
-        const deptActive = log.departmentactive ?? 0; // <-- ดึงจาก log โดยตรง
+        const deptActive = log.departmentactive ?? 0;
 
         const divisionId = divisionInfo?.id || "Unknown";
         const divisionName = divisionInfo?.division_name || "Unknown";
-        const divisionActive = log.divisionactive ?? 0; // <-- ดึงจาก log โดยตรง
+        const divisionActive = log.divisionactive ?? 0;
+
+        const officeId = officeInfo?.id || "Unknown";
+        const officeName = officeInfo?.office_name || "Unknown";
+        const officeActive = log.officeactive ?? 0;
 
         // Find or create department group
         let departmentGroup = acc.find((d) => d.departmentId === deptId);
@@ -118,15 +140,34 @@ module.exports = async (req, res) => {
 
           if (!divisionGroup) {
             divisionGroup = {
-              divisionId: divisionId,
+              divisionId,
               division_name: divisionName,
               divisionactive: divisionActive,
-              logs: [],
+              ...(branchId === 2 ? { offices: [] } : { logs: [] }),
             };
             departmentGroup.divisions.push(divisionGroup);
           }
 
-          divisionGroup.logs.push(formattedLog);
+          if (branchId === 2) {
+            // Find or create office group inside division
+            let officeGroup = divisionGroup.offices.find(
+              (o) => o.officeId === officeId
+            );
+
+            if (!officeGroup) {
+              officeGroup = {
+                officeId,
+                office_name: officeName,
+                officeactive: officeActive,
+                logs: [],
+              };
+              divisionGroup.offices.push(officeGroup);
+            }
+
+            officeGroup.logs.push(formattedLog);
+          } else {
+            divisionGroup.logs.push(formattedLog);
+          }
         }
 
         return acc;
@@ -134,25 +175,23 @@ module.exports = async (req, res) => {
 
       // Sort groupedData
       groupedData.sort((a, b) => {
-        if (a.departmentId === 15) return -1; // departmentId 15 ขึ้นก่อน
+        if (a.departmentId === 15) return -1;
         if (b.departmentId === 15) return 1;
 
-        // เรียงตาม departmentactive
-        if (a.departmentactive !== b.departmentactive) {
-          return a.departmentactive - b.departmentactive;
-        }
-
-        return 0;
+        return a.departmentactive - b.departmentactive;
       });
 
-      // Sort divisions inside each department
+      // Sort divisions and offices
       groupedData.forEach((department) => {
         if (department.divisions) {
-          department.divisions.sort((a, b) => {
-            if (a.divisionactive !== b.divisionactive) {
-              return a.divisionactive - b.divisionactive;
+          department.divisions.sort(
+            (a, b) => a.divisionactive - b.divisionactive
+          );
+
+          department.divisions.forEach((division) => {
+            if (division.offices) {
+              division.offices.sort((a, b) => a.officeactive - b.officeactive);
             }
-            return 0;
           });
         }
       });

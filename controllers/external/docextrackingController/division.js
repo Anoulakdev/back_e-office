@@ -45,6 +45,10 @@ module.exports = async (req, res) => {
 
       let logTransactions = [];
 
+      const existingTracking = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId), receiverCode: req.user.username },
+      });
+
       const docex = await prisma.docExternal.findUnique({
         where: {
           id: Number(docexId),
@@ -56,10 +60,6 @@ module.exports = async (req, res) => {
           where: { docexId: Number(docexId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
           take: 1,
-        });
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
         });
 
         if (existingLog) {
@@ -89,10 +89,6 @@ module.exports = async (req, res) => {
             .status(404)
             .json({ message: "User not found with the provided receiverCode" });
         }
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
 
         const datelineValue = dateline
           ? new Date(dateline)
@@ -221,10 +217,6 @@ module.exports = async (req, res) => {
           });
         }
 
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
-
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
@@ -299,9 +291,6 @@ module.exports = async (req, res) => {
         }
 
         // 🔹 เก็บ existingTracking ก่อน
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
 
         // 🔹 วนลูปเพื่อเพิ่มข้อมูลก่อน
         for (const { id: officeId, officeactive } of allOffices) {

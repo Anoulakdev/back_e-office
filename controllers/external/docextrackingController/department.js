@@ -269,6 +269,7 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
+                divisionactive,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,
