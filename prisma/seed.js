@@ -5,7 +5,7 @@
 // const seedPositionGroup = require("./seedPositionGroup");
 // const seedPositionCode = require("./seedPositionCode");
 // const seedPosition = require("./seedPosition");
-const seedEmployee = require("./seedEmployee");
+// const seedEmployee = require("./seedEmployee");
 const seedUser = require("./seedUser");
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
   // await seedPositionGroup(); // เรียกใช้ฟังก์ชัน seeding สำหรับ PositionGroup
   // await seedPositionCode(); // เรียกใช้ฟังก์ชัน seeding สำหรับ PositionCode
   // await seedPosition(); // เรียกใช้ฟังก์ชัน seeding สำหรับ Position
-  await seedEmployee(); // เรียกใช้ฟังก์ชัน seeding สำหรับ Employee
+  // await seedEmployee(); // เรียกใช้ฟังก์ชัน seeding สำหรับ Employee
   await seedUser(); // เรียกใช้ฟังก์ชัน seeding สำหรับ User
 
   console.log("Seeding complete!");
