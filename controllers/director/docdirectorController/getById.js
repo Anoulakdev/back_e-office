@@ -1,0 +1,94 @@
+const fs = require("fs");
+const prisma = require("../../../prisma/prisma");
+const multer = require("multer");
+const path = require("path");
+const moment = require("moment-timezone");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/document");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage }).single("docdt_file");
+
+module.exports = async (req, res) => {
+  try {
+    const { docdirectorId } = req.params;
+
+    const docdt = await prisma.docDirector.findUnique({
+      where: {
+        id: Number(docdirectorId),
+      },
+      include: {
+        priority: true,
+        doctype: true,
+        creator: {
+          select: {
+            username: true,
+            employee: {
+              select: {
+                first_name: true,
+                last_name: true,
+                emp_code: true,
+                gender: true,
+                tel: true,
+                email: true,
+              },
+            },
+          },
+        },
+        docdtlogs: {
+          include: {
+            docstatus: true,
+            assigner: {
+              select: {
+                username: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                  },
+                },
+              },
+            },
+            receiver: {
+              select: {
+                username: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!docdt) {
+      return res.status(404).json({ message: "document not found" });
+    }
+
+    // Format dates
+    const formattedDocs = {
+      ...docdt,
+      createdAt: moment(docdt.createdAt).tz("Asia/Vientiane").format(),
+      updatedAt: moment(docdt.updatedAt).tz("Asia/Vientiane").format(),
+    };
+
+    res.json(formattedDocs);
+  } catch (err) {
+    // err
+    console.log(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};

@@ -44,14 +44,11 @@ module.exports = async (req, res) => {
         user: {
           select: {
             username: true,
-            name: true,
-            userimg: true,
             status: true,
+            employee_code: true,
             employeeId: true,
             rankId: true,
             roleId: true,
-            departmentId: true,
-            divisionId: true,
           },
         },
       },

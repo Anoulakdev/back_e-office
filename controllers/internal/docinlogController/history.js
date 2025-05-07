@@ -3,10 +3,10 @@ const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {
-    const { docexId, departmentId, divisionId } = req.query;
+    const { docinId, departmentId, divisionId } = req.query;
 
     const where = {
-      docexId: Number(docexId),
+      docinId: Number(docinId),
     };
 
     if (departmentId) {
@@ -16,14 +16,13 @@ module.exports = async (req, res) => {
       where.divisionId = Number(divisionId);
     }
 
-    const docex = await prisma.docexLog.findMany({
+    const docin = await prisma.docinLog.findMany({
       where,
       include: {
         docstatus: true,
         assigner: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,
@@ -37,7 +36,6 @@ module.exports = async (req, res) => {
         receiver: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,
@@ -51,7 +49,7 @@ module.exports = async (req, res) => {
       },
     });
 
-    const formattedDocs = docex.map((doc) => ({
+    const formattedDocs = docin.map((doc) => ({
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),

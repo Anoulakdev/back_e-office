@@ -71,8 +71,6 @@ module.exports = async (req, res) => {
         },
       });
 
-      // console.log("New document external:", newDocExternal);
-
       res.status(201).json({
         message: "Document created successfully",
         data: newDocExternal,

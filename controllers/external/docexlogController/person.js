@@ -29,7 +29,6 @@ module.exports = async (req, res) => {
             assigner: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,
@@ -57,7 +56,6 @@ module.exports = async (req, res) => {
             assigner: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,
@@ -87,7 +85,6 @@ module.exports = async (req, res) => {
             assigner: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,
@@ -115,7 +112,6 @@ module.exports = async (req, res) => {
             assigner: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,

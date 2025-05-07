@@ -21,9 +21,7 @@ module.exports = async (req, res) => {
     const {
       search,
       priority,
-      outsider,
       assignto,
-      extype,
       selectDateStart,
       selectDateEnd,
       // page,
@@ -91,7 +89,6 @@ module.exports = async (req, res) => {
         creator: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,

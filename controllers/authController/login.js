@@ -163,6 +163,7 @@ module.exports = async (req, res) => {
       name: userWithAll.name,
       userimg: userWithAll.userimg,
       status: userWithAll.status,
+      employee_code: userWithAll.employee_code,
       employeeId: userWithAll.employeeId,
       roleId: userWithAll.roleId,
       rankId: userWithAll.rankId,

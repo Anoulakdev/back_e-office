@@ -46,7 +46,6 @@ module.exports = async (req, res) => {
             creator: {
               select: {
                 username: true,
-                name: true,
                 rankId: true,
                 roleId: true,
                 employee: {
@@ -60,10 +59,10 @@ module.exports = async (req, res) => {
                     email: true,
                     empimg: true,
                     posId: true,
-                    departmentId: true,
-                    divisionId: true,
-                    officeId: true,
-                    unitId: true,
+                    department: true,
+                    division: true,
+                    office: true,
+                    unit: true,
                   },
                 },
               },
@@ -73,7 +72,6 @@ module.exports = async (req, res) => {
         assigner: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,

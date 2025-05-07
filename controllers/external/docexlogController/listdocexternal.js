@@ -72,7 +72,6 @@ module.exports = async (req, res) => {
                   assigner: {
                     select: {
                       // username: true,
-                      // name: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -86,7 +85,6 @@ module.exports = async (req, res) => {
                   receiver: {
                     select: {
                       // username: true,
-                      // name: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -107,7 +105,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -116,6 +113,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -179,7 +178,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -188,6 +186,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -254,7 +254,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -263,6 +262,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -328,7 +329,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -337,6 +337,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -402,7 +404,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -411,6 +412,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -476,7 +479,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -485,6 +487,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },
@@ -548,7 +552,6 @@ module.exports = async (req, res) => {
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -557,6 +560,8 @@ module.exports = async (req, res) => {
                       gender: true,
                       tel: true,
                       email: true,
+                      department: true,
+                      division: true,
                     },
                   },
                 },

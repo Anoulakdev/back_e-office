@@ -26,8 +26,6 @@ module.exports = async (req, res) => {
             unit: true,
           },
         },
-        // department: true,
-        // division: true,
       },
     });
 
@@ -37,13 +35,7 @@ module.exports = async (req, res) => {
     }
 
     // Exclude sensitive fields (username, password)
-    const {
-      username,
-      password,
-      createdAt,
-      updatedAt,
-      ...filteredUser
-    } = user;
+    const { username, password, createdAt, updatedAt, ...filteredUser } = user;
 
     // Respond with the filtered user data
     res.json(filteredUser);

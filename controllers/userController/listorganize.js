@@ -1,21 +1,5 @@
-const fs = require("fs");
 const prisma = require("../../prisma/prisma");
-const bcrypt = require("bcrypt");
-const multer = require("multer");
-const path = require("path");
 const moment = require("moment-timezone");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/user"); // The directory where user images will be stored
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Appending file extension
-  },
-});
-
-const upload = multer({ storage: storage }).single("userimg");
 
 module.exports = async (req, res) => {
   try {
@@ -496,7 +480,7 @@ module.exports = async (req, res) => {
         : [];
 
     // การฟอร์แมตวันที่
-    const formattedUsers = users.map((user) => ({
+    const formattedUsers = users.map(({ password, ...user }) => ({
       ...user,
       createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(user.updatedAt).tz("Asia/Vientiane").format(),

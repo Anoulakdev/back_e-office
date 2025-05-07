@@ -5,7 +5,6 @@ const router = express.Router();
 const {
   list,
   getById,
-  create,
   director,
   assistantdirector,
   department,
@@ -19,7 +18,6 @@ const { auth } = require("../middleware/auth");
 
 router.get("/docextrackings", auth, list);
 router.get("/docextrackings/:doctrackingId", auth, getById);
-router.post("/docextrackings", auth, create);
 router.post("/docextrackings/director", auth, director);
 router.post("/docextrackings/assistantdirector", auth, assistantdirector);
 router.post("/docextrackings/department", auth, department);

@@ -61,7 +61,6 @@ module.exports = async (req, res) => {
           creator: {
             select: {
               username: true,
-              name: true,
               employee: {
                 select: {
                   first_name: true,
