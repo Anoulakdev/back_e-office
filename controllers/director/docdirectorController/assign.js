@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     }
     try {
       const {
-        docexId,
+        docdtId,
         receiverCode,
         departmentId1 = [],
         departmentId2 = [],
@@ -39,14 +39,14 @@ module.exports = async (req, res) => {
         description,
       } = req.body;
 
-      if (!docexId) {
-        return res.status(400).json({ message: "docexId is required" });
+      if (!docdtId) {
+        return res.status(400).json({ message: "docdtId is required" });
       }
 
       let logTransactions = [];
-      const docex = await prisma.docExternal.findUnique({
+      const docdt = await prisma.docDirector.findUnique({
         where: {
-          id: Number(docexId),
+          id: Number(docdtId),
         },
       });
 
@@ -60,40 +60,34 @@ module.exports = async (req, res) => {
         });
 
         if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+          return res.status(404).json({ message: "User not found" });
         }
 
-        if (!docex) {
-          return res
-            .status(404)
-            .json({ message: "Document not found with the provided docexId" });
+        if (!docdt) {
+          return res.status(404).json({ message: "Document not found" });
         }
 
         logTransactions.push(
-          prisma.docexLog.create({
+          prisma.docdtLog.create({
             data: {
-              docexId: Number(docexId),
+              docdtId: Number(docdtId),
               assignerCode: req.user.username,
               receiverCode: user.employee.emp_code,
               rankId: Number(user.rankId) ?? null,
               roleId: Number(user.roleId) ?? null,
               positionId: Number(user.employee.posId) ?? null,
               docstatusId: Number(docstatusId),
-              extype: Number(docex.extype) ?? null,
               description,
               departmentId: user.employee.departmentId ?? null,
               departmentactive: null,
             },
           }),
-          prisma.docexTracking.create({
+          prisma.docdtTracking.create({
             data: {
-              docexId: Number(docexId),
+              docdtId: Number(docdtId),
               assignerCode: req.user.username,
               receiverCode: user.employee.emp_code,
               docstatusId: Number(docstatusId),
-              extype: Number(docex.extype) ?? null,
               description,
             },
           })
@@ -154,42 +148,40 @@ module.exports = async (req, res) => {
             });
           }
 
-          const docex = await prisma.docExternal.findUnique({
+          const docdt = await prisma.docDirector.findUnique({
             where: {
-              id: Number(docexId),
+              id: Number(docdtId),
             },
           });
 
-          if (!docex) {
+          if (!docdt) {
             return res.status(404).json({
-              message: "Document not found with the provided docexId",
+              message: "Document not found with the provided docdtId",
             });
           }
 
           logTransactions.push(
-            prisma.docexLog.create({
+            prisma.docdtLog.create({
               data: {
-                docexId: Number(docexId),
+                docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 rankId: Number(depUser.user.rankId) ?? null,
                 roleId: Number(depUser.user.roleId) ?? null,
                 positionId: Number(depUser.posId) ?? null,
                 docstatusId: Number(docstatusId) ?? null,
-                extype: Number(docex.extype) ?? null,
                 description,
                 departmentId,
-                departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group
+                departmentactive,
               },
             }),
-            prisma.docexTracking.create({
+            prisma.docdtTracking.create({
               data: {
-                docexId: Number(docexId),
+                docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,
-                extype: Number(docex.extype) ?? null,
                 departmentactive,
               },
             })
@@ -197,17 +189,17 @@ module.exports = async (req, res) => {
         }
       }
 
-      // อัปเดตสถานะของ docexternal
-      const updateDocExternal = prisma.docExternal.update({
+      // อัปเดตสถานะของ docDirector
+      const updateDocDirectordocDirector = prisma.docDirector.update({
         where: {
-          id: Number(docexId),
+          id: Number(docdtId),
         },
         data: {
           assignto: 1,
         },
       });
 
-      const transactions = [updateDocExternal, ...logTransactions];
+      const transactions = [updateDocDirectordocDirector, ...logTransactions];
 
       const results = await prisma.$transaction(transactions);
 

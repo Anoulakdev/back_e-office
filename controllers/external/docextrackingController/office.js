@@ -42,6 +42,11 @@ module.exports = async (req, res) => {
       }
 
       let logTransactions = [];
+
+      const existingTracking = await prisma.docexTracking.findFirst({
+        where: { docexId: Number(docexId), receiverCode: req.user.username },
+      });
+
       const docex = await prisma.docExternal.findUnique({
         where: {
           id: Number(docexId),
@@ -53,10 +58,6 @@ module.exports = async (req, res) => {
           where: { docexId: Number(docexId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
           take: 1,
-        });
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
         });
 
         if (existingLog) {
@@ -87,10 +88,6 @@ module.exports = async (req, res) => {
             .json({ message: "User not found with the provided receiverCode" });
         }
 
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
-
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
@@ -98,6 +95,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docexlogfileData = {
+          docexlog_original: null,
           docexlog_file: null,
           docexlog_type: null,
           docexlog_size: null,
@@ -105,6 +103,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
+            docexlog_original: req.file.originalname,
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -113,12 +112,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
+                docexlog_original: null,
                 docexlog_file: null,
                 docexlog_type: null,
                 docexlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
+                docexlog_original: existingTracking.docexlog_original ?? null,
                 docexlog_file: existingTracking.docexlog_file ?? null,
                 docexlog_type: existingTracking.docexlog_type ?? null,
                 docexlog_size: existingTracking.docexlog_size ?? null,
@@ -127,6 +128,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
+            docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
             docexlog_type: existingTracking?.docexlog_type ?? null,
             docexlog_size: existingTracking?.docexlog_size ?? null,
@@ -164,9 +166,6 @@ module.exports = async (req, res) => {
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
               ...docexlogfileData,
-              // ...(user.roleId === 8 || (docstatusId === 7 && user.roleId === 8)
-              //   ? { officeId: Number(user.officeId) }
-              //   : {}),
             },
           })
         );
@@ -195,6 +194,9 @@ module.exports = async (req, res) => {
             employees: {
               include: {
                 user: {
+                  where: {
+                    roleId: 9,
+                  },
                   select: {
                     rankId: true,
                     roleId: true,
@@ -205,13 +207,23 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (!unit || !unit.employees.length) {
-          return res
-            .status(404)
-            .json({ message: "unit or employees not found" });
+        const unitWithUser = {
+          ...unit,
+          employees: unit?.employees?.length
+            ? unit.employees.map((employee) => ({
+                ...employee,
+                user: employee.user[0] || null,
+              }))
+            : [],
+        };
+
+        if (!unitWithUser || !unitWithUser.employees.length) {
+          return res.status(404).json({
+            message: `unit ${unitId} or employees not found`,
+          });
         }
 
-        depUser = unit.employees.find(
+        const depUser = unitWithUser.employees.find(
           (u) => u.user?.rankId === 1 && u.user?.roleId === 9
         );
 
@@ -221,10 +233,6 @@ module.exports = async (req, res) => {
               "No matching user found with specified rank, role, and position",
           });
         }
-
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
 
         const datelineValue = dateline
           ? new Date(dateline)
@@ -260,6 +268,7 @@ module.exports = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
+              docexlog_original: req.file ? req.file.originalname : null,
               docexlog_file: req.file ? req.file.filename : null,
               docexlog_type: req.file ? req.file.mimetype : null,
               docexlog_size: req.file ? req.file.size : null,
@@ -278,6 +287,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,

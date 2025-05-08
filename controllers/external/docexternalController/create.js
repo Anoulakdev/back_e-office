@@ -55,6 +55,7 @@ module.exports = async (req, res) => {
           doctypeId: Number(doctypeId),
           extype: Number(extype),
           creatorCode: req.user.username,
+          docex_fileoriginal: req.file ? req.file.originalname : null,
           docex_file: req.file ? req.file.filename : null,
           docex_filetype: req.file ? req.file.mimetype : null,
           docex_filesize: req.file ? req.file.size : null,

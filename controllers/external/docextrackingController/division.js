@@ -97,6 +97,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docexlogfileData = {
+          docexlog_original: null,
           docexlog_file: null,
           docexlog_type: null,
           docexlog_size: null,
@@ -104,6 +105,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
+            docexlog_original: req.file.originalname,
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -112,12 +114,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
+                docexlog_original: null,
                 docexlog_file: null,
                 docexlog_type: null,
                 docexlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
+                docexlog_original: existingTracking.docexlog_original ?? null,
                 docexlog_file: existingTracking.docexlog_file ?? null,
                 docexlog_type: existingTracking.docexlog_type ?? null,
                 docexlog_size: existingTracking.docexlog_size ?? null,
@@ -126,6 +130,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
+            docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
             docexlog_type: existingTracking?.docexlog_type ?? null,
             docexlog_size: existingTracking?.docexlog_size ?? null,
@@ -190,6 +195,9 @@ module.exports = async (req, res) => {
             employees: {
               include: {
                 user: {
+                  where: {
+                    roleId: 9,
+                  },
                   select: {
                     rankId: true,
                     roleId: true,
@@ -200,13 +208,23 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (!unit || !unit.employees.length) {
-          return res
-            .status(404)
-            .json({ message: "unit or employees not found" });
+        const unitWithUser = {
+          ...unit,
+          employees: unit?.employees?.length
+            ? unit.employees.map((employee) => ({
+                ...employee,
+                user: employee.user[0] || null,
+              }))
+            : [],
+        };
+
+        if (!unitWithUser || !unitWithUser.employees.length) {
+          return res.status(404).json({
+            message: `unit ${unitId} or employees not found`,
+          });
         }
 
-        depUser = unit.employees.find(
+        const depUser = unitWithUser.employees.find(
           (u) => u.user?.rankId === 1 && u.user?.roleId === 9
         );
 
@@ -249,6 +267,7 @@ module.exports = async (req, res) => {
               unitId: depUser.unitId ? Number(depUser.unitId) : null,
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
+              docexlog_original: req.file ? req.file.originalname : null,
               docexlog_file: req.file ? req.file.filename : null,
               docexlog_type: req.file ? req.file.mimetype : null,
               docexlog_size: req.file ? req.file.size : null,
@@ -267,6 +286,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -300,6 +320,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 8,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -310,13 +333,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!office || !office.employees.length) {
-            return res
-              .status(404)
-              .json({ message: `office ${officeId} or employees not found` });
+          const officeWithUser = {
+            ...office,
+            employees: office?.employees?.length
+              ? office.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!officeWithUser || !officeWithUser.employees.length) {
+            return res.status(404).json({
+              message: `office ${officeId} or employees not found`,
+            });
           }
 
-          const depUser = office.employees.find(
+          const depUser = officeWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 8
           );
 
@@ -359,6 +392,7 @@ module.exports = async (req, res) => {
                 divisionactive: Number(existingTracking.divisionactive),
                 officeId,
                 officeactive,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -376,6 +410,7 @@ module.exports = async (req, res) => {
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionactive: Number(existingTracking.divisionactive),
                 officeactive,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,

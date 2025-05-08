@@ -68,6 +68,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docexlogfileData = {
+          docexlog_original: null,
           docexlog_file: null,
           docexlog_type: null,
           docexlog_size: null,
@@ -75,6 +76,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
+            docexlog_original: req.file.originalname,
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -83,12 +85,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
+                docexlog_original: null,
                 docexlog_file: null,
                 docexlog_type: null,
                 docexlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
+                docexlog_original: existingTracking.docexlog_original ?? null,
                 docexlog_file: existingTracking.docexlog_file ?? null,
                 docexlog_type: existingTracking.docexlog_type ?? null,
                 docexlog_size: existingTracking.docexlog_size ?? null,
@@ -97,6 +101,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
+            docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
             docexlog_type: existingTracking?.docexlog_type ?? null,
             docexlog_size: existingTracking?.docexlog_size ?? null,

@@ -97,6 +97,7 @@ module.exports = async (req, res) => {
         }
 
         let docexlogfileData = {
+          docexlog_original: null,
           docexlog_file: null,
           docexlog_type: null,
           docexlog_size: null,
@@ -104,6 +105,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
+            docexlog_original: req.file.originalname,
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -112,12 +114,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
+                docexlog_original: null,
                 docexlog_file: null,
                 docexlog_type: null,
                 docexlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
+                docexlog_original: existingTracking.docexlog_original ?? null,
                 docexlog_file: existingTracking.docexlog_file ?? null,
                 docexlog_type: existingTracking.docexlog_type ?? null,
                 docexlog_size: existingTracking.docexlog_size ?? null,
@@ -126,6 +130,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
+            docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
             docexlog_type: existingTracking?.docexlog_type ?? null,
             docexlog_size: existingTracking?.docexlog_size ?? null,
@@ -209,6 +214,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 6,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -219,13 +227,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!department || !department.employees.length) {
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
               message: `Department ${departmentId} or employees not found`,
             });
           }
 
-          const depUser = department.employees.find(
+          const depUser = departmentWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 6
           );
 
@@ -272,6 +290,7 @@ module.exports = async (req, res) => {
                 divisionId: depUser.divisionId
                   ? Number(depUser.divisionId)
                   : null,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -287,6 +306,7 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
                 departmentactive,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,

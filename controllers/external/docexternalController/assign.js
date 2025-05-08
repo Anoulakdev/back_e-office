@@ -128,6 +128,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 6,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -138,13 +141,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!department || !department.employees.length) {
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
               message: `Department ${departmentId} or employees not found`,
             });
           }
 
-          const depUser = department.employees.find(
+          const depUser = departmentWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 6
           );
 

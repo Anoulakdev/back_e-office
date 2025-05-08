@@ -54,6 +54,7 @@ module.exports = async (req, res) => {
       }
 
       // Step 3: If a new file is uploaded, delete the old file if it exists
+      let docexfileoriginal = docex.docex_fileoriginal;
       let docexfile = docex.docex_file;
       let docextype = docex.docex_filetype;
       let docexsize = docex.docex_filesize;
@@ -72,6 +73,7 @@ module.exports = async (req, res) => {
           });
         }
 
+        docexfileoriginal = req.file.originalname;
         docexfile = req.file.filename;
         docextype = req.file.mimetype;
         docexsize = req.file.size;
@@ -91,6 +93,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.username,
+          docex_fileoriginal: docexfileoriginal,
           docex_file: docexfile,
           docex_filetype: docextype,
           docex_filesize: docexsize,

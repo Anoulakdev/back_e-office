@@ -198,245 +198,254 @@ model Position {
 }
 
 model DocExternal {
-  id                Int             @id @default(autoincrement())
-  docex_no          String          @db.VarChar(255)
-  docex_date        DateTime?
-  docex_title       String          @db.VarChar(255)
-  docex_description String?         @db.Text
-  docex_file        String          @db.VarChar(255)
-  docex_filetype    String          @db.VarChar(50)
-  docex_filesize    Int
-  outsiderId        Int?
-  outsider          Outsider?       @relation(fields: [outsiderId], references: [id])
-  assignto          Int?
-  creatorCode       String          @db.VarChar(255)
-  creator           User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
-  priorityId        Int?
-  priority          Priority?       @relation(fields: [priorityId], references: [id])
-  doctypeId         Int?
-  doctype           DocType?        @relation(fields: [doctypeId], references: [id])
-  extype            Int?            @default(1)
-  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
-  docextrackings    DocexTracking[]
-  docexlogs         DocexLog[]
+  id                 Int             @id @default(autoincrement())
+  docex_no           String          @db.VarChar(255)
+  docex_date         DateTime?
+  docex_title        String          @db.VarChar(255)
+  docex_description  String?         @db.Text
+  docex_fileoriginal String?         @db.VarChar(255)
+  docex_file         String          @db.VarChar(255)
+  docex_filetype     String          @db.VarChar(50)
+  docex_filesize     Int
+  outsiderId         Int?
+  outsider           Outsider?       @relation(fields: [outsiderId], references: [id])
+  assignto           Int?
+  creatorCode        String          @db.VarChar(255)
+  creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
+  priorityId         Int?
+  priority           Priority?       @relation(fields: [priorityId], references: [id])
+  doctypeId          Int?
+  doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  extype             Int?            @default(1)
+  createdAt          DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
+  docextrackings     DocexTracking[]
+  docexlogs          DocexLog[]
 }
 
 model DocexTracking {
-  id               Int         @id @default(autoincrement())
-  docexId          Int
-  docexternal      DocExternal @relation(fields: [docexId], references: [id])
-  assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  docstatusId      Int?
-  docstatus        DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline         DateTime?
-  description      String?     @db.Text
-  departmentactive Int?
-  divisionactive   Int?
-  officeactive     Int?
-  extype           Int?        @default(1)
-  docexlog_file    String?     @db.VarChar(255)
-  docexlog_type    String?     @db.VarChar(255)
-  docexlog_size    Int?
-  createdAt        DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docexId           Int
+  docexternal       DocExternal @relation(fields: [docexId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
+  extype            Int?        @default(1)
+  docexlog_original String?     @db.VarChar(255)
+  docexlog_file     String?     @db.VarChar(255)
+  docexlog_type     String?     @db.VarChar(255)
+  docexlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocexLog {
-  id               Int         @id @default(autoincrement())
-  docexId          Int
-  docexternal      DocExternal @relation(fields: [docexId], references: [id])
-  assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  rankId           Int?
-  rank             Rank?       @relation(fields: [rankId], references: [id])
-  roleId           Int?
-  role             Role?       @relation(fields: [roleId], references: [id])
-  positionId       Int?
-  position         Position?   @relation(fields: [positionId], references: [id])
-  departmentId     Int?
-  department       Department? @relation(fields: [departmentId], references: [id])
-  divisionId       Int?
-  division         Division?   @relation(fields: [divisionId], references: [id])
-  officeId         Int?
-  office           Office?     @relation(fields: [officeId], references: [id])
-  unitId           Int?
-  unit             Unit?       @relation(fields: [unitId], references: [id])
-  docstatusId      Int?
-  docstatus        DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline         DateTime?
-  description      String?     @db.Text
-  direction        String?     @db.VarChar(255)
-  departmentactive Int?
-  divisionactive   Int?
-  officeactive     Int?
-  extype           Int?        @default(1)
-  docexlog_file    String?     @db.VarChar(255)
-  docexlog_type    String?     @db.VarChar(255)
-  docexlog_size    Int?
-  createdAt        DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docexId           Int
+  docexternal       DocExternal @relation(fields: [docexId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  rankId            Int?
+  rank              Rank?       @relation(fields: [rankId], references: [id])
+  roleId            Int?
+  role              Role?       @relation(fields: [roleId], references: [id])
+  positionId        Int?
+  position          Position?   @relation(fields: [positionId], references: [id])
+  departmentId      Int?
+  department        Department? @relation(fields: [departmentId], references: [id])
+  divisionId        Int?
+  division          Division?   @relation(fields: [divisionId], references: [id])
+  officeId          Int?
+  office            Office?     @relation(fields: [officeId], references: [id])
+  unitId            Int?
+  unit              Unit?       @relation(fields: [unitId], references: [id])
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  direction         String?     @db.VarChar(255)
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
+  extype            Int?        @default(1)
+  docexlog_original String?     @db.VarChar(255)
+  docexlog_file     String?     @db.VarChar(255)
+  docexlog_type     String?     @db.VarChar(255)
+  docexlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocInternal {
-  id                Int             @id @default(autoincrement())
-  docin_no          String          @db.VarChar(255)
-  docin_date        DateTime?
-  docin_title       String          @db.VarChar(255)
-  docin_description String?         @db.Text
-  docin_file        String          @db.VarChar(255)
-  docin_filetype    String          @db.VarChar(50)
-  docin_filesize    Int
-  assignto          Int?
-  creatorCode       String          @db.VarChar(255)
-  creator           User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
-  priorityId        Int?
-  priority          Priority?       @relation(fields: [priorityId], references: [id])
-  doctypeId         Int?
-  doctype           DocType?        @relation(fields: [doctypeId], references: [id])
-  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
-  docintrackings    DocinTracking[]
-  docinlogs         DocinLog[]
+  id                 Int             @id @default(autoincrement())
+  docin_no           String          @db.VarChar(255)
+  docin_date         DateTime?
+  docin_title        String          @db.VarChar(255)
+  docin_description  String?         @db.Text
+  docin_fileoriginal String?         @db.VarChar(255)
+  docin_file         String          @db.VarChar(255)
+  docin_filetype     String          @db.VarChar(50)
+  docin_filesize     Int
+  assignto           Int?
+  creatorCode        String          @db.VarChar(255)
+  creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
+  priorityId         Int?
+  priority           Priority?       @relation(fields: [priorityId], references: [id])
+  doctypeId          Int?
+  doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  createdAt          DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
+  docintrackings     DocinTracking[]
+  docinlogs          DocinLog[]
 }
 
 model DocinTracking {
-  id            Int         @id @default(autoincrement())
-  docinId       Int
-  docinternal   DocInternal @relation(fields: [docinId], references: [id])
-  assignerCode  String?     @db.VarChar(255)
-  assigner      User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode  String?     @db.VarChar(255)
-  receiver      User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  docstatusId   Int?
-  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline      DateTime?
-  description   String?     @db.Text
-  docinlog_file String?     @db.VarChar(255)
-  docinlog_type String?     @db.VarChar(255)
-  docinlog_size Int?
-  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docinId           Int
+  docinternal       DocInternal @relation(fields: [docinId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  docinlog_original String?     @db.VarChar(255)
+  docinlog_file     String?     @db.VarChar(255)
+  docinlog_type     String?     @db.VarChar(255)
+  docinlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocinLog {
-  id            Int         @id @default(autoincrement())
-  docinId       Int
-  docinternal   DocInternal @relation(fields: [docinId], references: [id])
-  assignerCode  String?     @db.VarChar(255)
-  assigner      User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode  String?     @db.VarChar(255)
-  receiver      User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  rankId        Int?
-  rank          Rank?       @relation(fields: [rankId], references: [id])
-  roleId        Int?
-  role          Role?       @relation(fields: [roleId], references: [id])
-  positionId    Int?
-  position      Position?   @relation(fields: [positionId], references: [id])
-  departmentId  Int?
-  department    Department? @relation(fields: [departmentId], references: [id])
-  divisionId    Int?
-  division      Division?   @relation(fields: [divisionId], references: [id])
-  officeId      Int?
-  office        Office?     @relation(fields: [officeId], references: [id])
-  unitId        Int?
-  unit          Unit?       @relation(fields: [unitId], references: [id])
-  docstatusId   Int?
-  docstatus     DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline      DateTime?
-  description   String?     @db.Text
-  direction     String?     @db.VarChar(255)
-  docinlog_file String?     @db.VarChar(255)
-  docinlog_type String?     @db.VarChar(255)
-  docinlog_size Int?
-  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docinId           Int
+  docinternal       DocInternal @relation(fields: [docinId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  rankId            Int?
+  rank              Rank?       @relation(fields: [rankId], references: [id])
+  roleId            Int?
+  role              Role?       @relation(fields: [roleId], references: [id])
+  positionId        Int?
+  position          Position?   @relation(fields: [positionId], references: [id])
+  departmentId      Int?
+  department        Department? @relation(fields: [departmentId], references: [id])
+  divisionId        Int?
+  division          Division?   @relation(fields: [divisionId], references: [id])
+  officeId          Int?
+  office            Office?     @relation(fields: [officeId], references: [id])
+  unitId            Int?
+  unit              Unit?       @relation(fields: [unitId], references: [id])
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  direction         String?     @db.VarChar(255)
+  docinlog_original String?     @db.VarChar(255)
+  docinlog_file     String?     @db.VarChar(255)
+  docinlog_type     String?     @db.VarChar(255)
+  docinlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocDirector {
-  id                Int             @id @default(autoincrement())
-  docdt_no          String          @db.VarChar(255)
-  docdt_date        DateTime?
-  docdt_title       String          @db.VarChar(255)
-  docdt_description String?         @db.Text
-  docdt_file        String          @db.VarChar(255)
-  docdt_filetype    String          @db.VarChar(50)
-  docdt_filesize    Int
-  assignto          Int?
-  creatorCode       String          @db.VarChar(255)
-  creator           User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
-  priorityId        Int?
-  priority          Priority?       @relation(fields: [priorityId], references: [id])
-  doctypeId         Int?
-  doctype           DocType?        @relation(fields: [doctypeId], references: [id])
-  createdAt         DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime        @updatedAt @db.Timestamptz(0)
-  docdttrackings    DocdtTracking[]
-  docdtlogs         DocdtLog[]
+  id                 Int             @id @default(autoincrement())
+  docdt_no           String          @db.VarChar(255)
+  docdt_date         DateTime?
+  docdt_title        String          @db.VarChar(255)
+  docdt_description  String?         @db.Text
+  docdt_fileoriginal String?         @db.VarChar(255)
+  docdt_file         String          @db.VarChar(255)
+  docdt_filetype     String          @db.VarChar(50)
+  docdt_filesize     Int
+  assignto           Int?
+  creatorCode        String          @db.VarChar(255)
+  creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
+  priorityId         Int?
+  priority           Priority?       @relation(fields: [priorityId], references: [id])
+  doctypeId          Int?
+  doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  createdAt          DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
+  docdttrackings     DocdtTracking[]
+  docdtlogs          DocdtLog[]
 }
 
 model DocdtTracking {
-  id               Int         @id @default(autoincrement())
-  docdtId          Int
-  docdirector      DocDirector @relation(fields: [docdtId], references: [id])
-  assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  docstatusId      Int?
-  docstatus        DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline         DateTime?
-  description      String?     @db.Text
-  departmentactive Int?
-  divisionactive   Int?
-  officeactive     Int?
-  docdtlog_file    String?     @db.VarChar(255)
-  docdtlog_type    String?     @db.VarChar(255)
-  docdtlog_size    Int?
-  createdAt        DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docdtId           Int
+  docdirector       DocDirector @relation(fields: [docdtId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
+  docdtlog_original String?     @db.VarChar(255)
+  docdtlog_file     String?     @db.VarChar(255)
+  docdtlog_type     String?     @db.VarChar(255)
+  docdtlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocdtLog {
-  id               Int         @id @default(autoincrement())
-  docdtId          Int
-  docdirector      DocDirector @relation(fields: [docdtId], references: [id])
-  assignerCode     String?     @db.VarChar(255)
-  assigner         User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
-  receiverCode     String?     @db.VarChar(255)
-  receiver         User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
-  rankId           Int?
-  rank             Rank?       @relation(fields: [rankId], references: [id])
-  roleId           Int?
-  role             Role?       @relation(fields: [roleId], references: [id])
-  positionId       Int?
-  position         Position?   @relation(fields: [positionId], references: [id])
-  departmentId     Int?
-  department       Department? @relation(fields: [departmentId], references: [id])
-  divisionId       Int?
-  division         Division?   @relation(fields: [divisionId], references: [id])
-  officeId         Int?
-  office           Office?     @relation(fields: [officeId], references: [id])
-  unitId           Int?
-  unit             Unit?       @relation(fields: [unitId], references: [id])
-  docstatusId      Int?
-  docstatus        DocStatus?  @relation(fields: [docstatusId], references: [id])
-  dateline         DateTime?
-  description      String?     @db.Text
-  direction        String?     @db.VarChar(255)
-  departmentactive Int?
-  divisionactive   Int?
-  officeactive     Int?
-  docdtlog_file    String?     @db.VarChar(255)
-  docdtlog_type    String?     @db.VarChar(255)
-  docdtlog_size    Int?
-  createdAt        DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(0)
+  id                Int         @id @default(autoincrement())
+  docdtId           Int
+  docdirector       DocDirector @relation(fields: [docdtId], references: [id])
+  assignerCode      String?     @db.VarChar(255)
+  assigner          User?       @relation(fields: [assignerCode], references: [username], name: "AssignerRelation")
+  receiverCode      String?     @db.VarChar(255)
+  receiver          User?       @relation(fields: [receiverCode], references: [username], name: "ReceiverRelation")
+  rankId            Int?
+  rank              Rank?       @relation(fields: [rankId], references: [id])
+  roleId            Int?
+  role              Role?       @relation(fields: [roleId], references: [id])
+  positionId        Int?
+  position          Position?   @relation(fields: [positionId], references: [id])
+  departmentId      Int?
+  department        Department? @relation(fields: [departmentId], references: [id])
+  divisionId        Int?
+  division          Division?   @relation(fields: [divisionId], references: [id])
+  officeId          Int?
+  office            Office?     @relation(fields: [officeId], references: [id])
+  unitId            Int?
+  unit              Unit?       @relation(fields: [unitId], references: [id])
+  docstatusId       Int?
+  docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
+  dateline          DateTime?
+  description       String?     @db.Text
+  direction         String?     @db.VarChar(255)
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
+  docdtlog_original String?     @db.VarChar(255)
+  docdtlog_file     String?     @db.VarChar(255)
+  docdtlog_type     String?     @db.VarChar(255)
+  docdtlog_size     Int?
+  createdAt         DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocType {

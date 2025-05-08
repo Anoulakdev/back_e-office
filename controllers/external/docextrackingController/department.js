@@ -97,6 +97,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docexlogfileData = {
+          docexlog_original: null,
           docexlog_file: null,
           docexlog_type: null,
           docexlog_size: null,
@@ -104,6 +105,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
+            docexlog_original: req.file.originalname,
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -112,12 +114,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
+                docexlog_original: null,
                 docexlog_file: null,
                 docexlog_type: null,
                 docexlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
+                docexlog_original: existingTracking.docexlog_original ?? null,
                 docexlog_file: existingTracking.docexlog_file ?? null,
                 docexlog_type: existingTracking.docexlog_type ?? null,
                 docexlog_size: existingTracking.docexlog_size ?? null,
@@ -126,6 +130,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
+            docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
             docexlog_type: existingTracking?.docexlog_type ?? null,
             docexlog_size: existingTracking?.docexlog_size ?? null,
@@ -202,6 +207,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 7,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -211,14 +219,27 @@ module.exports = async (req, res) => {
               },
             },
           });
-          if (!division || !division.employees.length)
-            return res
-              .status(404)
-              .json({ message: `Division ${divisionId} not found` });
 
-          const depUser = division.employees.find(
+          const divisionWithUser = {
+            ...division,
+            employees: division?.employees?.length
+              ? division.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!divisionWithUser || !divisionWithUser.employees.length) {
+            return res.status(404).json({
+              message: `division ${divisionId} or employees not found`,
+            });
+          }
+
+          const depUser = divisionWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 7
           );
+
           if (!depUser)
             return res
               .status(404)
@@ -252,6 +273,7 @@ module.exports = async (req, res) => {
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
                 divisionactive,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,
@@ -270,6 +292,7 @@ module.exports = async (req, res) => {
                 extype: Number(docex.extype) ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionactive,
+                docexlog_original: req.file ? req.file.originalname : null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,
