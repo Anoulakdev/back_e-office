@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
       }
 
       // Step 3: If a new file is uploaded, delete the old file if it exists
+      let docinfileoriginal = docin.docin_fileoriginal;
       let docinfile = docin.docin_file;
       let docintype = docin.docin_filetype;
       let docinsize = docin.docin_filesize;
@@ -71,6 +72,7 @@ module.exports = async (req, res) => {
           });
         }
 
+        docinfileoriginal = req.file.originalname;
         docinfile = req.file.filename;
         docintype = req.file.mimetype;
         docinsize = req.file.size;
@@ -89,6 +91,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.username,
+          docin_fileoriginal: docinfileoriginal,
           docin_file: docinfile,
           docin_filetype: docintype,
           docin_filesize: docinsize,

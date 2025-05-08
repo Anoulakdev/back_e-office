@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
       }
 
       // Step 3: If a new file is uploaded, delete the old file if it exists
+      let docdtfileoriginal = docdt.docdt_fileoriginal;
       let docdtfile = docdt.docdt_file;
       let docdttype = docdt.docdt_filetype;
       let docdtsize = docdt.docdt_filesize;
@@ -71,6 +72,7 @@ module.exports = async (req, res) => {
           });
         }
 
+        docdtfileoriginal = req.file.originalname;
         docdtfile = req.file.filename;
         docdttype = req.file.mimetype;
         docdtsize = req.file.size;
@@ -89,6 +91,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.username,
+          docdt_fileoriginal: docdtfileoriginal,
           docdt_file: docdtfile,
           docdt_filetype: docdttype,
           docdt_filesize: docdtsize,

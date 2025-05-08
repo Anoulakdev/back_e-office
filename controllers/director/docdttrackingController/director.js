@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).single("docexlog_file");
+const upload = multer({ storage: storage }).single("docdtlog_file");
 
 module.exports = async (req, res) => {
   upload(req, res, async function (err) {
@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     }
     try {
       const {
-        docexId,
+        docdtId,
         receiverCode,
         departmentId1 = [],
         departmentId2 = [],
@@ -39,24 +39,24 @@ module.exports = async (req, res) => {
         dateline,
       } = req.body;
 
-      if (!docexId) {
-        return res.status(400).json({ message: "docexId is required" });
+      if (!docdtId) {
+        return res.status(400).json({ message: "docdtId is required" });
       }
 
       let logTransactions = [];
       const existingTracking = await prisma.docexTracking.findFirst({
-        where: { docexId: Number(docexId), receiverCode: req.user.username },
+        where: { docdtId: Number(docdtId), receiverCode: req.user.username },
       });
 
       const docex = await prisma.docExternal.findUnique({
         where: {
-          id: Number(docexId),
+          id: Number(docdtId),
         },
       });
 
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
         const existingLog = await prisma.docexLog.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
+          where: { docdtId: Number(docdtId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
           take: 1,
         });
@@ -97,49 +97,49 @@ module.exports = async (req, res) => {
         }
 
         let docexlogfileData = {
-          docexlog_file: null,
-          docexlog_type: null,
-          docexlog_size: null,
+          docdtlog_file: null,
+          docdtlog_type: null,
+          docdtlog_size: null,
         };
 
         if (req.file) {
           docexlogfileData = {
-            docexlog_file: req.file.filename,
-            docexlog_type: req.file.mimetype,
-            docexlog_size: req.file.size,
+            docdtlog_file: req.file.filename,
+            docdtlog_type: req.file.mimetype,
+            docdtlog_size: req.file.size,
           };
         } else if (Number(docstatusId) === 6) {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docexlogfileData = {
-                docexlog_file: null,
-                docexlog_type: null,
-                docexlog_size: null,
+                docdtlog_file: null,
+                docdtlog_type: null,
+                docdtlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docexlogfileData = {
-                docexlog_file: existingTracking.docexlog_file ?? null,
-                docexlog_type: existingTracking.docexlog_type ?? null,
-                docexlog_size: existingTracking.docexlog_size ?? null,
+                docdtlog_file: existingTracking.docdtlog_file ?? null,
+                docdtlog_type: existingTracking.docdtlog_type ?? null,
+                docdtlog_size: existingTracking.docdtlog_size ?? null,
               };
             }
           }
         } else if (Number(docstatusId) === 7) {
           docexlogfileData = {
-            docexlog_file: existingTracking?.docexlog_file ?? null,
-            docexlog_type: existingTracking?.docexlog_type ?? null,
-            docexlog_size: existingTracking?.docexlog_size ?? null,
+            docdtlog_file: existingTracking?.docdtlog_file ?? null,
+            docdtlog_type: existingTracking?.docdtlog_type ?? null,
+            docdtlog_size: existingTracking?.docdtlog_size ?? null,
           };
         }
 
         logTransactions.push(
           prisma.docExternal.update({
-            where: { id: Number(docexId) },
+            where: { id: Number(docdtId) },
             data: updateData,
           }),
           prisma.docexLog.create({
             data: {
-              docexId: Number(docexId),
+              docdtId: Number(docdtId),
               assignerCode: req.user.username,
               receiverCode: user.employee.emp_code,
               rankId: user.rankId ? Number(user.rankId) : null,
@@ -248,12 +248,12 @@ module.exports = async (req, res) => {
 
           logTransactions.push(
             prisma.docExternal.update({
-              where: { id: Number(docexId) },
+              where: { id: Number(docdtId) },
               data: updateData,
             }),
             prisma.docexLog.create({
               data: {
-                docexId: Number(docexId),
+                docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 rankId: depUser.user?.rankId
@@ -272,14 +272,14 @@ module.exports = async (req, res) => {
                 divisionId: depUser.divisionId
                   ? Number(depUser.divisionId)
                   : null,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                docdtlog_file: req.file ? req.file.filename : null,
+                docdtlog_type: req.file ? req.file.mimetype : null,
+                docdtlog_size: req.file ? req.file.size : null,
               },
             }),
             prisma.docexTracking.create({
               data: {
-                docexId: Number(docexId),
+                docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
@@ -287,9 +287,9 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
                 departmentactive,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                docdtlog_file: req.file ? req.file.filename : null,
+                docdtlog_type: req.file ? req.file.mimetype : null,
+                docdtlog_size: req.file ? req.file.size : null,
               },
             })
           );

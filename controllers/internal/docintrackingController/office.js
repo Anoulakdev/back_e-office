@@ -95,6 +95,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docinlogfileData = {
+          docinlog_original: null,
           docinlog_file: null,
           docinlog_type: null,
           docinlog_size: null,
@@ -102,6 +103,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docinlogfileData = {
+            docinlog_original: req.file.originalname,
             docinlog_file: req.file.filename,
             docinlog_type: req.file.mimetype,
             docinlog_size: req.file.size,
@@ -110,12 +112,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docinlogfileData = {
+                docinlog_original: null,
                 docinlog_file: null,
                 docinlog_type: null,
                 docinlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docinlogfileData = {
+                docinlog_original: existingTracking.docinlog_original ?? null,
                 docinlog_file: existingTracking.docinlog_file ?? null,
                 docinlog_type: existingTracking.docinlog_type ?? null,
                 docinlog_size: existingTracking.docinlog_size ?? null,
@@ -124,6 +128,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docinlogfileData = {
+            docinlog_original: existingTracking?.docinlog_original ?? null,
             docinlog_file: existingTracking?.docinlog_file ?? null,
             docinlog_type: existingTracking?.docinlog_type ?? null,
             docinlog_size: existingTracking?.docinlog_size ?? null,
@@ -183,6 +188,9 @@ module.exports = async (req, res) => {
             employees: {
               include: {
                 user: {
+                  where: {
+                    roleId: 9,
+                  },
                   select: {
                     rankId: true,
                     roleId: true,
@@ -193,13 +201,23 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (!unit || !unit.employees.length) {
+        const unitWithUser = {
+          ...unit,
+          employees: unit?.employees?.length
+            ? unit.employees.map((employee) => ({
+                ...employee,
+                user: employee.user[0] || null,
+              }))
+            : [],
+        };
+
+        if (!unitWithUser || !unitWithUser.employees.length) {
           return res.status(404).json({
-            message: `unit ${unitId} or employees not found.`,
+            message: `unit ${unitId} or employees not found`,
           });
         }
 
-        const depUser = unit.employees.find(
+        const depUser = unitWithUser.employees.find(
           (u) => u.user?.rankId === 1 && u.user?.roleId === 9
         );
 
@@ -239,6 +257,7 @@ module.exports = async (req, res) => {
                 : null,
               officeId: depUser.officeId ? Number(depUser.officeId) : null,
               unitId: depUser.unitId ? Number(depUser.unitId) : null,
+              docinlog_original: req.file ? req.file.originalname : null,
               docinlog_file: req.file ? req.file.filename : null,
               docinlog_type: req.file ? req.file.mimetype : null,
               docinlog_size: req.file ? req.file.size : null,
@@ -256,6 +275,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                docinlog_original: req.file ? req.file.originalname : null,
                 docinlog_file: req.file ? req.file.filename : null,
                 docinlog_type: req.file ? req.file.mimetype : null,
                 docinlog_size: req.file ? req.file.size : null,

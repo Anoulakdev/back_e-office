@@ -51,6 +51,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           creatorCode: req.user.username,
+          docin_fileoriginal: req.file ? req.file.originalname : null,
           docin_file: req.file ? req.file.filename : null,
           docin_filetype: req.file ? req.file.mimetype : null,
           docin_filesize: req.file ? req.file.size : null,

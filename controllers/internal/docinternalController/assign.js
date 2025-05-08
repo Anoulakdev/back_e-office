@@ -120,6 +120,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 7,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -130,13 +133,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!division || !division.employees.length) {
+          const divisionWithUser = {
+            ...division,
+            employees: division?.employees?.length
+              ? division.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `Division ${divisionId} or employees not found.`,
+              message: `division ${divisionId} or employees not found`,
             });
           }
 
-          const depUser = division.employees.find(
+          const depUser = divisionWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 7
           );
 

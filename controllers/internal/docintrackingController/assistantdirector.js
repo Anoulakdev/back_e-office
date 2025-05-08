@@ -66,6 +66,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docinlogfileData = {
+          docinlog_original: null,
           docinlog_file: null,
           docinlog_type: null,
           docinlog_size: null,
@@ -73,6 +74,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docinlogfileData = {
+            docinlog_original: req.file.originalname,
             docinlog_file: req.file.filename,
             docinlog_type: req.file.mimetype,
             docinlog_size: req.file.size,
@@ -81,12 +83,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docinlogfileData = {
+                docinlog_original: null,
                 docinlog_file: null,
                 docinlog_type: null,
                 docinlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docinlogfileData = {
+                docinlog_original: existingTracking.docinlog_original ?? null,
                 docinlog_file: existingTracking.docinlog_file ?? null,
                 docinlog_type: existingTracking.docinlog_type ?? null,
                 docinlog_size: existingTracking.docinlog_size ?? null,
@@ -95,6 +99,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docinlogfileData = {
+            docinlog_original: existingTracking?.docinlog_original ?? null,
             docinlog_file: existingTracking?.docinlog_file ?? null,
             docinlog_type: existingTracking?.docinlog_type ?? null,
             docinlog_size: existingTracking?.docinlog_size ?? null,

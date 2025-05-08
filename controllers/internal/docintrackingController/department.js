@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: "docinId is required" });
 
       let logTransactions = [];
-      
+
       const existingTracking = await prisma.docinTracking.findFirst({
         where: { docinId: Number(docinId), receiverCode: req.user.username },
       });
@@ -99,6 +99,7 @@ module.exports = async (req, res) => {
           : null;
 
         let docinlogfileData = {
+          docinlog_original: null,
           docinlog_file: null,
           docinlog_type: null,
           docinlog_size: null,
@@ -106,6 +107,7 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docinlogfileData = {
+            docinlog_original: req.file.originalname,
             docinlog_file: req.file.filename,
             docinlog_type: req.file.mimetype,
             docinlog_size: req.file.size,
@@ -114,12 +116,14 @@ module.exports = async (req, res) => {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
               docinlogfileData = {
+                docinlog_original: null,
                 docinlog_file: null,
                 docinlog_type: null,
                 docinlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
               docinlogfileData = {
+                docinlog_original: existingTracking.docinlog_original ?? null,
                 docinlog_file: existingTracking.docinlog_file ?? null,
                 docinlog_type: existingTracking.docinlog_type ?? null,
                 docinlog_size: existingTracking.docinlog_size ?? null,
@@ -128,6 +132,7 @@ module.exports = async (req, res) => {
           }
         } else if (Number(docstatusId) === 7) {
           docinlogfileData = {
+            docinlog_original: existingTracking?.docinlog_original ?? null,
             docinlog_file: existingTracking?.docinlog_file ?? null,
             docinlog_type: existingTracking?.docinlog_type ?? null,
             docinlog_size: existingTracking?.docinlog_size ?? null,
@@ -180,6 +185,9 @@ module.exports = async (req, res) => {
             employees: {
               include: {
                 user: {
+                  where: {
+                    roleId: 7,
+                  },
                   select: {
                     rankId: true,
                     roleId: true,
@@ -190,13 +198,23 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (!division || !division.employees.length) {
+        const divisionWithUser = {
+          ...division,
+          employees: division?.employees?.length
+            ? division.employees.map((employee) => ({
+                ...employee,
+                user: employee.user[0] || null,
+              }))
+            : [],
+        };
+
+        if (!divisionWithUser || !divisionWithUser.employees.length) {
           return res.status(404).json({
-            message: `division ${divisionId} or employees not found.`,
+            message: `division ${divisionId} or employees not found`,
           });
         }
 
-        const depUser = division.employees.find(
+        const depUser = divisionWithUser.employees.find(
           (u) => u.user?.rankId === 1 && u.user?.roleId === 7
         );
 
@@ -234,6 +252,7 @@ module.exports = async (req, res) => {
               divisionId: depUser.divisionId
                 ? Number(depUser.divisionId)
                 : null,
+              docinlog_original: req.file ? req.file.originalname : null,
               docinlog_file: req.file ? req.file.filename : null,
               docinlog_type: req.file ? req.file.mimetype : null,
               docinlog_size: req.file ? req.file.size : null,
@@ -251,6 +270,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                docinlog_original: req.file ? req.file.originalname : null,
                 docinlog_file: req.file ? req.file.filename : null,
                 docinlog_type: req.file ? req.file.mimetype : null,
                 docinlog_size: req.file ? req.file.size : null,
@@ -276,6 +296,9 @@ module.exports = async (req, res) => {
               employees: {
                 include: {
                   user: {
+                    where: {
+                      roleId: 6,
+                    },
                     select: {
                       rankId: true,
                       roleId: true,
@@ -286,13 +309,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!department || !department.employees.length) {
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
-              message: `department ${departmentId} or employees not found.`,
+              message: `department ${departmentId} or employees not found`,
             });
           }
 
-          const depUser = department.employees.find(
+          const depUser = departmentWithUser.employees.find(
             (u) => u.user?.rankId === 1 && u.user?.roleId === 6
           );
 
@@ -330,6 +363,7 @@ module.exports = async (req, res) => {
                 divisionId: depUser.divisionId
                   ? Number(depUser.divisionId)
                   : null,
+                docinlog_original: req.file?.originalname ?? null,
                 docinlog_file: req.file?.filename ?? null,
                 docinlog_type: req.file?.mimetype ?? null,
                 docinlog_size: req.file?.size ?? null,
@@ -345,6 +379,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                docinlog_original: req.file?.originalname ?? null,
                 docinlog_file: req.file?.filename ?? null,
                 docinlog_type: req.file?.mimetype ?? null,
                 docinlog_size: req.file?.size ?? null,
