@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
             data: {
               docdtId: Number(docdtId),
               assignerCode: req.user.username,
-              receiverCode: user.employee.emp_code,
+              receiverCode: user.username,
               rankId: Number(user.rankId) ?? null,
               roleId: Number(user.roleId) ?? null,
               positionId: Number(user.employee.posId) ?? null,
@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
             data: {
               docdtId: Number(docdtId),
               assignerCode: req.user.username,
-              receiverCode: user.employee.emp_code,
+              receiverCode: user.username,
               docstatusId: Number(docstatusId),
               description,
             },
