@@ -3,7 +3,7 @@ const prisma = require("../../prisma/prisma");
 module.exports = async (req, res) => {
   try {
     const { doctypeId } = req.params;
-    const { doctype_name, dtype, actionMax, followMax } = req.body;
+    const { doctype_name, soptype, actionMax, followMax } = req.body;
 
     const updated = await prisma.docType.update({
       where: {
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
       },
       data: {
         doctype_name: doctype_name,
-        dtype: dtype,
+        soptype: soptype,
         actionMax: actionMax,
         followMax: followMax,
       },

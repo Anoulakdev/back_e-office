@@ -142,7 +142,8 @@ module.exports = async (req, res) => {
             data: {
               docexId: Number(docexId),
               assignerCode: req.user.username,
-              receiverCode: user.employee.emp_code,
+              receiverCode:
+                docstatusId === 10 ? user.username : user.employee.emp_code,
               rankId: user.rankId ? Number(user.rankId) : null,
               roleId: user.roleId ? Number(user.roleId) : null,
               positionId: user.employee.posId
@@ -169,7 +170,8 @@ module.exports = async (req, res) => {
               where: { id: existingTracking.id },
               data: {
                 assignerCode: req.user.username,
-                receiverCode: user.employee.emp_code,
+                receiverCode:
+                  docstatusId === 10 ? user.username : user.employee.emp_code,
                 docstatusId: Number(docstatusId),
                 extype: Number(docex.extype) ?? null,
                 dateline: datelineValue,

@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       priority,
       outsider,
       assignto,
-      extype,
+      // extype,
       selectDateStart,
       selectDateEnd,
       // page,
@@ -39,9 +39,13 @@ module.exports = async (req, res) => {
     // const take = pageSize;
 
     // สร้างเงื่อนไข where
-    const where = {
-      creatorCode: req.user.username,
-    };
+    let where = {};
+
+    if (req.user.roleId === 2) {
+      where.extype = 1;
+    } else {
+      where.creatorCode = req.user.username;
+    }
 
     if (search) {
       where.OR = [
@@ -54,9 +58,9 @@ module.exports = async (req, res) => {
       where.priorityId = Number(priority);
     }
 
-    if (extype) {
-      where.extype = Number(extype);
-    }
+    // if (extype) {
+    //   where.extype = Number(extype);
+    // }
 
     if (assignto) {
       where.assignto = Number(assignto);

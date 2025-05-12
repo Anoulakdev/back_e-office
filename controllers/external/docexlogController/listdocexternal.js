@@ -51,7 +51,77 @@ module.exports = async (req, res) => {
 
     // console.log(existinglog);
 
-    if (req.user.roleId === 4) {
+    if (req.user.roleId === 2) {
+      docexlogs = await prisma.docexLog.findMany({
+        where: {
+          ...where,
+          roleId: req.user.roleId,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        distinct: ["docexId"],
+        include: {
+          docexternal: {
+            include: {
+              docexlogs: {
+                select: {
+                  docstatus: true,
+                  assigner: {
+                    select: {
+                      // username: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
+                    },
+                  },
+                  receiver: {
+                    select: {
+                      // username: true,
+                      employee: {
+                        select: {
+                          first_name: true,
+                          last_name: true,
+                          gender: true,
+                          tel: true,
+                        },
+                      },
+                    },
+                  },
+                },
+                take: 1,
+                orderBy: { createdAt: "desc" },
+              },
+              priority: true,
+              doctype: true,
+              outsider: true,
+              creator: {
+                select: {
+                  username: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                      department: true,
+                      division: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } else if (req.user.roleId === 4) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
           ...where,
