@@ -88,6 +88,7 @@ module.exports = async (req, res) => {
             employee: true,
           },
         });
+
         if (!user) return res.status(404).json({ message: "User not found" });
 
         const datelineValue = dateline
@@ -105,7 +106,9 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
-            docexlog_original: req.file.originalname,
+            docexlog_original: Buffer.from(req.file.originalname).toString(
+              "utf8"
+            ),
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -143,7 +146,9 @@ module.exports = async (req, res) => {
               docexId: Number(docexId),
               assignerCode: req.user.username,
               receiverCode:
-                docstatusId === 10 ? user.username : user.employee.emp_code,
+                Number(docstatusId) === 10
+                  ? user.username
+                  : user.employee?.emp_code,
               rankId: user.rankId ? Number(user.rankId) : null,
               roleId: user.roleId ? Number(user.roleId) : null,
               positionId: user.employee.posId
@@ -171,7 +176,9 @@ module.exports = async (req, res) => {
               data: {
                 assignerCode: req.user.username,
                 receiverCode:
-                  docstatusId === 10 ? user.username : user.employee.emp_code,
+                  Number(docstatusId) === 10
+                    ? user.username
+                    : user.employee?.emp_code,
                 docstatusId: Number(docstatusId),
                 extype: Number(docex.extype) ?? null,
                 dateline: datelineValue,
@@ -275,7 +282,9 @@ module.exports = async (req, res) => {
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionId,
                 divisionactive,
-                docexlog_original: req.file ? req.file.originalname : null,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,
@@ -294,7 +303,9 @@ module.exports = async (req, res) => {
                 extype: Number(docex.extype) ?? null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 divisionactive,
-                docexlog_original: req.file ? req.file.originalname : null,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docexlog_file: req.file?.filename ?? null,
                 docexlog_type: req.file?.mimetype ?? null,
                 docexlog_size: req.file?.size ?? null,

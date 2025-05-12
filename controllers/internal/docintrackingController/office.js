@@ -103,7 +103,9 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docinlogfileData = {
-            docinlog_original: req.file.originalname,
+            docinlog_original: Buffer.from(req.file.originalname).toString(
+              "utf8"
+            ),
             docinlog_file: req.file.filename,
             docinlog_type: req.file.mimetype,
             docinlog_size: req.file.size,
@@ -257,7 +259,9 @@ module.exports = async (req, res) => {
                 : null,
               officeId: depUser.officeId ? Number(depUser.officeId) : null,
               unitId: depUser.unitId ? Number(depUser.unitId) : null,
-              docinlog_original: req.file ? req.file.originalname : null,
+              docinlog_original: req.file
+                ? Buffer.from(req.file.originalname).toString("utf8")
+                : null,
               docinlog_file: req.file ? req.file.filename : null,
               docinlog_type: req.file ? req.file.mimetype : null,
               docinlog_size: req.file ? req.file.size : null,
@@ -275,7 +279,9 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                docinlog_original: req.file ? req.file.originalname : null,
+                docinlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docinlog_file: req.file ? req.file.filename : null,
                 docinlog_type: req.file ? req.file.mimetype : null,
                 docinlog_size: req.file ? req.file.size : null,

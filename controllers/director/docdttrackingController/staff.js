@@ -76,7 +76,9 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docdtlogfileData = {
-            docdtlog_original: req.file.originalname,
+            docdtlog_original: Buffer.from(req.file.originalname).toString(
+              "utf8"
+            ),
             docdtlog_file: req.file.filename,
             docdtlog_type: req.file.mimetype,
             docdtlog_size: req.file.size,

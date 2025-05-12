@@ -105,7 +105,9 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docexlogfileData = {
-            docexlog_original: req.file.originalname,
+            docexlog_original: Buffer.from(req.file.originalname).toString(
+              "utf8"
+            ),
             docexlog_file: req.file.filename,
             docexlog_type: req.file.mimetype,
             docexlog_size: req.file.size,
@@ -147,7 +149,7 @@ module.exports = async (req, res) => {
               docexId: Number(docexId),
               assignerCode: req.user.username,
               receiverCode:
-                docstatusId === 10 || 6
+                Number(docstatusId) === 10 || 3
                   ? user.username
                   : user.employee.emp_code,
               rankId: user.rankId ? Number(user.rankId) : null,
@@ -177,7 +179,7 @@ module.exports = async (req, res) => {
               data: {
                 assignerCode: req.user.username,
                 receiverCode:
-                  docstatusId === 10 || 6
+                  Number(docstatusId) === 10 || 3
                     ? user.username
                     : user.employee.emp_code,
                 docstatusId: Number(docstatusId),
@@ -296,7 +298,9 @@ module.exports = async (req, res) => {
                 divisionId: depUser.divisionId
                   ? Number(depUser.divisionId)
                   : null,
-                docexlog_original: req.file ? req.file.originalname : null,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,
@@ -312,7 +316,9 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 extype: Number(docex.extype) ?? null,
                 departmentactive,
-                docexlog_original: req.file ? req.file.originalname : null,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docexlog_file: req.file ? req.file.filename : null,
                 docexlog_type: req.file ? req.file.mimetype : null,
                 docexlog_size: req.file ? req.file.size : null,

@@ -103,7 +103,9 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docdtlogfileData = {
-            docdtlog_original: req.file.originalname,
+            docdtlog_original: Buffer.from(req.file.originalname).toString(
+              "utf8"
+            ),
             docdtlog_file: req.file.filename,
             docdtlog_type: req.file.mimetype,
             docdtlog_size: req.file.size,
@@ -262,7 +264,9 @@ module.exports = async (req, res) => {
               unitId: depUser.unitId ? Number(depUser.unitId) : null,
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
-              docdtlog_original: req.file ? req.file.originalname : null,
+              docdtlog_original: req.file
+                ? Buffer.from(req.file.originalname).toString("utf8")
+                : null,
               docdtlog_file: req.file ? req.file.filename : null,
               docdtlog_type: req.file ? req.file.mimetype : null,
               docdtlog_size: req.file ? req.file.size : null,
@@ -280,7 +284,9 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                docdtlog_original: req.file ? req.file.originalname : null,
+                docdtlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
@@ -383,7 +389,9 @@ module.exports = async (req, res) => {
                 divisionactive: Number(existingTracking.divisionactive),
                 officeId,
                 officeactive,
-                docdtlog_original: req.file ? req.file.originalname : null,
+                docdtlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
@@ -400,7 +408,9 @@ module.exports = async (req, res) => {
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionactive: Number(existingTracking.divisionactive),
                 officeactive,
-                docdtlog_original: req.file ? req.file.originalname : null,
+                docdtlog_original: req.file
+                  ? Buffer.from(req.file.originalname).toString("utf8")
+                  : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,

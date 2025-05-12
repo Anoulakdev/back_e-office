@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
           extype: Number(extype),
           creatorCode: req.user.username,
           docex_fileoriginal: req.file
-            ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
+            ? Buffer.from(req.file.originalname).toString("utf8")
             : null,
           docex_file: req.file ? req.file.filename : null,
           docex_filetype: req.file ? req.file.mimetype : null,
