@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).single("docexlog_file");
+const upload = multer({ storage: storage }).single("docdtlog_file");
 
 module.exports = async (req, res) => {
   try {
@@ -31,22 +31,20 @@ module.exports = async (req, res) => {
         lte: new Date(endDate.toISOString()),
       };
     }
-    const doctrackings = await prisma.docexTracking.findMany({
+    const doctrackings = await prisma.docdtTracking.findMany({
       where: {
         ...where,
         receiverCode: req.user.username,
       },
       include: {
         docstatus: true,
-        docexternal: {
+        docdirector: {
           include: {
-            outsider: true,
             priority: true,
             doctype: true,
             creator: {
               select: {
                 username: true,
-                name: true,
                 rankId: true,
                 roleId: true,
                 employee: {
@@ -73,7 +71,6 @@ module.exports = async (req, res) => {
         assigner: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,
@@ -95,12 +92,12 @@ module.exports = async (req, res) => {
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
-      docexternal: {
-        ...doc.docexternal,
-        createdAt: moment(doc.docexternal.createdAt)
+      docdirector: {
+        ...doc.docdirector,
+        createdAt: moment(doc.docdirector.createdAt)
           .tz("Asia/Vientiane")
           .format(),
-        updatedAt: moment(doc.docexternal.updatedAt)
+        updatedAt: moment(doc.docdirector.updatedAt)
           .tz("Asia/Vientiane")
           .format(),
       },

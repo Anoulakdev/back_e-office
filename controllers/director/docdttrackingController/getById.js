@@ -14,26 +14,24 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).single("docexlog_file");
+const upload = multer({ storage: storage }).single("docdtlog_file");
 
 module.exports = async (req, res) => {
   try {
     const { doctrackingId } = req.params;
-    const doctrackings = await prisma.docexTracking.findUnique({
+    const doctrackings = await prisma.docdtTracking.findUnique({
       where: {
         id: Number(doctrackingId),
       },
       include: {
         docstatus: true,
-        docexternal: {
+        docdirector: {
           include: {
-            outsider: true,
             priority: true,
             doctype: true,
             creator: {
               select: {
                 username: true,
-                name: true,
                 rankId: true,
                 roleId: true,
                 employee: {
@@ -60,7 +58,6 @@ module.exports = async (req, res) => {
         assigner: {
           select: {
             username: true,
-            name: true,
             employee: {
               select: {
                 first_name: true,
@@ -87,13 +84,13 @@ module.exports = async (req, res) => {
       updatedAt: moment(doctrackings.updatedAt)
         .tz("Asia/Vientiane")
         .format("YYYY-MM-DD HH:mm:ss"),
-      docexternal: doctrackings.docexternal
+      docdirector: doctrackings.docdirector
         ? {
-            ...doctrackings.docexternal,
-            createdAt: moment(doctrackings.docexternal.createdAt)
+            ...doctrackings.docdirector,
+            createdAt: moment(doctrackings.docdirector.createdAt)
               .tz("Asia/Vientiane")
               .format("YYYY-MM-DD HH:mm:ss"),
-            updatedAt: moment(doctrackings.docexternal.updatedAt)
+            updatedAt: moment(doctrackings.docdirector.updatedAt)
               .tz("Asia/Vientiane")
               .format("YYYY-MM-DD HH:mm:ss"),
           }

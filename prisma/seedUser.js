@@ -25,7 +25,8 @@ async function loginAndGetToken() {
 async function seedUser() {
   try {
     const token = await loginAndGetToken();
-    const departmentIds = Array.from({ length: 15 }, (_, i) => i + 1); // [1, 2, ..., 15]
+    const departmentIds = Array.from({ length: 15 }, (_, i) => i + 1);
+    // const departmentId = 15;
 
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash("EDL1234", salt);
@@ -102,6 +103,7 @@ async function seedUser() {
           where: { username: userData.emp_code },
           update: {
             username: userData.emp_code,
+            employee_code: userData.emp_code,
             employeeId: userData.emp_id,
             status: userData.status,
             ...(roleId !== undefined && { roleId }),
@@ -116,6 +118,7 @@ async function seedUser() {
           create: {
             username: userData.emp_code,
             password: hashPassword, // ตรวจสอบว่าค่านี้มีอยู่แล้ว
+            employee_code: userData.emp_code,
             employeeId: userData.emp_id,
             status: userData.status,
             roleId: roleId,

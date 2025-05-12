@@ -11,22 +11,22 @@ module.exports = async (req, res) => {
 
       const endDate = new Date(`${selectDateEnd}T23:59:59+07:00`);
 
-      where.docexternal = {
+      where.docdirector = {
         createdAt: {
           gte: new Date(startDate.toISOString()),
           lte: new Date(endDate.toISOString()),
         },
       };
     }
-    let docexlogs;
+    let docdtlogs;
 
-    const existingTracking = await prisma.docexTracking.findFirst({
+    const existingTracking = await prisma.docdtTracking.findFirst({
       where: {
         receiverCode: req.user.username,
         OR: [{ docstatusId: 1 }, { docstatusId: 2 }],
       },
       select: {
-        docexId: true,
+        docdtId: true,
         receiverCode: true,
         docstatusId: true,
       },
@@ -35,9 +35,9 @@ module.exports = async (req, res) => {
     // console.log(existingTracking);
 
     const existinglog = existingTracking
-      ? await prisma.docexLog.findFirst({
+      ? await prisma.docdtLog.findFirst({
           where: {
-            docexId: existingTracking.docexId,
+            docdtId: existingTracking.docdtId,
             receiverCode: existingTracking.receiverCode,
             docstatusId: existingTracking.docstatusId,
           },
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
     // console.log(existinglog);
 
     if (req.user.roleId === 4) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -62,17 +62,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -85,8 +84,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -103,11 +101,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -125,7 +121,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 11) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -134,17 +130,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -157,8 +152,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -175,11 +169,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -197,7 +189,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 6) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -209,17 +201,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -232,8 +223,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -250,11 +240,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -272,7 +260,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 7) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -283,17 +271,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -306,8 +293,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -324,11 +310,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -346,7 +330,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 8) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -357,17 +341,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -380,8 +363,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -398,11 +380,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -420,7 +400,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 9) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -431,17 +411,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -454,8 +433,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -472,11 +450,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -494,7 +470,7 @@ module.exports = async (req, res) => {
         },
       });
     } else if (req.user.roleId === 10) {
-      docexlogs = await prisma.docexLog.findMany({
+      docdtlogs = await prisma.docdtLog.findMany({
         where: {
           ...where,
           ...idFilter,
@@ -503,17 +479,16 @@ module.exports = async (req, res) => {
         orderBy: {
           id: "desc",
         },
-        distinct: ["docexId"],
+        distinct: ["docdtId"],
         include: {
-          docexternal: {
+          docdirector: {
             include: {
-              docexlogs: {
+              docdtlogs: {
                 select: {
                   docstatus: true,
                   assigner: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -526,8 +501,7 @@ module.exports = async (req, res) => {
                   },
                   receiver: {
                     select: {
-                      // username: true,
-                      // name: true,
+                      username: true,
                       employee: {
                         select: {
                           first_name: true,
@@ -544,11 +518,9 @@ module.exports = async (req, res) => {
               },
               priority: true,
               doctype: true,
-              outsider: true,
               creator: {
                 select: {
                   username: true,
-                  name: true,
                   employee: {
                     select: {
                       first_name: true,
@@ -567,21 +539,21 @@ module.exports = async (req, res) => {
       });
     }
 
-    // docexlogs.forEach((log) => {
-    //   log.docexternal.docexlogs = log.docexternal.docexlogs[0] || null;
+    // docdtlogs.forEach((log) => {
+    //   log.docdirector.docdtlogs = log.docdirector.docdtlogs[0] || null;
     // });
 
     // แปลงเวลาเป็น Asia/Vientiane
-    const formattedDocs = docexlogs.map((doc) => ({
+    const formattedDocs = docdtlogs.map((doc) => ({
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
-      docexternal: {
-        ...doc.docexternal,
-        createdAt: moment(doc.docexternal.createdAt)
+      docdirector: {
+        ...doc.docdirector,
+        createdAt: moment(doc.docdirector.createdAt)
           .tz("Asia/Vientiane")
           .format(),
-        updatedAt: moment(doc.docexternal.updatedAt)
+        updatedAt: moment(doc.docdirector.updatedAt)
           .tz("Asia/Vientiane")
           .format(),
       },

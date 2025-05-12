@@ -1,7 +1,7 @@
 const prisma = require("../../prisma/prisma");
 module.exports = async (req, res) => {
   try {
-    const { doctype_name } = req.body;
+    const { doctype_name, dtype, actionMax, followMax } = req.body;
 
     // Validate input fields
     if (!doctype_name) {
@@ -12,6 +12,9 @@ module.exports = async (req, res) => {
     const newDoctype = await prisma.docType.create({
       data: {
         doctype_name,
+        dtype,
+        actionMax,
+        followMax,
       },
     });
 

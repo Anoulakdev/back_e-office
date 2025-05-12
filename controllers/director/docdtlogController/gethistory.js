@@ -3,20 +3,19 @@ const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {
-    const { docexId } = req.params;
+    const { docdtId } = req.params;
 
-    const docex = await prisma.docExternal.findUnique({
+    const docdt = await prisma.docDirector.findUnique({
       where: {
-        id: Number(docexId),
+        id: Number(docdtId),
       },
       include: {
-        docexlogs: {
+        docdtlogs: {
           include: {
             docstatus: true,
             assigner: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,
@@ -30,7 +29,6 @@ module.exports = async (req, res) => {
             receiver: {
               select: {
                 username: true,
-                name: true,
                 employee: {
                   select: {
                     first_name: true,
@@ -46,16 +44,16 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!docex) {
+    if (!docdt) {
       return res.status(404).json({ message: "document not found" });
     }
 
     // Format dates
     const formattedDocs = {
-      ...docex,
-      createdAt: moment(docex.createdAt).tz("Asia/Vientiane").format(),
-      updatedAt: moment(docex.updatedAt).tz("Asia/Vientiane").format(),
-      docexlogs: docex.docexlogs.map((log) => ({
+      ...docdt,
+      createdAt: moment(docdt.createdAt).tz("Asia/Vientiane").format(),
+      updatedAt: moment(docdt.updatedAt).tz("Asia/Vientiane").format(),
+      docdtlogs: docdt.docdtlogs.map((log) => ({
         ...log,
         createdAt: moment(log.createdAt).tz("Asia/Vientiane").format(),
         updatedAt: moment(log.updatedAt).tz("Asia/Vientiane").format(),

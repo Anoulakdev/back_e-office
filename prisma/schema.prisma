@@ -451,6 +451,7 @@ model DocdtLog {
 model DocType {
   id           Int           @id @default(autoincrement())
   doctype_name String        @db.VarChar(255)
+  dtype        String?
   actionMax    Int?
   followMax    Int?
   docexternals DocExternal[]

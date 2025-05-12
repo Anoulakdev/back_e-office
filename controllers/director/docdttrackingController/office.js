@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).single("docexlog_file");
+const upload = multer({ storage: storage }).single("docdtlog_file");
 
 module.exports = async (req, res) => {
   upload(req, res, async function (err) {
@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     }
     try {
       const {
-        docexId,
+        docdtId,
         receiverCode,
         unitId,
         docstatusId,
@@ -37,31 +37,32 @@ module.exports = async (req, res) => {
         dateline,
       } = req.body;
 
-      if (!docexId) {
-        return res.status(400).json({ message: "docexId is required" });
+      if (!docdtId) {
+        return res.status(400).json({ message: "docdtId is required" });
       }
 
       let logTransactions = [];
-      const docex = await prisma.docExternal.findUnique({
+
+      const existingTracking = await prisma.docdtTracking.findFirst({
+        where: { docdtId: Number(docdtId), receiverCode: req.user.username },
+      });
+
+      const docdt = await prisma.docDirector.findUnique({
         where: {
-          id: Number(docexId),
+          id: Number(docdtId),
         },
       });
 
       if (!receiverCode && !unitId) {
-        const existingLog = await prisma.docexLog.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
+        const existingLog = await prisma.docdtLog.findFirst({
+          where: { docdtId: Number(docdtId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
           take: 1,
         });
 
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
-
         if (existingLog) {
           logTransactions.push(
-            prisma.docexLog.update({
+            prisma.docdtLog.update({
               where: { id: existingLog.id },
               data: { docstatusId: Number(docstatusId), description },
             })
@@ -69,7 +70,7 @@ module.exports = async (req, res) => {
         }
         if (existingTracking) {
           logTransactions.push(
-            prisma.docexTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docdtTracking.delete({ where: { id: existingTracking.id } })
           );
         }
       } else if (receiverCode) {
@@ -87,56 +88,57 @@ module.exports = async (req, res) => {
             .json({ message: "User not found with the provided receiverCode" });
         }
 
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
-
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
           ? new Date(existingTracking.dateline)
           : null;
 
-        let docexlogfileData = {
-          docexlog_file: null,
-          docexlog_type: null,
-          docexlog_size: null,
+        let docdtlogfileData = {
+          docdtlog_original: null,
+          docdtlog_file: null,
+          docdtlog_type: null,
+          docdtlog_size: null,
         };
 
         if (req.file) {
-          docexlogfileData = {
-            docexlog_file: req.file.filename,
-            docexlog_type: req.file.mimetype,
-            docexlog_size: req.file.size,
+          docdtlogfileData = {
+            docdtlog_original: req.file.originalname,
+            docdtlog_file: req.file.filename,
+            docdtlog_type: req.file.mimetype,
+            docdtlog_size: req.file.size,
           };
         } else if (Number(docstatusId) === 6) {
           if (existingTracking) {
             if (existingTracking.docstatusId === 5) {
-              docexlogfileData = {
-                docexlog_file: null,
-                docexlog_type: null,
-                docexlog_size: null,
+              docdtlogfileData = {
+                docdtlog_original: null,
+                docdtlog_file: null,
+                docdtlog_type: null,
+                docdtlog_size: null,
               };
             } else if (existingTracking.docstatusId === 6) {
-              docexlogfileData = {
-                docexlog_file: existingTracking.docexlog_file ?? null,
-                docexlog_type: existingTracking.docexlog_type ?? null,
-                docexlog_size: existingTracking.docexlog_size ?? null,
+              docdtlogfileData = {
+                docdtlog_original: existingTracking.docdtlog_original ?? null,
+                docdtlog_file: existingTracking.docdtlog_file ?? null,
+                docdtlog_type: existingTracking.docdtlog_type ?? null,
+                docdtlog_size: existingTracking.docdtlog_size ?? null,
               };
             }
           }
         } else if (Number(docstatusId) === 7) {
-          docexlogfileData = {
-            docexlog_file: existingTracking?.docexlog_file ?? null,
-            docexlog_type: existingTracking?.docexlog_type ?? null,
-            docexlog_size: existingTracking?.docexlog_size ?? null,
+          docdtlogfileData = {
+            docdtlog_original: existingTracking.docdtlog_original ?? null,
+            docdtlog_file: existingTracking?.docdtlog_file ?? null,
+            docdtlog_type: existingTracking?.docdtlog_type ?? null,
+            docdtlog_size: existingTracking?.docdtlog_size ?? null,
           };
         }
 
         logTransactions.push(
-          prisma.docexLog.create({
+          prisma.docdtLog.create({
             data: {
-              docexId: Number(docexId),
+              docdtId: Number(docdtId),
               assignerCode: req.user.username,
               receiverCode: user.employee.emp_code,
               rankId: user.rankId ? Number(user.rankId) : null,
@@ -147,7 +149,6 @@ module.exports = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
-              extype: Number(docex.extype) ?? null,
               departmentId: user.employee.departmentId
                 ? Number(user.employee.departmentId)
                 : null,
@@ -163,17 +164,14 @@ module.exports = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
-              ...docexlogfileData,
-              // ...(user.roleId === 8 || (docstatusId === 7 && user.roleId === 8)
-              //   ? { officeId: Number(user.officeId) }
-              //   : {}),
+              ...docdtlogfileData,
             },
           })
         );
 
         if (existingTracking) {
           logTransactions.push(
-            prisma.docexTracking.update({
+            prisma.docdtTracking.update({
               where: { id: existingTracking.id },
               data: {
                 assignerCode: req.user.username,
@@ -181,8 +179,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                extype: Number(docex.extype) ?? null,
-                ...docexlogfileData,
+                ...docdtlogfileData,
               },
             })
           );
@@ -195,6 +192,9 @@ module.exports = async (req, res) => {
             employees: {
               include: {
                 user: {
+                  where: {
+                    roleId: 9,
+                  },
                   select: {
                     rankId: true,
                     roleId: true,
@@ -205,13 +205,23 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (!unit || !unit.employees.length) {
-          return res
-            .status(404)
-            .json({ message: "unit or employees not found" });
+        const unitWithUser = {
+          ...unit,
+          employees: unit?.employees?.length
+            ? unit.employees.map((employee) => ({
+                ...employee,
+                user: employee.user[0] || null,
+              }))
+            : [],
+        };
+
+        if (!unitWithUser || !unitWithUser.employees.length) {
+          return res.status(404).json({
+            message: `unit ${unitId} or employees not found`,
+          });
         }
 
-        depUser = unit.employees.find(
+        const depUser = unitWithUser.employees.find(
           (u) => u.user?.rankId === 1 && u.user?.roleId === 9
         );
 
@@ -222,10 +232,6 @@ module.exports = async (req, res) => {
           });
         }
 
-        const existingTracking = await prisma.docexTracking.findFirst({
-          where: { docexId: Number(docexId), receiverCode: req.user.username },
-        });
-
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
@@ -233,9 +239,9 @@ module.exports = async (req, res) => {
           : null;
 
         logTransactions.push(
-          prisma.docexLog.create({
+          prisma.docdtLog.create({
             data: {
-              docexId: Number(docexId),
+              docdtId: Number(docdtId),
               assignerCode: req.user.username,
               receiverCode: depUser.emp_code,
               rankId: depUser.user?.rankId
@@ -248,7 +254,6 @@ module.exports = async (req, res) => {
               docstatusId: Number(docstatusId),
               dateline: datelineValue,
               description: description ?? null,
-              extype: Number(docex.extype) ?? null,
               departmentId: depUser.departmentId
                 ? Number(depUser.departmentId)
                 : null,
@@ -260,16 +265,17 @@ module.exports = async (req, res) => {
               departmentactive: Number(existingTracking.departmentactive),
               divisionactive: Number(existingTracking.divisionactive),
               officeactive: Number(existingTracking.officeactive),
-              docexlog_file: req.file ? req.file.filename : null,
-              docexlog_type: req.file ? req.file.mimetype : null,
-              docexlog_size: req.file ? req.file.size : null,
+              docdtlog_original: req.file ? req.file.originalname : null,
+              docdtlog_file: req.file ? req.file.filename : null,
+              docdtlog_type: req.file ? req.file.mimetype : null,
+              docdtlog_size: req.file ? req.file.size : null,
             },
           })
         );
 
         if (existingTracking) {
           logTransactions.push(
-            prisma.docexTracking.update({
+            prisma.docdtTracking.update({
               where: { id: existingTracking.id },
               data: {
                 assignerCode: req.user.username,
@@ -277,10 +283,10 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                extype: Number(docex.extype) ?? null,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
+                docdtlog_original: req.file ? req.file.originalname : null,
+                docdtlog_file: req.file ? req.file.filename : null,
+                docdtlog_type: req.file ? req.file.mimetype : null,
+                docdtlog_size: req.file ? req.file.size : null,
               },
             })
           );
