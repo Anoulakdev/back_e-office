@@ -78,7 +78,10 @@ module.exports = async (req, res) => {
 
       res.status(201).json({
         message: "Document created successfully",
-        data: newDocInternal,
+        data: {
+          docinId: newDocInternal.id, // เพิ่ม docinId เข้าไปใน data
+          ...newDocInternal, // คัดลอกทุก field ที่ได้จาก Prisma มาไว้ใน data
+        },
       });
     } catch (error) {
       console.error("Error creating document:", error);

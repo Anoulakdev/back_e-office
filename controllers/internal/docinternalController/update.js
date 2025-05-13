@@ -117,7 +117,13 @@ module.exports = async (req, res) => {
         },
       });
 
-      res.json({ message: "Update successful!", data: updated });
+      res.json({
+        message: "Update successful!",
+        data: {
+          docinId: updated.id,
+          ...updated,
+        },
+      });
     } catch (err) {
       console.log(err); // Added logging for better error debugging
       res.status(500).json({ message: "Server Error", error: err.message });
