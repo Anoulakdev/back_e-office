@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
         docinId,
         receiverCode,
         divisionId,
-        departmentId = [],
+        departmentId,
         docstatusId,
         description,
         dateline,
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (!receiverCode && !divisionId && !departmentId.length) {
+      if (!receiverCode && !divisionId && !departmentId) {
         const existingLog = await prisma.docinLog.findFirst({
           where: { docinId: Number(docinId), receiverCode: req.user.username },
           orderBy: { id: "desc" },
@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
             prisma.docinTracking.delete({ where: { id: existingTracking.id } })
           );
         }
-      } else if (receiverCode && !departmentId.length) {
+      } else if (receiverCode && !departmentId) {
         const user = await prisma.user.findUnique({
           where: { username: receiverCode },
           include: {
@@ -287,7 +287,7 @@ module.exports = async (req, res) => {
             })
           );
         }
-      } else if (departmentId.length && !receiverCode) {
+      } else if (departmentId && !receiverCode) {
         const allDepartments = Array.isArray(departmentId)
           ? departmentId.map((id) => Number(id))
           : [Number(departmentId)];
@@ -409,7 +409,7 @@ module.exports = async (req, res) => {
             prisma.docinTracking.delete({ where: { id: existingTracking.id } })
           );
         }
-      } else if (receiverCode && departmentId.length) {
+      } else if (receiverCode && departmentId) {
         const user = await prisma.user.findUnique({
           where: { username: receiverCode },
           include: { employee: true },
