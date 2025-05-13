@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
           doctypeId: Number(doctypeId),
           creatorCode: req.user.username,
           docdt_fileoriginal: req.file
-            ? Buffer.from(req.file.originalname).toString("utf8")
+            ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
             : null,
           docdt_file: req.file ? req.file.filename : null,
           docdt_filetype: req.file ? req.file.mimetype : null,

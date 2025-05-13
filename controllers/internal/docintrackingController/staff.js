@@ -74,9 +74,10 @@ module.exports = async (req, res) => {
 
         if (req.file) {
           docinlogfileData = {
-            docinlog_original: Buffer.from(req.file.originalname).toString(
-              "utf8"
-            ),
+            docinlog_original: Buffer.from(
+              req.file.originalname,
+              "latin1"
+            ).toString("utf8"),
             docinlog_file: req.file.filename,
             docinlog_type: req.file.mimetype,
             docinlog_size: req.file.size,

@@ -72,7 +72,10 @@ module.exports = async (req, res) => {
           });
         }
 
-        docinfileoriginal = Buffer.from(req.file.originalname).toString("utf8");
+        docinfileoriginal = Buffer.from(
+          req.file.originalname,
+          "latin1"
+        ).toString("utf8");
         docinfile = req.file.filename;
         docintype = req.file.mimetype;
         docinsize = req.file.size;
