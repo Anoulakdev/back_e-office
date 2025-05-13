@@ -108,6 +108,7 @@ module.exports = async (req, res) => {
 
     // Format dates
     const formattedDocs = docinternals.map((doc) => ({
+      docinId: doc.id,
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
