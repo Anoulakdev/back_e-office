@@ -147,7 +147,7 @@ module.exports = async (req, res) => {
 
             break;
           case 10:
-            filter.where.roleId = { lt: Number(roleId) };
+            filter.where.roleId = 9;
             filter.where.status = { not: "C" };
             filter.where.employee = {
               unitId: Number(unitId),
