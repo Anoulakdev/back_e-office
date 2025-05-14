@@ -33,6 +33,7 @@ module.exports = async (req, res) => {
       const {
         docinId,
         receiverCode,
+        departmentId,
         divisionId,
         officeId,
         docstatusId,
@@ -57,7 +58,7 @@ module.exports = async (req, res) => {
 
       let logTransactions = [];
 
-      if (receiverCode) {
+      if (receiverCode && !departmentId && !divisionId && !officeId) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         const user = await prisma.user.findUnique({
           where: { username: receiverCode },
@@ -103,7 +104,90 @@ module.exports = async (req, res) => {
             },
           })
         );
-      } else if (divisionId) {
+      } else if (departmentId && !receiverCode && !divisionId && !officeId) {
+        const allDepartments = Array.isArray(departmentId)
+          ? departmentId.map((id) => Number(id))
+          : [Number(departmentId)];
+
+        if (!allDepartments.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one departmentId is required." });
+        }
+
+        for (const departmentId of allDepartments) {
+          const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 6,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
+            return res.status(404).json({
+              message: `department ${departmentId} or employees not found`,
+            });
+          }
+
+          const depUser = departmentWithUser.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
+          );
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in department ${departmentId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            prisma.docinLog.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                rankId: Number(depUser.user.rankId) ?? null,
+                roleId: Number(depUser.user.roleId) ?? null,
+                positionId: Number(depUser.posId) ?? null,
+                docstatusId: Number(docstatusId) ?? null,
+                description,
+                departmentId: Number(depUser.departmentId) ?? null,
+                divisionId: Number(depUser.divisionId) ?? null,
+              },
+            }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                docstatusId: Number(docstatusId),
+                description,
+              },
+            })
+          );
+        }
+      } else if (divisionId && !receiverCode && !departmentId && !officeId) {
         const allDivisions = Array.isArray(divisionId)
           ? divisionId.map((id) => Number(id))
           : [Number(divisionId)];
@@ -186,7 +270,7 @@ module.exports = async (req, res) => {
             })
           );
         }
-      } else if (officeId) {
+      } else if (officeId && !receiverCode && !departmentId && !divisionId) {
         const allOffices = Array.isArray(officeId)
           ? officeId.map((id) => Number(id))
           : [Number(officeId)];
@@ -268,6 +352,379 @@ module.exports = async (req, res) => {
                 description,
               },
             })
+          );
+        }
+      } else if (receiverCode && departmentId) {
+        const user = await prisma.user.findUnique({
+          where: { username: receiverCode },
+          include: { employee: true },
+        });
+
+        if (!user) {
+          return res
+            .status(404)
+            .json({ message: "User not found with the provided receiverCode" });
+        }
+
+        const createLogs = (
+          receiverCode,
+          rankId,
+          roleId,
+          positionId,
+          departmentId,
+          divisionId
+        ) => [
+          prisma.docinLog.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              rankId,
+              roleId,
+              positionId,
+              docstatusId: Number(docstatusId),
+              description,
+              departmentId,
+              divisionId,
+            },
+          }),
+          prisma.docinTracking.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              docstatusId: Number(docstatusId),
+              description,
+            },
+          }),
+        ];
+
+        logTransactions.push(
+          ...createLogs(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null
+          )
+        );
+
+        const allDepartments = Array.isArray(departmentId)
+          ? departmentId.map((id) => Number(id))
+          : [Number(departmentId)];
+
+        if (!allDepartments.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one departmentId is required." });
+        }
+
+        for (const departmentId of allDepartments) {
+          const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 6,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
+            return res.status(404).json({
+              message: `department ${departmentId} or employees not found`,
+            });
+          }
+
+          const depUser = departmentWithUser.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
+          );
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in department ${departmentId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            ...createLogs(
+              depUser.emp_code,
+              depUser.user?.rankId ?? null,
+              depUser.user?.roleId ?? null,
+              depUser.posId ?? null,
+              depUser.departmentId ?? null,
+              depUser.divisionId ?? null
+            )
+          );
+        }
+      } else if (receiverCode && divisionId) {
+        const user = await prisma.user.findUnique({
+          where: { username: receiverCode },
+          include: { employee: true },
+        });
+
+        if (!user) {
+          return res
+            .status(404)
+            .json({ message: "User not found with the provided receiverCode" });
+        }
+
+        const createLogs = (
+          receiverCode,
+          rankId,
+          roleId,
+          positionId,
+          departmentId,
+          divisionId
+        ) => [
+          prisma.docinLog.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              rankId,
+              roleId,
+              positionId,
+              docstatusId: Number(docstatusId),
+              description,
+              departmentId,
+              divisionId,
+            },
+          }),
+          prisma.docinTracking.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              docstatusId: Number(docstatusId),
+              description,
+            },
+          }),
+        ];
+
+        logTransactions.push(
+          ...createLogs(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null
+          )
+        );
+
+        const allDivisions = Array.isArray(divisionId)
+          ? divisionId.map((id) => Number(id))
+          : [Number(divisionId)];
+
+        if (!allDivisions.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one divisionId is required." });
+        }
+
+        for (const divisionId of allDivisions) {
+          const division = await prisma.division.findUnique({
+            where: { id: divisionId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 7,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const divisionWithUser = {
+            ...division,
+            employees: division?.employees?.length
+              ? division.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!divisionWithUser || !divisionWithUser.employees.length) {
+            return res.status(404).json({
+              message: `division ${divisionId} or employees not found`,
+            });
+          }
+
+          const depUser = divisionWithUser.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 7
+          );
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in division ${divisionId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            ...createLogs(
+              depUser.emp_code,
+              depUser.user?.rankId ?? null,
+              depUser.user?.roleId ?? null,
+              depUser.posId ?? null,
+              depUser.departmentId ?? null,
+              depUser.divisionId ?? null
+            )
+          );
+        }
+      } else if (receiverCode && officeId) {
+        const user = await prisma.user.findUnique({
+          where: { username: receiverCode },
+          include: { employee: true },
+        });
+
+        if (!user) {
+          return res
+            .status(404)
+            .json({ message: "User not found with the provided receiverCode" });
+        }
+
+        const createLogs = (
+          receiverCode,
+          rankId,
+          roleId,
+          positionId,
+          departmentId,
+          divisionId,
+          officeId
+        ) => [
+          prisma.docinLog.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              rankId,
+              roleId,
+              positionId,
+              docstatusId: Number(docstatusId),
+              description,
+              departmentId,
+              divisionId,
+              officeId,
+            },
+          }),
+          prisma.docinTracking.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              receiverCode,
+              docstatusId: Number(docstatusId),
+              description,
+            },
+          }),
+        ];
+
+        logTransactions.push(
+          ...createLogs(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null,
+            user.employee?.officeId ?? null
+          )
+        );
+
+        const allOffices = Array.isArray(officeId)
+          ? officeId.map((id) => Number(id))
+          : [Number(officeId)];
+
+        if (!allOffices.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one officeId is required." });
+        }
+
+        for (const officeId of allOffices) {
+          const office = await prisma.office.findUnique({
+            where: { id: officeId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 8,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const officeWithUser = {
+            ...office,
+            employees: office?.employees?.length
+              ? office.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!officeWithUser || !officeWithUser.employees.length) {
+            return res.status(404).json({
+              message: `office ${officeId} or employees not found`,
+            });
+          }
+
+          const depUser = officeWithUser.employees.find(
+            (u) => u.user?.rankId === 1 && u.user?.roleId === 8
+          );
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in office ${officeId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            ...createLogs(
+              depUser.emp_code,
+              depUser.user?.rankId ?? null,
+              depUser.user?.roleId ?? null,
+              depUser.posId ?? null,
+              depUser.departmentId ?? null,
+              depUser.divisionId ?? null,
+              depUser.officeId ?? null
+            )
           );
         }
       }
