@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
             prisma.docinTracking.delete({ where: { id: existingTracking.id } })
           );
         }
-      } else if (receiverCode && !departmentId) {
+      } else if (receiverCode && !departmentId && !divisionId) {
         const user = await prisma.user.findUnique({
           where: { username: receiverCode },
           include: {
@@ -181,7 +181,7 @@ module.exports = async (req, res) => {
             })
           );
         }
-      } else if (divisionId) {
+      } else if (divisionId && !receiverCode && !departmentId) {
         const division = await prisma.division.findUnique({
           where: { id: Number(divisionId) },
           include: {
@@ -287,7 +287,7 @@ module.exports = async (req, res) => {
             })
           );
         }
-      } else if (departmentId && !receiverCode) {
+      } else if (departmentId && !receiverCode && !divisionId) {
         const allDepartments = Array.isArray(departmentId)
           ? departmentId.map((id) => Number(id))
           : [Number(departmentId)];
