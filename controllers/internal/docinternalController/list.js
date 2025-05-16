@@ -99,6 +99,7 @@ module.exports = async (req, res) => {
                 departmentId: true,
                 divisionId: true,
                 officeId: true,
+                unitId: true,
               },
             },
           },

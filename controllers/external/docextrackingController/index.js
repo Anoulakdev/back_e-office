@@ -8,6 +8,7 @@ const division = require("./division");
 const office = require("./office");
 const unit = require("./unit");
 const staff = require("./staff");
+const updateview = require("./updateview");
 
 module.exports = {
   list,
@@ -20,4 +21,5 @@ module.exports = {
   office,
   unit,
   staff,
+  updateview,
 };

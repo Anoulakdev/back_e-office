@@ -41,6 +41,8 @@ module.exports = async (req, res) => {
                 department: true,
                 division: true,
                 office: true,
+                unit: true,
+                position: true,
               },
             },
           },

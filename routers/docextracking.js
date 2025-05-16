@@ -13,6 +13,7 @@ const {
   office,
   unit,
   staff,
+  updateview,
 } = require("../controllers/external/docextrackingController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -27,5 +28,6 @@ router.post("/docextrackings/division", auth, division);
 router.post("/docextrackings/office", auth, office);
 router.post("/docextrackings/unit", auth, unit);
 router.post("/docextrackings/staff", auth, staff);
+router.put("/docextrackings/updateview", auth, updateview);
 
 module.exports = router;
