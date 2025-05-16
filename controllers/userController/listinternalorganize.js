@@ -169,13 +169,17 @@ module.exports = async (req, res) => {
         break;
       case 11:
         switch (Number(roleId)) {
+          case 2:
+            filter.where.roleId = 4;
+            filter.where.status = { not: "C" };
+            break;
           case 4:
             filter.where.roleId = Number(roleId);
             filter.where.status = { not: "C" };
             filter.where.rankId = { lt: Number(rankId) };
             break;
           case 6:
-            filter.where.roleId = 4;
+            filter.where.roleId = 2;
             filter.where.status = { not: "C" };
             break;
         }
