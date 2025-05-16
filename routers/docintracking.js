@@ -12,6 +12,7 @@ const {
   office,
   unit,
   staff,
+  updateview,
 } = require("../controllers/internal/docintrackingController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -25,5 +26,6 @@ router.post("/docintrackings/division", auth, division);
 router.post("/docintrackings/office", auth, office);
 router.post("/docintrackings/unit", auth, unit);
 router.post("/docintrackings/staff", auth, staff);
+router.put("/docintrackings/updateview", auth, updateview);
 
 module.exports = router;

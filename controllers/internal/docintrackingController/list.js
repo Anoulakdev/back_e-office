@@ -31,11 +31,17 @@ module.exports = async (req, res) => {
         lte: new Date(endDate.toISOString()),
       };
     }
+
+    if (req.user.roleId === 2) {
+      where.receiver = {
+        roleId: 2,
+      };
+    } else {
+      where.receiverCode = req.user.username;
+    }
+
     const doctrackings = await prisma.docinTracking.findMany({
-      where: {
-        ...where,
-        receiverCode: req.user.username,
-      },
+      where,
       include: {
         docstatus: true,
         docinternal: {
@@ -85,6 +91,12 @@ module.exports = async (req, res) => {
                 unitId: true,
               },
             },
+          },
+        },
+        receiver: {
+          select: {
+            username: true,
+            roleId: true,
           },
         },
       },
