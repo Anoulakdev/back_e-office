@@ -4,7 +4,6 @@ const moment = require("moment-timezone");
 module.exports = async (req, res) => {
   try {
     const {
-      extype,
       docstatusId,
       roleId,
       rankId,
@@ -187,17 +186,10 @@ module.exports = async (req, res) => {
         switch (Number(roleId)) {
           case 2:
             filter.where = {
-              roleId: 4,
-              status: { not: "C" },
-            };
-            break;
-          case 4:
-            filter.where = {
               OR: [
                 {
-                  roleId: Number(roleId),
+                  roleId: 4,
                   status: { not: "C" },
-                  rankId: { gt: Number(rankId) },
                 },
                 {
                   roleId: 11,
@@ -206,8 +198,19 @@ module.exports = async (req, res) => {
               ],
             };
             break;
+          case 4:
+            filter.where = {
+              OR: [
+                {
+                  roleId: Number(roleId),
+                  status: { not: "C" },
+                  rankId: { lt: Number(rankId) },
+                },
+              ],
+            };
+            break;
           case 11:
-            filter.where.roleId = 6;
+            filter.where.roleId = 4;
             filter.where.status = { not: "C" };
             break;
           case 6:
