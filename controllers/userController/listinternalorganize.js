@@ -37,31 +37,21 @@ module.exports = async (req, res) => {
       case 1:
         switch (Number(roleId)) {
           case 6:
-            filter.where = {
-              OR: [
-                {
-                  roleId: Number(roleId),
-                  status: { not: "C" },
-                  rankId: { lt: Number(rankId) },
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+            if (rankId) {
+              filter.where = {
+                roleId: Number(roleId),
+                status: { not: "C" },
+                rankId: { lt: Number(rankId) },
+                employee: {
+                  departmentId: Number(departmentId),
                 },
-                {
-                  roleId: 4,
-                  status: { not: "C" },
-                },
-                {
-                  roleId: 11,
-                  status: { not: "C" },
-                },
-              ],
-            };
-
-            filter.orderBy = [
-              { role: { role_code: "asc" } },
-              { rankId: "asc" },
-            ];
+              };
+            } else {
+              filter.where = {
+                roleId: 2,
+                status: { not: "C" },
+              };
+            }
             break;
           case 7:
             filter.where = {
@@ -75,7 +65,7 @@ module.exports = async (req, res) => {
                   },
                 },
                 {
-                  roleId: { lt: Number(roleId) },
+                  roleId: 6,
                   status: { not: "C" },
                   employee: {
                     departmentId: Number(departmentId),
@@ -195,6 +185,12 @@ module.exports = async (req, res) => {
         break;
       case 2:
         switch (Number(roleId)) {
+          case 2:
+            filter.where = {
+              roleId: 4,
+              status: { not: "C" },
+            };
+            break;
           case 4:
             filter.where = {
               OR: [
@@ -215,41 +211,29 @@ module.exports = async (req, res) => {
             filter.where.status = { not: "C" };
             break;
           case 6:
-            filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
-            filter.where.employee = {
-              departmentId: Number(departmentId),
-            };
-
-            if (
-              extype === undefined ||
-              extype === null ||
-              extype === "" ||
-              Number(extype) === 1
-            ) {
-              filter.where.rankId = { gt: Number(rankId) };
+            if (rankId) {
+              filter.where = {
+                roleId: Number(roleId),
+                status: { not: "C" },
+                rankId: { gt: Number(rankId) },
+                employee: {
+                  departmentId: Number(departmentId),
+                },
+              };
             } else {
-              filter.where.rankId = { lt: Number(rankId) };
+              filter.where = {
+                roleId: 2,
+                status: { not: "C" },
+              };
             }
             break;
           case 7:
-            if (Number(rankId) === 1 && Number(extype) === 2) {
-              filter.where.roleId = 6;
-              filter.where.status = { not: "C" };
-              filter.where.employee = {
-                departmentId: Number(departmentId),
-              };
-            } else {
-              filter.where.roleId = Number(roleId);
-              filter.where.status = { not: "C" };
-              filter.where.rankId =
-                Number(extype) === 2
-                  ? { lt: Number(rankId) }
-                  : { gt: Number(rankId) };
-              filter.where.employee = {
-                divisionId: Number(divisionId),
-              };
-            }
+            filter.where.roleId = Number(roleId);
+            filter.where.status = { not: "C" };
+            filter.where.rankId = { gt: Number(rankId) };
+            filter.where.employee = {
+              divisionId: Number(divisionId),
+            };
             break;
           case 8:
             filter.where.roleId = Number(roleId);
