@@ -16,29 +16,58 @@ module.exports = async (req, res) => {
         .json({ message: "Invalid docexId or docstatusId" });
     }
 
-    // หาข้อมูลจาก docexTracking
-    const docextrackings = await prisma.docexTracking.findFirst({
-      where: {
-        docexId: docexIdNum,
-        docstatusId: docstatusIdNum,
-        receiverCode: req.user.username,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    let docextrackings = null;
+    let docexlogs = null;
 
-    // หาข้อมูลจาก docexLog
-    const docexlogs = await prisma.docexLog.findFirst({
-      where: {
-        docexId: docexIdNum,
-        docstatusId: docstatusIdNum,
-        receiverCode: req.user.username,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    if (req.user.roleId === 2) {
+      docextrackings = await prisma.docexTracking.findFirst({
+        where: {
+          docexId: docexIdNum,
+          docstatusId: docstatusIdNum,
+          receiver: {
+            roleId: 2,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      docexlogs = await prisma.docexLog.findFirst({
+        where: {
+          docexId: docexIdNum,
+          docstatusId: docstatusIdNum,
+          receiver: {
+            roleId: 2,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    } else {
+      docextrackings = await prisma.docexTracking.findFirst({
+        where: {
+          docexId: docexIdNum,
+          docstatusId: docstatusIdNum,
+          receiverCode: req.user.username,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      docexlogs = await prisma.docexLog.findFirst({
+        where: {
+          docexId: docexIdNum,
+          docstatusId: docstatusIdNum,
+          receiverCode: req.user.username,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }
 
     let updatedTracking = null;
     let updatedLog = null;

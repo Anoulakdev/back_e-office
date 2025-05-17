@@ -98,6 +98,17 @@ module.exports = async (req, res) => {
             },
           })
         );
+
+        if (user.roleId === 4) {
+          logTransactions.push(
+            prisma.docExternal.update({
+              where: { id: Number(docexId) },
+              data: {
+                md: true,
+              },
+            })
+          );
+        }
       } else {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [

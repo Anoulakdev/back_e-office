@@ -217,6 +217,7 @@ model DocExternal {
   doctypeId          Int?
   doctype            DocType?        @relation(fields: [doctypeId], references: [id])
   extype             Int?            @default(1)
+  md                 Boolean?        @default(false)
   createdAt          DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
   docextrackings     DocexTracking[]
