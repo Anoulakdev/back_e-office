@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   list,
   getById,
+  edloffice,
   director,
   assistantdirector,
   department,
@@ -19,6 +20,7 @@ const { auth } = require("../middleware/auth");
 
 router.get("/docintrackings", auth, list);
 router.get("/docintrackings/:doctrackingId", auth, getById);
+router.post("/docintrackings/edloffice", auth, edloffice);
 router.post("/docintrackings/director", auth, director);
 router.post("/docintrackings/assistantdirector", auth, assistantdirector);
 router.post("/docintrackings/department", auth, department);

@@ -52,6 +52,52 @@ module.exports = async (req, res) => {
         data: {
           viewed: true,
         },
+        include: {
+          docstatus: true,
+          docdirector: {
+            include: {
+              priority: true,
+              doctype: true,
+              creator: {
+                select: {
+                  username: true,
+                  rankId: true,
+                  roleId: true,
+                  employee: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                      emp_code: true,
+                      status: true,
+                      gender: true,
+                      tel: true,
+                      email: true,
+                      empimg: true,
+                      posId: true,
+                      departmentId: true,
+                      divisionId: true,
+                      officeId: true,
+                      unitId: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          assigner: {
+            select: {
+              username: true,
+              employee: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  gender: true,
+                  tel: true,
+                },
+              },
+            },
+          },
+        },
       });
     }
 

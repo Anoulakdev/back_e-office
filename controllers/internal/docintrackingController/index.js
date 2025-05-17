@@ -1,5 +1,6 @@
 const list = require("./list");
 const getById = require("./getById");
+const edloffice = require("./edloffice");
 const director = require("./director");
 const assistantdirector = require("./assistantdirector");
 const department = require("./department");
@@ -12,6 +13,7 @@ const updateview = require("./updateview");
 module.exports = {
   list,
   getById,
+  edloffice,
   director,
   assistantdirector,
   department,
