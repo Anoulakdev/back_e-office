@@ -20,11 +20,20 @@ module.exports = async (req, res) => {
     }
     let docexlogs;
 
-    const existingTracking = await prisma.docexTracking.findFirst({
-      where: {
-        receiverCode: req.user.username,
-        OR: [{ docstatusId: 1 }, { docstatusId: 2 }],
-      },
+    const isRoleId2 = req.user.roleId === 2;
+
+    const trackingWhere = isRoleId2
+      ? {
+          receiver: { roleId: 2 },
+          OR: [{ docstatusId: 1 }, { docstatusId: 2 }, { docstatusId: 10 }],
+        }
+      : {
+          receiverCode: req.user.username,
+          OR: [{ docstatusId: 1 }, { docstatusId: 2 }, { docstatusId: 10 }],
+        };
+
+    const existingTrackings = await prisma.docexTracking.findMany({
+      where: trackingWhere,
       select: {
         docexId: true,
         receiverCode: true,
@@ -32,29 +41,36 @@ module.exports = async (req, res) => {
       },
     });
 
-    // console.log(existingTracking);
+    // สร้าง array ของ log ที่ไม่ซ้ำ
+    const logIdsToExclude = [];
 
-    const existinglog = existingTracking
-      ? await prisma.docexLog.findFirst({
-          where: {
-            docexId: existingTracking.docexId,
-            receiverCode: existingTracking.receiverCode,
-            docstatusId: existingTracking.docstatusId,
-          },
-          select: {
-            id: true,
-          },
-        })
-      : null;
+    for (const tracking of existingTrackings) {
+      const log = await prisma.docexLog.findFirst({
+        where: {
+          docexId: tracking.docexId,
+          receiverCode: tracking.receiverCode,
+          docstatusId: tracking.docstatusId,
+        },
+        select: {
+          id: true,
+        },
+      });
 
-    const idFilter = existinglog ? { id: { not: existinglog.id } } : {};
+      if (log) {
+        logIdsToExclude.push(log.id);
+      }
+    }
 
-    // console.log(existinglog);
+    // เงื่อนไข filter id ที่ไม่ซ้ำ
+    const idFilter = logIdsToExclude.length
+      ? { id: { notIn: logIdsToExclude } }
+      : {};
 
     if (req.user.roleId === 2) {
       docexlogs = await prisma.docexLog.findMany({
         where: {
           ...where,
+          ...idFilter,
           roleId: req.user.roleId,
         },
         orderBy: {

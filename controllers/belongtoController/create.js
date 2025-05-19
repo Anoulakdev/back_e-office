@@ -8,9 +8,16 @@ module.exports = async (req, res) => {
       return res.status(400).json({ message: "Invalid input fields" });
     }
 
+    const maxId = await prisma.belongTo.aggregate({
+      _max: { id: true },
+    });
+
+    const nextId = (maxId._max.id || 0) + 1;
+
     // Create new user in the database
     const newBelongTo = await prisma.belongTo.create({
       data: {
+        id: nextId,
         name,
       },
     });
