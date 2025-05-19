@@ -495,7 +495,8 @@ module.exports = async (req, res) => {
           roleId,
           positionId,
           departmentId,
-          divisionId
+          divisionId,
+          docstatusId
         ) => [
           prisma.docinLog.create({
             data: {
@@ -505,7 +506,7 @@ module.exports = async (req, res) => {
               rankId,
               roleId,
               positionId,
-              docstatusId: Number(docstatusId),
+              docstatusId,
               description,
               departmentId,
               divisionId,
@@ -516,7 +517,7 @@ module.exports = async (req, res) => {
               docinId: Number(docinId),
               assignerCode: req.user.username,
               receiverCode,
-              docstatusId: Number(docstatusId),
+              docstatusId,
               description,
             },
           }),
@@ -529,7 +530,8 @@ module.exports = async (req, res) => {
             user.roleId ?? null,
             user.employee?.posId ?? null,
             user.employee?.departmentId ?? null,
-            user.employee?.divisionId ?? null
+            user.employee?.divisionId ?? null,
+            Number(docstatusId)
           )
         );
 
@@ -596,7 +598,8 @@ module.exports = async (req, res) => {
               depUser.user?.roleId ?? null,
               depUser.posId ?? null,
               depUser.departmentId ?? null,
-              depUser.divisionId ?? null
+              depUser.divisionId ?? null,
+              2
             )
           );
         }
@@ -619,7 +622,8 @@ module.exports = async (req, res) => {
           positionId,
           departmentId,
           divisionId,
-          officeId
+          officeId,
+          docstatusId
         ) => [
           prisma.docinLog.create({
             data: {
@@ -629,7 +633,7 @@ module.exports = async (req, res) => {
               rankId,
               roleId,
               positionId,
-              docstatusId: Number(docstatusId),
+              docstatusId,
               description,
               departmentId,
               divisionId,
@@ -641,7 +645,7 @@ module.exports = async (req, res) => {
               docinId: Number(docinId),
               assignerCode: req.user.username,
               receiverCode,
-              docstatusId: Number(docstatusId),
+              docstatusId,
               description,
             },
           }),
@@ -655,7 +659,8 @@ module.exports = async (req, res) => {
             user.employee?.posId ?? null,
             user.employee?.departmentId ?? null,
             user.employee?.divisionId ?? null,
-            user.employee?.officeId ?? null
+            user.employee?.officeId ?? null,
+            Number(docstatusId)
           )
         );
 
@@ -723,7 +728,8 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              depUser.officeId ?? null
+              depUser.officeId ?? null,
+              2
             )
           );
         }
