@@ -181,6 +181,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                viewed: false,
                 ...docdtlogfileData,
               },
             })
@@ -285,6 +286,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                viewed: false,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
                       "utf8"

@@ -160,6 +160,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                viewed: false,
                 extype: Number(docex.extype) ?? null,
                 ...docexlogfileData,
               },

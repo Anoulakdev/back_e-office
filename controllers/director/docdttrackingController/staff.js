@@ -155,6 +155,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
+                viewed: false,
                 ...docdtlogfileData,
               },
             })
@@ -167,33 +168,36 @@ module.exports = async (req, res) => {
           message: "Document assigned successfully",
           data: results,
         });
-      }
+      } else {
+        if (existingTracking) {
+          const existingLog = await prisma.docdtLog.findFirst({
+            where: {
+              docdtId: Number(docdtId),
+              receiverCode: req.user.username,
+            },
+            orderBy: { id: "desc" },
+            take: 1,
+          });
 
-      if (existingTracking) {
-        const existingLog = await prisma.docdtLog.findFirst({
-          where: { docdtId: Number(docdtId), receiverCode: req.user.username },
-          orderBy: { id: "desc" },
-          take: 1,
-        });
+          if (existingLog) {
+            logTransactions.push(
+              prisma.docdtLog.update({
+                where: { id: existingLog.id },
+                data: { docstatusId: Number(docstatusId), description },
+              })
+            );
+          }
 
-        if (existingLog) {
           logTransactions.push(
-            prisma.docdtLog.update({
-              where: { id: existingLog.id },
-              data: { docstatusId: Number(docstatusId), description },
-            })
+            prisma.docdtTracking.delete({ where: { id: existingTracking.id } })
           );
+
+          const results = await prisma.$transaction(logTransactions);
+          return res.status(201).json({
+            message: "updated docstatus success",
+            data: results,
+          });
         }
-
-        logTransactions.push(
-          prisma.docdtTracking.delete({ where: { id: existingTracking.id } })
-        );
-
-        const results = await prisma.$transaction(logTransactions);
-        return res.status(201).json({
-          message: "updated docstatus success",
-          data: results,
-        });
       }
     } catch (error) {
       console.error("Error assigning document:", error);
