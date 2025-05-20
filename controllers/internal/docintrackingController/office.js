@@ -450,7 +450,8 @@ module.exports = async (req, res) => {
           posId,
           departmentId,
           divisionId,
-          officeId
+          officeId,
+          docstatusId
         ) => {
           logTransactions.push(
             prisma.docinLog.create({
@@ -461,7 +462,7 @@ module.exports = async (req, res) => {
                 rankId,
                 roleId,
                 positionId: posId,
-                docstatusId: Number(docstatusId),
+                docstatusId,
                 dateline: datelineValue,
                 description: description ?? null,
                 departmentId: departmentId,
@@ -477,7 +478,7 @@ module.exports = async (req, res) => {
                 docinId: Number(docinId),
                 assignerCode: req.user.username,
                 receiverCode,
-                docstatusId: Number(docstatusId),
+                docstatusId,
                 dateline: datelineValue,
                 description: description ?? null,
                 ...fileData,
@@ -494,7 +495,8 @@ module.exports = async (req, res) => {
           user.employee?.posId ?? null,
           user.employee?.departmentId ?? null,
           user.employee?.divisionId ?? null,
-          user.employee?.officeId ?? null
+          user.employee?.officeId ?? null,
+          Number(docstatusId)
         );
 
         // บันทึกของแผนก
@@ -561,7 +563,8 @@ module.exports = async (req, res) => {
             depUser.posId ?? null,
             depUser.departmentId ?? null,
             depUser.divisionId ?? null,
-            depUser.officeId ?? null
+            depUser.officeId ?? null,
+            2
           );
         }
 

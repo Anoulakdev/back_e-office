@@ -474,7 +474,7 @@ module.exports = async (req, res) => {
         where: {
           ...where,
           ...idFilter,
-          receiverCode: req.user.emp_code,
+          receiverCode: req.user.username,
         },
         orderBy: {
           id: "desc",
