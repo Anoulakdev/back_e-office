@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
                 last_name: true,
                 gender: true,
                 tel: true,
+                position: true,
                 department: {
                   select: { id: true, department_name: true },
                 },
@@ -55,6 +56,7 @@ module.exports = async (req, res) => {
                 last_name: true,
                 gender: true,
                 tel: true,
+                position: true,
                 department: {
                   select: { id: true, department_name: true },
                 },
