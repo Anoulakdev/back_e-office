@@ -56,20 +56,23 @@ module.exports = async (req, res) => {
       });
 
       if (!receiverCode && !divisionId && !unitId && !officeId) {
-        const existingLog = await prisma.docinLog.findFirst({
-          where: { docinId: Number(docinId), receiverCode: req.user.username },
-          orderBy: { id: "desc" },
-          take: 1,
-        });
-
-        if (existingLog) {
-          logTransactions.push(
-            prisma.docinLog.update({
-              where: { id: existingLog.id },
-              data: { docstatusId: Number(docstatusId), description },
-            })
-          );
-        }
+        logTransactions.push(
+          prisma.docinLog.create({
+            data: {
+              docinId: Number(docinId),
+              assignerCode: req.user.username,
+              docstatusId: Number(docstatusId),
+              description: description ?? null,
+              viewed: true,
+              docinlog_original: req.file
+                ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
+                : null,
+              docinlog_file: req.file ? req.file.filename : null,
+              docinlog_type: req.file ? req.file.mimetype : null,
+              docinlog_size: req.file ? req.file.size : null,
+            },
+          })
+        );
         if (existingTracking) {
           logTransactions.push(
             prisma.docinTracking.delete({ where: { id: existingTracking.id } })

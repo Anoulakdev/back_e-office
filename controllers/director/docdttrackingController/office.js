@@ -54,20 +54,23 @@ module.exports = async (req, res) => {
       });
 
       if (!receiverCode && !unitId) {
-        const existingLog = await prisma.docdtLog.findFirst({
-          where: { docdtId: Number(docdtId), receiverCode: req.user.username },
-          orderBy: { id: "desc" },
-          take: 1,
-        });
-
-        if (existingLog) {
-          logTransactions.push(
-            prisma.docdtLog.update({
-              where: { id: existingLog.id },
-              data: { docstatusId: Number(docstatusId), description },
-            })
-          );
-        }
+        logTransactions.push(
+          prisma.docdtLog.create({
+            data: {
+              docdtId: Number(docdtId),
+              assignerCode: req.user.username,
+              docstatusId: Number(docstatusId),
+              description: description ?? null,
+              viewed: true,
+              docdtlog_original: req.file
+                ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
+                : null,
+              docdtlog_file: req.file ? req.file.filename : null,
+              docdtlog_type: req.file ? req.file.mimetype : null,
+              docdtlog_size: req.file ? req.file.size : null,
+            },
+          })
+        );
         if (existingTracking) {
           logTransactions.push(
             prisma.docdtTracking.delete({ where: { id: existingTracking.id } })

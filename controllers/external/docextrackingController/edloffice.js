@@ -176,23 +176,25 @@ module.exports = async (req, res) => {
         });
       } else {
         if (existingTracking) {
-          const existingLog = await prisma.docexLog.findFirst({
-            where: {
-              docexId: Number(docexId),
-              receiverCode: req.user.username,
-            },
-            orderBy: { id: "desc" },
-            take: 1,
-          });
-
-          if (existingLog) {
-            logTransactions.push(
-              prisma.docexLog.update({
-                where: { id: existingLog.id },
-                data: { docstatusId: Number(docstatusId), description },
-              })
-            );
-          }
+          logTransactions.push(
+            prisma.docexLog.create({
+              data: {
+                docexId: Number(docexId),
+                assignerCode: req.user.username,
+                docstatusId: Number(docstatusId),
+                description: description ?? null,
+                viewed: true,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8"
+                    )
+                  : null,
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              },
+            })
+          );
 
           logTransactions.push(
             prisma.docexTracking.delete({ where: { id: existingTracking.id } })
