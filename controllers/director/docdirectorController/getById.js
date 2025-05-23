@@ -40,6 +40,7 @@ module.exports = async (req, res) => {
                 email: true,
                 department: true,
                 division: true,
+                position: true,
               },
             },
           },
