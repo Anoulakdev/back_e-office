@@ -83,7 +83,7 @@ async function seedUser() {
         } else if (
           [
             55, 56, 57, 58, 59, 60, 64, 65, 66, 68, 69, 70, 71, 72, 73, 75, 76,
-            81, 88, 89, 93, 94, 95, 96, 97, 23, 1, 8, 42, 81, 88, 89,
+            81, 88, 89, 93, 94, 95, 96, 97, 23, 1, 8, 42,
           ].includes(posId)
         ) {
           roleId = 10;
@@ -97,6 +97,13 @@ async function seedUser() {
           ].includes(posId)
         ) {
           rankId = 1;
+        } else if (
+          [
+            3, 9, 10, 11, 12, 15, 17, 21, 24, 25, 27, 35, 36, 37, 38, 39, 40,
+            47, 48, 50, 51, 52, 54, 99,
+          ].includes(posId)
+        ) {
+          rankId = 2;
         }
 
         await prisma.user.upsert({

@@ -38,6 +38,8 @@ module.exports = async (req, res) => {
                 gender: true,
                 tel: true,
                 email: true,
+                department: true,
+                division: true,
               },
             },
           },
