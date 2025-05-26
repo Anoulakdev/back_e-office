@@ -84,6 +84,7 @@ module.exports = async (req, res) => {
               extype: Number(docex.extype) ?? null,
               description,
               departmentId: user.employee.departmentId ?? null,
+              divisionId: user.employee.divisionId ?? null,
               departmentactive: null,
             },
           }),

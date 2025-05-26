@@ -1,5 +1,6 @@
 const fs = require("fs");
 const prisma = require("../../../prisma/prisma");
+const generateDocumentNumber = require("./generateDocumentNumber");
 const multer = require("multer");
 const path = require("path");
 const moment = require("moment-timezone");
@@ -63,6 +64,7 @@ module.exports = async (req, res) => {
               docstatusId: Number(docstatusId),
               description: description ?? null,
               viewed: true,
+              extype: Number(docex.extype) ?? null,
               docexlog_original: req.file
                 ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
                 : null,
@@ -72,6 +74,20 @@ module.exports = async (req, res) => {
             },
           })
         );
+
+        if (Number(docex.extype) === 2 && Number(docstatusId) === 9) {
+          const docNumber = await generateDocumentNumber();
+          logTransactions.push(
+            prisma.docExport.create({
+              data: {
+                docexId: Number(docexId),
+                signatorCode: req.user.username,
+                export_no: docNumber,
+              },
+            })
+          );
+        }
+
         if (existingTracking) {
           logTransactions.push(
             prisma.docexTracking.delete({ where: { id: existingTracking.id } })
@@ -134,7 +150,7 @@ module.exports = async (req, res) => {
               };
             }
           }
-        } else if (Number(docstatusId) === 7) {
+        } else if (Number(docstatusId) === 7 || Number(docstatusId) === 10) {
           docexlogfileData = {
             docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,

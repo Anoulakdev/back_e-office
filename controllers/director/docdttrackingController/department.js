@@ -242,9 +242,16 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = divisionWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 7
-          );
+          // 🔍 ค้นหา depUser ตามลำดับ rankId ที่ต้องการ
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = divisionWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7
+            );
+            if (depUser) break;
+          }
 
           if (!depUser)
             return res

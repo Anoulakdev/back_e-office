@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "DocExport" ALTER COLUMN "export_date" SET DEFAULT CURRENT_DATE;

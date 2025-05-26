@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
               };
             }
           }
-        } else if (Number(docstatusId) === 7) {
+        } else if (Number(docstatusId) === 7  || Number(docstatusId) === 10) {
           docexlogfileData = {
             docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
@@ -184,6 +184,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 description: description ?? null,
                 viewed: true,
+                extype: Number(docex.extype) ?? null,
                 docexlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
                       "utf8"
