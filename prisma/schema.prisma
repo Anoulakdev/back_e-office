@@ -45,6 +45,7 @@ model User {
   DocdtLogAssigner      DocdtLog[]      @relation("AssignerRelation")
   DocdtLogReceiver      DocdtLog[]      @relation("ReceiverRelation")
   DocExportSignator     DocExport[]     @relation("SignatorRelation")
+  DocExportExporter     DocExport[]     @relation("ExporterRelation")
 }
 
 model Employee {
@@ -210,6 +211,8 @@ model DocExport {
   signatorCode       String?     @db.VarChar(255)
   signator           User?       @relation(fields: [signatorCode], references: [username], name: "SignatorRelation")
   export_status      Boolean?    @default(false)
+  exporterCode       String?     @db.VarChar(255)
+  exporter           User?       @relation(fields: [exporterCode], references: [username], name: "ExporterRelation")
   createdAt          DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt          DateTime    @updatedAt @db.Timestamptz(0)
 }

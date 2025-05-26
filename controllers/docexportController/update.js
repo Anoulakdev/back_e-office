@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
         export_title: export_title,
         export_description: export_description,
         export_status: true,
+        exporterCode: req.user.username,
       },
     });
 

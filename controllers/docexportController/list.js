@@ -71,6 +71,18 @@ module.exports = async (req, res) => {
             },
           },
         },
+        exporter: {
+          select: {
+            username: true,
+            employee: {
+              select: {
+                first_name: true,
+                last_name: true,
+                gender: true,
+              },
+            },
+          },
+        },
       },
     });
 
