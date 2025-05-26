@@ -1,4 +1,5 @@
 const prisma = require("../../../prisma/prisma");
+const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {
@@ -31,7 +32,21 @@ module.exports = async (req, res) => {
             docinlog_file: true,
             docinlog_type: true,
             docinlog_size: true,
+            docstatus: true,
+            createdAt: true,
             assigner: {
+              select: {
+                username: true,
+                employee: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    gender: true,
+                  },
+                },
+              },
+            },
+            receiver: {
               select: {
                 username: true,
                 employee: {
@@ -62,20 +77,33 @@ module.exports = async (req, res) => {
       );
     });
 
-    // ลบ log ที่ข้อมูลซ้ำกันออก (เปรียบเทียบทั้ง object)
-    const uniqueLogsMap = new Map();
+    // ลบ log ซ้ำกันตาม 4 field แรกเท่านั้น
+    const uniqueMap = new Map();
     filteredLogs.forEach((log) => {
-      const key = JSON.stringify(log); // ใช้ stringify เพื่อเช็คว่าเหมือนกันทุกช่อง
-      if (!uniqueLogsMap.has(key)) {
-        uniqueLogsMap.set(key, log);
+      const key = JSON.stringify({
+        docinlog_original: log.docinlog_original,
+        docinlog_file: log.docinlog_file,
+        docinlog_type: log.docinlog_type,
+        docinlog_size: log.docinlog_size,
+      });
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, log);
       }
     });
 
-    const uniqueLogs = Array.from(uniqueLogsMap.values());
+    // แปลงวันที่ createdAt ทีละ log เป็น timezone Asia/Vientiane
+    const uniqueLogs = Array.from(uniqueMap.values()).map((log) => ({
+      ...log,
+      createdAt: moment(log.createdAt).tz("Asia/Vientiane").format(),
+    }));
 
-    // สร้างผลลัพธ์ใหม่
+    // สร้างผลลัพธ์สุดท้าย
     const result = {
-      ...docin,
+      docin_fileoriginal: docin.docin_fileoriginal,
+      docin_file: docin.docin_file,
+      docin_filetype: docin.docin_filetype,
+      docin_filesize: docin.docin_filesize,
+      creator: docin.creator,
       docinlogs: uniqueLogs,
     };
 
