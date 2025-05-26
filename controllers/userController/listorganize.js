@@ -143,12 +143,20 @@ module.exports = async (req, res) => {
             }
             break;
           case 8:
-            filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
-            filter.where.rankId = { gt: Number(rankId) };
-            filter.where.employee = {
-              officeId: Number(officeId),
-            };
+            if (Number(rankId) === 1 && Number(extype) === 2) {
+              filter.where.roleId = 7;
+              filter.where.status = { not: "C" };
+              filter.where.employee = {
+                divisionId: Number(divisionId),
+              };
+            } else {
+              filter.where.roleId = Number(roleId);
+              filter.where.status = { not: "C" };
+              filter.where.rankId = { gt: Number(rankId) };
+              filter.where.employee = {
+                officeId: Number(officeId),
+              };
+            }
             break;
           case 9:
             if (!rankId) {

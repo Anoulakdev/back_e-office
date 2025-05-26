@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   list,
   getById,
+  getdocument,
   create,
   update,
   remove,
@@ -15,6 +16,7 @@ const { auth } = require("../middleware/auth");
 
 router.get("/docexternals", auth, list);
 router.get("/docexternals/:docexternalId", auth, getById);
+router.get("/docexternals/getdocument/:docexternalId", auth, getdocument);
 router.post("/docexternals", auth, create);
 router.post("/docexternals/assignto", auth, assign);
 router.put("/docexternals/:docexternalId", auth, update);
