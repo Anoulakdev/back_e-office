@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   list,
   getById,
+  getdocument,
   create,
   update,
   remove,
@@ -15,6 +16,7 @@ const { auth } = require("../middleware/auth");
 
 router.get("/docinternals", auth, list);
 router.get("/docinternals/:docinternalId", auth, getById);
+router.get("/docinternals/getdocument/:docinternalId", auth, getdocument);
 router.post("/docinternals", auth, create);
 router.post("/docinternals/assignto", auth, assign);
 router.put("/docinternals/:docinternalId", auth, update);

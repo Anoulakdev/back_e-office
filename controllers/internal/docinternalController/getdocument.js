@@ -2,17 +2,17 @@ const prisma = require("../../../prisma/prisma");
 
 module.exports = async (req, res) => {
   try {
-    const { docexternalId } = req.params;
+    const { docinternalId } = req.params;
 
-    const docex = await prisma.docExternal.findUnique({
+    const docin = await prisma.docInternal.findUnique({
       where: {
-        id: Number(docexternalId),
+        id: Number(docinternalId),
       },
       select: {
-        docex_fileoriginal: true,
-        docex_file: true,
-        docex_filetype: true,
-        docex_filesize: true,
+        docin_fileoriginal: true,
+        docin_file: true,
+        docin_filetype: true,
+        docin_filesize: true,
         creator: {
           select: {
             username: true,
@@ -25,12 +25,12 @@ module.exports = async (req, res) => {
             },
           },
         },
-        docexlogs: {
+        docinlogs: {
           select: {
-            docexlog_original: true,
-            docexlog_file: true,
-            docexlog_type: true,
-            docexlog_size: true,
+            docinlog_original: true,
+            docinlog_file: true,
+            docinlog_type: true,
+            docinlog_size: true,
             assigner: {
               select: {
                 username: true,
@@ -48,17 +48,17 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!docex) {
+    if (!docin) {
       return res.status(404).json({ message: "document not found" });
     }
 
     // กรอง log ที่มีข้อมูลอย่างน้อย 1 ช่องไม่เป็น null
-    const filteredLogs = docex.docexlogs.filter((log) => {
+    const filteredLogs = docin.docinlogs.filter((log) => {
       return (
-        log.docexlog_original !== null ||
-        log.docexlog_file !== null ||
-        log.docexlog_type !== null ||
-        log.docexlog_size !== null
+        log.docinlog_original !== null ||
+        log.docinlog_file !== null ||
+        log.docinlog_type !== null ||
+        log.docinlog_size !== null
       );
     });
 
@@ -75,8 +75,8 @@ module.exports = async (req, res) => {
 
     // สร้างผลลัพธ์ใหม่
     const result = {
-      ...docex,
-      docexlogs: uniqueLogs,
+      ...docin,
+      docinlogs: uniqueLogs,
     };
 
     res.json(result);
