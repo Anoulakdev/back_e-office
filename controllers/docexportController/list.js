@@ -3,8 +3,7 @@ const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {
-    const { search, priority, outsider, selectDateStart, selectDateEnd } =
-      req.query;
+    const { search, selectDateStart, selectDateEnd } = req.query;
 
     let where = {};
 

@@ -33,3 +33,12 @@ exports.auth = (req, res, next) => {
     res.status(500).json({ message: "Server Error!!" });
   }
 };
+
+exports.checkRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.roleId)) {
+      return res.status(403).json({ message: "Access denied!!" });
+    }
+    next();
+  };
+};

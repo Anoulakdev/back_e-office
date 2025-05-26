@@ -5,12 +5,18 @@ const router = express.Router();
 // controllers
 const { list, getById, update } = require("../controllers/docexportController");
 // middleware
-const { auth } = require("../middleware/auth");
+const { auth, checkRole } = require("../middleware/auth");
 
 const upload = multer();
 
-router.get("/docexports", auth, list);
-router.get("/docexports/:docexportId", auth, getById);
-router.put("/docexports/:docexportId", upload.none(), auth, update);
+router.get("/docexports", auth, checkRole([12]), list);
+router.get("/docexports/:docexportId", auth, checkRole([12]), getById);
+router.put(
+  "/docexports/:docexportId",
+  upload.none(),
+  auth,
+  checkRole([12]),
+  update
+);
 
 module.exports = router;

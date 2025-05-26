@@ -16,6 +16,33 @@ module.exports = async (req, res) => {
         export_status: true,
         exporterCode: req.user.username,
       },
+      include: {
+        signator: {
+          select: {
+            username: true,
+            employee: {
+              select: {
+                first_name: true,
+                last_name: true,
+                emp_code: true,
+                gender: true,
+              },
+            },
+          },
+        },
+        exporter: {
+          select: {
+            username: true,
+            employee: {
+              select: {
+                first_name: true,
+                last_name: true,
+                gender: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     res.json({ message: "Updated Success!! ", data: updated });
