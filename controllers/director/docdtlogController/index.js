@@ -1,4 +1,5 @@
 const listdocdirector = require("./listdocdirector");
+const getdocumentall = require("./getdocumentall");
 const person = require("./person");
 const gethistory = require("./gethistory");
 const history = require("./history");
@@ -10,4 +11,5 @@ module.exports = {
   gethistory,
   history,
   gethistoryall,
+  getdocumentall,
 };

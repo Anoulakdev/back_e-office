@@ -8,11 +8,13 @@ const {
   history,
   gethistory,
   gethistoryall,
+  getdocumentall,
 } = require("../controllers/internal/docinlogController");
 // middleware
 const { auth } = require("../middleware/auth");
 
 router.get("/docinlogs", auth, listdocinternal);
+router.get("/docinlogs/getdocumentall", auth, getdocumentall);
 router.get("/docinlogs/person", auth, person);
 router.get("/docinlogs/history", auth, history);
 router.get("/docinlogs/:docinId", auth, gethistory);
