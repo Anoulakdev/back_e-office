@@ -200,21 +200,25 @@ model Position {
 }
 
 model DocExport {
-  id                 Int         @id @default(autoincrement())
-  docexId            Int
-  docexternal        DocExternal @relation(fields: [docexId], references: [id])
-  export_no          String?     @db.VarChar(255)
-  export_text        String?     @db.VarChar(255)
-  export_date        DateTime?   @default(dbgenerated("CURRENT_DATE")) @db.Date
-  export_title       String?     @db.VarChar(255)
-  export_description String?     @db.Text
-  signatorCode       String?     @db.VarChar(255)
-  signator           User?       @relation(fields: [signatorCode], references: [username], name: "SignatorRelation")
-  export_status      Boolean?    @default(false)
-  exporterCode       String?     @db.VarChar(255)
-  exporter           User?       @relation(fields: [exporterCode], references: [username], name: "ExporterRelation")
-  createdAt          DateTime    @default(now()) @db.Timestamptz(0)
-  updatedAt          DateTime    @updatedAt @db.Timestamptz(0)
+  id                  Int         @id @default(autoincrement())
+  docexId             Int
+  docexternal         DocExternal @relation(fields: [docexId], references: [id])
+  export_no           String?     @db.VarChar(255)
+  export_text         String?     @db.VarChar(255)
+  export_date         DateTime?   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  export_title        String?     @db.VarChar(255)
+  export_description  String?     @db.Text
+  signatorCode        String?     @db.VarChar(255)
+  signator            User?       @relation(fields: [signatorCode], references: [username], name: "SignatorRelation")
+  export_status       Boolean?    @default(false)
+  exporterCode        String?     @db.VarChar(255)
+  exporter            User?       @relation(fields: [exporterCode], references: [username], name: "ExporterRelation")
+  export_fileoriginal String?     @db.VarChar(255)
+  export_file         String?     @db.VarChar(255)
+  export_filetype     String?     @db.VarChar(50)
+  export_filesize     Int?
+  createdAt           DateTime    @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(0)
 }
 
 model DocExternal {
