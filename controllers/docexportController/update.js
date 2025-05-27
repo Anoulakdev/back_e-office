@@ -30,7 +30,8 @@ module.exports = async (req, res) => {
     }
     try {
       const { docexportId } = req.params;
-      const { export_text, export_title, export_description } = req.body;
+      const { export_text, export_title, export_description, export_date } =
+        req.body;
 
       const doc = await prisma.docExport.findUnique({
         where: {
@@ -77,6 +78,7 @@ module.exports = async (req, res) => {
           export_text: export_text,
           export_title: export_title,
           export_description: export_description,
+          export_date: new Date(export_date),
           export_status: true,
           exporterCode: req.user.username,
           export_fileoriginal: docfileoriginal,
