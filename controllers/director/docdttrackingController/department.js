@@ -242,9 +242,8 @@ module.exports = async (req, res) => {
             });
           }
 
-          // 🔍 ค้นหา depUser ตามลำดับ rankId ที่ต้องการ
           let depUser = null;
-          const rankPriority = [1, 2, 3, 4, 5]; // ปรับลำดับความสำคัญตามต้องการ
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
 
           for (const rankId of rankPriority) {
             depUser = divisionWithUser.employees.find(

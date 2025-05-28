@@ -77,8 +77,8 @@ module.exports = async (req, res) => {
               docexId: Number(docexId),
               assignerCode: req.user.username,
               receiverCode: user.username,
-              rankId: Number(user.rankId) ?? null,
-              roleId: Number(user.roleId) ?? null,
+              rankId: user.rankId ? Number(user.rankId) : null,
+              roleId: user.roleId ? Number(user.roleId) : null,
               positionId: Number(user.employee.posId) ?? null,
               docstatusId: Number(docstatusId),
               extype: Number(docex.extype) ?? null,
@@ -169,9 +169,15 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = departmentWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+            );
+            if (depUser) break;
+          }
 
           if (!depUser) {
             return res.status(404).json({
@@ -205,6 +211,7 @@ module.exports = async (req, res) => {
                 description,
                 departmentId,
                 departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group
+                divisionId: Number(depUser.divisionId) ?? null,
               },
             }),
             prisma.docexTracking.create({
