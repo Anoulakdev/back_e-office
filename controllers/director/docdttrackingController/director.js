@@ -248,9 +248,16 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = departmentWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+            );
+            if (depUser) break;
+          }
+          
           if (!depUser) {
             return res.status(404).json({
               message: `No matching user found in department ${departmentId} with specified rank and role`,

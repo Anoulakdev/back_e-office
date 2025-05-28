@@ -233,9 +233,15 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = divisionWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 7
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = divisionWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7
+            );
+            if (depUser) break;
+          }
 
           if (!depUser) {
             return res.status(404).json({
@@ -355,9 +361,15 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = departmentWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 6
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+            );
+            if (depUser) break;
+          }
 
           if (!depUser) {
             return res.status(404).json({
@@ -545,9 +557,15 @@ module.exports = async (req, res) => {
               .status(404)
               .json({ message: `department ${depId} or employees not found` });
 
-          const depUser = employees.find(
-            (e) => e.user?.rankId === 1 && e.user?.roleId === 6
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = employees.find(
+              (e) => e.user?.rankId === rankId && e.user?.roleId === 6
+            );
+            if (depUser) break;
+          }
 
           if (!depUser)
             return res.status(404).json({

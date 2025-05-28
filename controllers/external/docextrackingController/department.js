@@ -137,7 +137,7 @@ module.exports = async (req, res) => {
               };
             }
           }
-        } else if (Number(docstatusId) === 7  || Number(docstatusId) === 10) {
+        } else if (Number(docstatusId) === 7 || Number(docstatusId) === 10) {
           docexlogfileData = {
             docexlog_original: existingTracking?.docexlog_original ?? null,
             docexlog_file: existingTracking?.docexlog_file ?? null,
@@ -246,9 +246,15 @@ module.exports = async (req, res) => {
             });
           }
 
-          const depUser = divisionWithUser.employees.find(
-            (u) => u.user?.rankId === 1 && u.user?.roleId === 7
-          );
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = divisionWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7
+            );
+            if (depUser) break;
+          }
 
           if (!depUser)
             return res
