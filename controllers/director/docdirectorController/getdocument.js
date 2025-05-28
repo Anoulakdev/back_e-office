@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
         docdt_file: true,
         docdt_filetype: true,
         docdt_filesize: true,
+        createdAt: true,
         creator: {
           select: {
             username: true,
@@ -103,6 +104,7 @@ module.exports = async (req, res) => {
       docdt_file: docdt.docdt_file,
       docdt_filetype: docdt.docdt_filetype,
       docdt_filesize: docdt.docdt_filesize,
+      createdAt: moment(docdt.createdAt).tz("Asia/Vientiane").format(),
       creator: docdt.creator,
       docdtlogs: uniqueLogs,
     };

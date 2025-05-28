@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
         docex_file: true,
         docex_filetype: true,
         docex_filesize: true,
+        createdAt: true,
         creator: {
           select: {
             username: true,
@@ -103,6 +104,7 @@ module.exports = async (req, res) => {
       docex_file: docex.docex_file,
       docex_filetype: docex.docex_filetype,
       docex_filesize: docex.docex_filesize,
+      createdAt: moment(docex.createdAt).tz("Asia/Vientiane").format(),
       creator: docex.creator,
       docexlogs: uniqueLogs,
     };

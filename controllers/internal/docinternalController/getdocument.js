@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
         docin_file: true,
         docin_filetype: true,
         docin_filesize: true,
+        createdAt: true,
         creator: {
           select: {
             username: true,
@@ -103,6 +104,7 @@ module.exports = async (req, res) => {
       docin_file: docin.docin_file,
       docin_filetype: docin.docin_filetype,
       docin_filesize: docin.docin_filesize,
+      createdAt: moment(docin.createdAt).tz("Asia/Vientiane").format(),
       creator: docin.creator,
       docinlogs: uniqueLogs,
     };
