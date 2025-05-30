@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
           extype: Number(extype),
-          creatorCode: req.user.username,
+          creatorCode: req.user?.username,
           docex_fileoriginal: req.file
             ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
             : null,
@@ -66,11 +66,6 @@ module.exports = async (req, res) => {
           priority: true,
           doctype: true,
           outsider: true,
-          creator: {
-            select: {
-              username: true,
-            },
-          },
         },
       });
 

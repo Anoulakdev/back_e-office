@@ -225,12 +225,12 @@ model DocExternal {
   id                 Int             @id @default(autoincrement())
   docex_no           String          @db.VarChar(255)
   docex_date         DateTime?
-  docex_title        String          @db.VarChar(255)
+  docex_title        String?         @db.VarChar(255)
   docex_description  String?         @db.Text
   docex_fileoriginal String?         @db.VarChar(255)
-  docex_file         String          @db.VarChar(255)
-  docex_filetype     String          @db.VarChar(50)
-  docex_filesize     Int
+  docex_file         String?         @db.VarChar(255)
+  docex_filetype     String?         @db.VarChar(50)
+  docex_filesize     Int?
   outsiderId         Int?
   outsider           Outsider?       @relation(fields: [outsiderId], references: [id])
   assignto           Int?
@@ -318,12 +318,12 @@ model DocInternal {
   id                 Int             @id @default(autoincrement())
   docin_no           String          @db.VarChar(255)
   docin_date         DateTime?
-  docin_title        String          @db.VarChar(255)
+  docin_title        String?         @db.VarChar(255)
   docin_description  String?         @db.Text
   docin_fileoriginal String?         @db.VarChar(255)
-  docin_file         String          @db.VarChar(255)
-  docin_filetype     String          @db.VarChar(50)
-  docin_filesize     Int
+  docin_file         String?         @db.VarChar(255)
+  docin_filetype     String?         @db.VarChar(50)
+  docin_filesize     Int?
   assignto           Int?
   creatorCode        String          @db.VarChar(255)
   creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
@@ -398,12 +398,12 @@ model DocDirector {
   id                 Int             @id @default(autoincrement())
   docdt_no           String          @db.VarChar(255)
   docdt_date         DateTime?
-  docdt_title        String          @db.VarChar(255)
+  docdt_title        String?         @db.VarChar(255)
   docdt_description  String?         @db.Text
   docdt_fileoriginal String?         @db.VarChar(255)
-  docdt_file         String          @db.VarChar(255)
-  docdt_filetype     String          @db.VarChar(50)
-  docdt_filesize     Int
+  docdt_file         String?         @db.VarChar(255)
+  docdt_filetype     String?         @db.VarChar(50)
+  docdt_filesize     Int?
   assignto           Int?
   creatorCode        String          @db.VarChar(255)
   creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
