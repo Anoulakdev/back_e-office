@@ -63,103 +63,111 @@ module.exports = async (req, res) => {
       });
 
       if (receiverCode) {
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: {
-            employee: true,
-          },
-        });
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
+        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
+          return res
+            .status(400)
+            .json({ message: "receiverCode must be a non-empty array" });
         }
 
-        const datelineValue = dateline
-          ? new Date(dateline)
-          : existingTracking?.dateline
-          ? new Date(existingTracking.dateline)
-          : null;
-
-        let docinlogfileData = {
-          docinlog_original: null,
-          docinlog_file: null,
-          docinlog_type: null,
-          docinlog_size: null,
-        };
-
-        if (req.file) {
-          docinlogfileData = {
-            docinlog_original: Buffer.from(
-              req.file.originalname,
-              "latin1"
-            ).toString("utf8"),
-            docinlog_file: req.file.filename,
-            docinlog_type: req.file.mimetype,
-            docinlog_size: req.file.size,
-          };
-        } else if (Number(docstatusId) === 6) {
-          if (existingTracking) {
-            if (existingTracking.docstatusId === 5) {
-              docinlogfileData = {
-                docinlog_original: null,
-                docinlog_file: null,
-                docinlog_type: null,
-                docinlog_size: null,
-              };
-            } else if (existingTracking.docstatusId === 6) {
-              docinlogfileData = {
-                docinlog_original: existingTracking.docinlog_original ?? null,
-                docinlog_file: existingTracking.docinlog_file ?? null,
-                docinlog_type: existingTracking.docinlog_type ?? null,
-                docinlog_size: existingTracking.docinlog_size ?? null,
-              };
-            }
-          }
-        } else if (Number(docstatusId) === 7) {
-          docinlogfileData = {
-            docinlog_original: existingTracking?.docinlog_original ?? null,
-            docinlog_file: existingTracking?.docinlog_file ?? null,
-            docinlog_type: existingTracking?.docinlog_type ?? null,
-            docinlog_size: existingTracking?.docinlog_size ?? null,
-          };
-        }
-
-        logTransactions.push(
-          prisma.docinLog.create({
-            data: {
-              docinId: Number(docinId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: user.employee.posId
-                ? Number(user.employee.posId)
-                : null,
-              docstatusId: Number(docstatusId),
-              dateline: datelineValue,
-              description: description ?? null,
-              departmentId: user.employee.departmentId
-                ? Number(user.employee.departmentId)
-                : null,
-              ...docinlogfileData,
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: {
+              employee: true,
             },
-          })
-        );
+          });
 
-        if (existingTracking) {
+          if (!user) {
+            return res.status(404).json({ message: "User not found" });
+          }
+
+          const datelineValue = dateline
+            ? new Date(dateline)
+            : existingTracking?.dateline
+            ? new Date(existingTracking.dateline)
+            : null;
+
+          let docinlogfileData = {
+            docinlog_original: null,
+            docinlog_file: null,
+            docinlog_type: null,
+            docinlog_size: null,
+          };
+
+          if (req.file) {
+            docinlogfileData = {
+              docinlog_original: Buffer.from(
+                req.file.originalname,
+                "latin1"
+              ).toString("utf8"),
+              docinlog_file: req.file.filename,
+              docinlog_type: req.file.mimetype,
+              docinlog_size: req.file.size,
+            };
+          } else if (Number(docstatusId) === 6) {
+            if (existingTracking) {
+              if (existingTracking.docstatusId === 5) {
+                docinlogfileData = {
+                  docinlog_original: null,
+                  docinlog_file: null,
+                  docinlog_type: null,
+                  docinlog_size: null,
+                };
+              } else if (existingTracking.docstatusId === 6) {
+                docinlogfileData = {
+                  docinlog_original: existingTracking.docinlog_original ?? null,
+                  docinlog_file: existingTracking.docinlog_file ?? null,
+                  docinlog_type: existingTracking.docinlog_type ?? null,
+                  docinlog_size: existingTracking.docinlog_size ?? null,
+                };
+              }
+            }
+          } else if (Number(docstatusId) === 7) {
+            docinlogfileData = {
+              docinlog_original: existingTracking?.docinlog_original ?? null,
+              docinlog_file: existingTracking?.docinlog_file ?? null,
+              docinlog_type: existingTracking?.docinlog_type ?? null,
+              docinlog_size: existingTracking?.docinlog_size ?? null,
+            };
+          }
+
           logTransactions.push(
-            prisma.docinTracking.update({
-              where: { id: existingTracking.id },
+            prisma.docinLog.create({
               data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                rankId: user.rankId ? Number(user.rankId) : null,
+                roleId: user.roleId ? Number(user.roleId) : null,
+                positionId: user.employee.posId
+                  ? Number(user.employee.posId)
+                  : null,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                departmentId: user.employee.departmentId
+                  ? Number(user.employee.departmentId)
+                  : null,
+                ...docinlogfileData,
+              },
+            }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
                 assignerCode: req.user.username,
                 receiverCode: user.username,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                viewed: false,
                 ...docinlogfileData,
               },
             })
+          );
+        }
+
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docinTracking.delete({ where: { id: existingTracking.id } })
           );
         }
 
