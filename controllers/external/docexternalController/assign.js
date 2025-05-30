@@ -51,64 +51,71 @@ module.exports = async (req, res) => {
       });
 
       if (receiverCode) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: {
-            employee: true,
-          },
-        });
-
-        if (!user) {
+        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+            .status(400)
+            .json({ message: "receiverCode must be a non-empty array" });
         }
 
-        if (!docex) {
-          return res
-            .status(404)
-            .json({ message: "Document not found with the provided docexId" });
-        }
-
-        logTransactions.push(
-          prisma.docexLog.create({
-            data: {
-              docexId: Number(docexId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: Number(user.employee.posId) ?? null,
-              docstatusId: Number(docstatusId),
-              extype: Number(docex.extype) ?? null,
-              description,
-              departmentId: user.employee.departmentId ?? null,
-              divisionId: user.employee.divisionId ?? null,
-              departmentactive: null,
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: {
+              employee: true,
             },
-          }),
-          prisma.docexTracking.create({
-            data: {
-              docexId: Number(docexId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              docstatusId: Number(docstatusId),
-              extype: Number(docex.extype) ?? null,
-              description,
-            },
-          })
-        );
+          });
 
-        if (user.roleId === 4) {
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found with the provided ${receiverC}`,
+            });
+          }
+
+          if (!docex) {
+            return res.status(404).json({
+              message: "Document not found with the provided docexId",
+            });
+          }
+
           logTransactions.push(
-            prisma.docExternal.update({
-              where: { id: Number(docexId) },
+            prisma.docexLog.create({
               data: {
-                md: true,
+                docexId: Number(docexId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                rankId: user.rankId ? Number(user.rankId) : null,
+                roleId: user.roleId ? Number(user.roleId) : null,
+                positionId: Number(user.employee.posId) ?? null,
+                docstatusId: Number(docstatusId),
+                extype: Number(docex.extype) ?? null,
+                description,
+                departmentId: user.employee.departmentId ?? null,
+                divisionId: user.employee.divisionId ?? null,
+                departmentactive: null,
+              },
+            }),
+            prisma.docexTracking.create({
+              data: {
+                docexId: Number(docexId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                docstatusId: Number(docstatusId),
+                extype: Number(docex.extype) ?? null,
+                description,
               },
             })
           );
+
+          if (user.roleId === 4) {
+            logTransactions.push(
+              prisma.docExternal.update({
+                where: { id: Number(docexId) },
+                data: {
+                  md: true,
+                },
+              })
+            );
+          }
         }
       } else {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
@@ -184,12 +191,6 @@ module.exports = async (req, res) => {
               message: `No matching user found in department ${departmentId} with specified rank and role`,
             });
           }
-
-          const docex = await prisma.docExternal.findUnique({
-            where: {
-              id: Number(docexId),
-            },
-          });
 
           if (!docex) {
             return res.status(404).json({
