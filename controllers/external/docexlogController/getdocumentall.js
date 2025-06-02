@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     const documents = await prisma.docexLog.findMany({
       where,
       select: {
-        id: true,
+        docexId: true,
         docexlog_original: true,
         docexlog_file: true,
         docexlog_type: true,
@@ -73,7 +73,6 @@ module.exports = async (req, res) => {
         seenFiles.add(doc.docexlog_file);
         uniqueDocs.push({
           ...doc,
-          docexlogId: doc.id,
           createdAt: moment(doc.createdAt)
             .tz("Asia/Vientiane")
             .format("YYYY-MM-DD HH:mm:ss"),
