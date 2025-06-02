@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/rankController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/ranks", list);
+router.get("/ranks", auth, list);
 
-router.get("/ranks/:rankId", getById);
+router.get("/ranks/:rankId", auth, getById);
 
-router.post("/ranks", create);
+router.post("/ranks", auth, create);
 
-router.put("/ranks/:rankId", update);
+router.put("/ranks/:rankId", auth, update);
 
-router.delete("/ranks/:rankId", remove);
+router.delete("/ranks/:rankId", auth, remove);
 
 module.exports = router;

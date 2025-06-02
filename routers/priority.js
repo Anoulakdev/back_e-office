@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/priorityController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/prioritys", list);
+router.get("/prioritys", auth, list);
 
-router.get("/prioritys/:priorityId", getById);
+router.get("/prioritys/:priorityId", auth, getById);
 
-router.post("/prioritys", create);
+router.post("/prioritys", auth, create);
 
-router.put("/prioritys/:priorityId", update);
+router.put("/prioritys/:priorityId", auth, update);
 
-router.delete("/prioritys/:priorityId", remove);
+router.delete("/prioritys/:priorityId", auth, remove);
 
 module.exports = router;

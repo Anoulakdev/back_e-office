@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/docstatusController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/docstatus", list);
+router.get("/docstatus", auth, list);
 
-router.get("/docstatus/:docstatusId", getById);
+router.get("/docstatus/:docstatusId", auth, getById);
 
-router.post("/docstatus", create);
+router.post("/docstatus", auth, create);
 
-router.put("/docstatus/:docstatusId", update);
+router.put("/docstatus/:docstatusId", auth, update);
 
-router.delete("/docstatus/:docstatusId", remove);
+router.delete("/docstatus/:docstatusId", auth, remove);
 
 module.exports = router;

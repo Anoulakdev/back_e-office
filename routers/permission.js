@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/permissionController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/permissions", list);
+router.get("/permissions", auth, list);
 
-router.get("/permissions/:permissionId", getById);
+router.get("/permissions/:permissionId", auth, getById);
 
-router.post("/permissions", create);
+router.post("/permissions", auth, create);
 
-router.put("/permissions/:permissionId", update);
+router.put("/permissions/:permissionId", auth, update);
 
-router.delete("/permissions/:permissionId", remove);
+router.delete("/permissions/:permissionId", auth, remove);
 
 module.exports = router;

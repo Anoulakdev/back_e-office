@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/outsiderController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/outsiders", list);
+router.get("/outsiders", auth, list);
 
-router.get("/outsiders/:outsiderId", getById);
+router.get("/outsiders/:outsiderId", auth, getById);
 
-router.post("/outsiders", create);
+router.post("/outsiders", auth, create);
 
-router.put("/outsiders/:outsiderId", update);
+router.put("/outsiders/:outsiderId", auth, update);
 
-router.delete("/outsiders/:outsiderId", remove);
+router.delete("/outsiders/:outsiderId", auth, remove);
 
 module.exports = router;

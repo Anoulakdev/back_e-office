@@ -4,10 +4,10 @@ const router = express.Router();
 // controllers
 const { list, getById } = require("../controllers/positioncodeController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/positioncodes", list);
+router.get("/positioncodes", auth, list);
 
-router.get("/positioncodes/:poscodeId", getById);
+router.get("/positioncodes/:poscodeId", auth, getById);
 
 module.exports = router;

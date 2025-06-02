@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/doctypeController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/doctypes", list);
+router.get("/doctypes", auth, list);
 
-router.get("/doctypes/:doctypeId", getById);
+router.get("/doctypes/:doctypeId", auth, getById);
 
-router.post("/doctypes", create);
+router.post("/doctypes", auth, create);
 
-router.put("/doctypes/:doctypeId", update);
+router.put("/doctypes/:doctypeId", auth, update);
 
-router.delete("/doctypes/:doctypeId", remove);
+router.delete("/doctypes/:doctypeId", auth, remove);
 
 module.exports = router;

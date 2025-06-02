@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/belongtoController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/belongtos", list);
+router.get("/belongtos", auth, list);
 
-router.get("/belongtos/:belongId", getById);
+router.get("/belongtos/:belongId", auth, getById);
 
-router.post("/belongtos", create);
+router.post("/belongtos", auth, create);
 
-router.put("/belongtos/:belongId", update);
+router.put("/belongtos/:belongId", auth, update);
 
-router.delete("/belongtos/:belongId", remove);
+router.delete("/belongtos/:belongId", auth, remove);
 
 module.exports = router;

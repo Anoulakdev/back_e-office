@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/roleController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/roles", list);
+router.get("/roles", auth, list);
 
-router.get("/roles/:roleId", getById);
+router.get("/roles/:roleId", auth, getById);
 
-router.post("/roles", create);
+router.post("/roles", auth, create);
 
-router.put("/roles/:roleId", update);
+router.put("/roles/:roleId", auth, update);
 
-router.delete("/roles/:roleId", remove);
+router.delete("/roles/:roleId", auth, remove);
 
 module.exports = router;

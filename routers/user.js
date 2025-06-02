@@ -14,17 +14,17 @@ const {
   remove,
 } = require("../controllers/userController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
 const upload = multer();
 
-router.get("/users", list);
-router.get("/employees", listemployee);
-router.get("/users/organize", listorganize);
-router.get("/users/internalorganize", listinternalorganize);
-router.get("/users/:userId", getById);
-router.post("/users", upload.none(), create);
-router.put("/users/:userId", upload.none(), update);
-router.delete("/users/:userId", remove);
+router.get("/users", auth, list);
+router.get("/employees", auth, listemployee);
+router.get("/users/organize", auth, listorganize);
+router.get("/users/internalorganize", auth, listinternalorganize);
+router.get("/users/:userId", auth, getById);
+router.post("/users", auth, upload.none(), create);
+router.put("/users/:userId", auth, upload.none(), update);
+router.delete("/users/:userId", auth, remove);
 
 module.exports = router;

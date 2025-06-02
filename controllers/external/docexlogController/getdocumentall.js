@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
 
     let where = {
       assignerCode: req.user.username,
-      docstatusId: { notIn: [7] },
+      // docstatusId: { notIn: [7] },
       NOT: {
         docexlog_file: null, // กรอง null ตั้งแต่ใน query
       },

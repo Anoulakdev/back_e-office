@@ -10,16 +10,16 @@ const {
   remove,
 } = require("../controllers/rolemenuController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/rolemenus", list);
+router.get("/rolemenus", auth, list);
 
-router.get("/rolemenus/:rolemenuId", getById);
+router.get("/rolemenus/:rolemenuId", auth, getById);
 
-router.post("/rolemenus", create);
+router.post("/rolemenus", auth, create);
 
-router.put("/rolemenus/:rolemenuId", update);
+router.put("/rolemenus/:rolemenuId", auth, update);
 
-router.delete("/rolemenus/:rolemenuId", remove);
+router.delete("/rolemenus/:rolemenuId", auth, remove);
 
 module.exports = router;

@@ -8,10 +8,10 @@ const {
   getById,
 } = require("../controllers/departmentController");
 // middleware
-// const { auth } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 
-router.get("/departments", list);
-router.get("/departments/listuser", listuser);
-router.get("/departments/:departmentId", getById);
+router.get("/departments", auth, list);
+router.get("/departments/listuser", auth, listuser);
+router.get("/departments/:departmentId", auth, getById);
 
 module.exports = router;
