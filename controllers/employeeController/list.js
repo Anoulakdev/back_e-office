@@ -1,9 +1,4 @@
-const fs = require("fs");
 const prisma = require("../../prisma/prisma");
-const bcrypt = require("bcrypt");
-const multer = require("multer");
-const path = require("path");
-const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {

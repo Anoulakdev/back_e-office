@@ -13,6 +13,7 @@ const {
   unit,
   staff,
   updateview,
+  removetracking,
 } = require("../controllers/director/docdttrackingController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -27,5 +28,6 @@ router.post("/docdttrackings/office", auth, office);
 router.post("/docdttrackings/unit", auth, unit);
 router.post("/docdttrackings/staff", auth, staff);
 router.put("/docdttrackings/updateview", auth, updateview);
+router.delete("/docdttrackings/deletetracking/:docdtId", auth, removetracking);
 
 module.exports = router;

@@ -14,6 +14,7 @@ const {
   unit,
   staff,
   updateview,
+  removetracking,
 } = require("../controllers/external/docextrackingController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -29,5 +30,6 @@ router.post("/docextrackings/office", auth, office);
 router.post("/docextrackings/unit", auth, unit);
 router.post("/docextrackings/staff", auth, staff);
 router.put("/docextrackings/updateview", auth, updateview);
+router.delete("/docextrackings/deletetracking/:docexId", auth, removetracking);
 
 module.exports = router;

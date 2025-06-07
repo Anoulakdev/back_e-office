@@ -9,6 +9,7 @@ const office = require("./office");
 const unit = require("./unit");
 const staff = require("./staff");
 const updateview = require("./updateview");
+const removetracking = require("./removetracking");
 
 module.exports = {
   list,
@@ -22,4 +23,5 @@ module.exports = {
   unit,
   staff,
   updateview,
+  removetracking,
 };

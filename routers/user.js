@@ -5,7 +5,6 @@ const router = express.Router();
 // controllers
 const {
   list,
-  listemployee,
   listorganize,
   listinternalorganize,
   getById,
@@ -19,7 +18,6 @@ const { auth } = require("../middleware/auth");
 const upload = multer();
 
 router.get("/users", auth, list);
-router.get("/employees", auth, listemployee);
 router.get("/users/organize", auth, listorganize);
 router.get("/users/internalorganize", auth, listinternalorganize);
 router.get("/users/:userId", auth, getById);
