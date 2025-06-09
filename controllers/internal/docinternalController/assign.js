@@ -92,6 +92,12 @@ module.exports = async (req, res) => {
               divisionId: user.employee.divisionId
                 ? Number(user.employee.divisionId)
                 : null,
+              officeId: user.employee.officeId
+                ? Number(user.employee.officeId)
+                : null,
+              unitId: user.employee.unitId
+                ? Number(user.employee.unitId)
+                : null,
             },
           }),
           prisma.docinTracking.create({

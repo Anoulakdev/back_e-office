@@ -373,7 +373,7 @@ module.exports = async (req, res) => {
           ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
-          divisionId: req.user.employee.divisionId,
+          divisionId: req.user.employee?.divisionId,
         },
         orderBy: {
           id: "desc",
@@ -449,7 +449,7 @@ module.exports = async (req, res) => {
           ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
-          officeId: req.user.employee.officeId,
+          officeId: req.user.employee?.officeId,
         },
         orderBy: {
           id: "desc",
@@ -525,7 +525,7 @@ module.exports = async (req, res) => {
           ...idFilter,
           rankId: req.user.rankId,
           roleId: req.user.roleId,
-          unitId: req.user.employee.unitId,
+          unitId: req.user.employee?.unitId,
         },
         orderBy: {
           id: "desc",
