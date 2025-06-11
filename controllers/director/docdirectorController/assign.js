@@ -51,47 +51,55 @@ module.exports = async (req, res) => {
       });
 
       if (receiverCode) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: {
-            employee: true,
-          },
-        });
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
+        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
+          return res
+            .status(400)
+            .json({ message: "receiverCode must be a non-empty array" });
         }
 
-        if (!docdt) {
-          return res.status(404).json({ message: "Document not found" });
-        }
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: {
+              employee: true,
+            },
+          });
 
-        logTransactions.push(
-          prisma.docdtLog.create({
-            data: {
-              docdtId: Number(docdtId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: Number(user.employee.posId) ?? null,
-              docstatusId: Number(docstatusId),
-              description,
-              departmentId: user.employee.departmentId ?? null,
-              departmentactive: null,
-            },
-          }),
-          prisma.docdtTracking.create({
-            data: {
-              docdtId: Number(docdtId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              docstatusId: Number(docstatusId),
-              description,
-            },
-          })
-        );
+          if (!user) {
+            return res.status(404).json({ message: "User not found" });
+          }
+
+          if (!docdt) {
+            return res.status(404).json({ message: "Document not found" });
+          }
+
+          logTransactions.push(
+            prisma.docdtLog.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                rankId: user.rankId ? Number(user.rankId) : null,
+                roleId: user.roleId ? Number(user.roleId) : null,
+                positionId: Number(user.employee.posId) ?? null,
+                docstatusId: Number(docstatusId),
+                description,
+                departmentId: user.employee.departmentId ?? null,
+                divisionId: user.employee.divisionId ?? null,
+                departmentactive: null,
+              },
+            }),
+            prisma.docdtTracking.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                docstatusId: Number(docstatusId),
+                description,
+              },
+            })
+          );
+        }
       } else {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [
@@ -192,6 +200,7 @@ module.exports = async (req, res) => {
                 description,
                 departmentId,
                 departmentactive,
+                divisionId: Number(depUser.divisionId) ?? null,
               },
             }),
             prisma.docdtTracking.create({
