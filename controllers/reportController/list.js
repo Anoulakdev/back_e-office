@@ -33,6 +33,7 @@ module.exports = async (req, res) => {
         creator: {
           select: {
             username: true,
+            role: true,
             employee: {
               select: {
                 first_name: true,
@@ -70,6 +71,7 @@ module.exports = async (req, res) => {
         creator: {
           select: {
             username: true,
+            role: true,
             employee: {
               select: {
                 first_name: true,
@@ -107,6 +109,7 @@ module.exports = async (req, res) => {
         creator: {
           select: {
             username: true,
+            role: true,
             employee: {
               select: {
                 first_name: true,
