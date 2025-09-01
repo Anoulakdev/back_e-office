@@ -379,6 +379,159 @@ module.exports = async (req, res) => {
             })
           );
         }
+      } else if (
+        !receiverCode &&
+        departmentId1.length &&
+        !departmentId2.length
+      ) {
+        const allDepartments = [
+          ...(Array.isArray(departmentId1) && departmentId1.length
+            ? departmentId1.map((id) => ({
+                id: Number(id),
+                departmentactive: 1,
+              }))
+            : []),
+        ];
+
+        if (!allDepartments.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one departmentId is required" });
+        }
+
+        // 🔹 วนลูปเพื่อเพิ่มข้อมูลก่อน
+        for (const { id: departmentId, departmentactive } of allDepartments) {
+          const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 6,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
+            return res.status(404).json({
+              message: `Department ${departmentId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in department ${departmentId} with specified rank and role`,
+            });
+          }
+
+          const datelineValue = dateline
+            ? new Date(dateline)
+            : existingTracking?.dateline
+            ? new Date(existingTracking.dateline)
+            : null;
+
+          const updateData = {};
+          if (priorityId) {
+            updateData.priorityId = Number(priorityId);
+            logTransactions.push(
+              prisma.docExternal.update({
+                where: { id: Number(docexId) },
+                data: updateData,
+              })
+            );
+          }
+
+          logTransactions.push(
+            prisma.docexLog.create({
+              data: {
+                docexId: Number(docexId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                rankId: depUser.user?.rankId
+                  ? Number(depUser.user?.rankId)
+                  : null,
+                roleId: depUser.user?.roleId
+                  ? Number(depUser.user?.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                extype: Number(docex.extype) ?? null,
+                departmentId,
+                departmentactive,
+                divisionId: depUser.divisionId
+                  ? Number(depUser.divisionId)
+                  : null,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8"
+                    )
+                  : null,
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              },
+            }),
+            prisma.docexTracking.create({
+              data: {
+                docexId: Number(docexId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                extype: Number(docex.extype) ?? null,
+                departmentactive,
+                docexlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8"
+                    )
+                  : null,
+                docexlog_file: req.file ? req.file.filename : null,
+                docexlog_type: req.file ? req.file.mimetype : null,
+                docexlog_size: req.file ? req.file.size : null,
+              },
+            })
+          );
+        }
+
+        // 🔹 ลบ existingTracking **หลังจากเพิ่มข้อมูลเสร็จ**
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docexTracking.delete({
+              where: { id: existingTracking.id },
+            })
+          );
+        }
       } else if (receiverCode && departmentId1.length && departmentId2.length) {
         if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
