@@ -68,7 +68,7 @@ async function seedEmployee() {
         }
 
         await prisma.employee.upsert({
-          where: { emp_code: userData.emp_code },
+          where: { id: userData.emp_id },
           update: {
             first_name: userData.first_name_la,
             last_name: userData.last_name_la,
