@@ -25,8 +25,23 @@ async function loginAndGetToken() {
 async function seedUser() {
   try {
     const token = await loginAndGetToken();
-    const departmentIds = Array.from({ length: 15 }, (_, i) => i + 1);
-    // const departmentId = 15;
+
+    // 1️⃣ ดึง department ทั้งหมดแบบ dynamic
+    const departmentResponse = await axios.get(
+      `${process.env.URL_API}/organization-svc/department/get`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const departments = departmentResponse.data.data;
+
+    if (!departments || !Array.isArray(departments)) {
+      console.error(
+        "❌ Departments data is empty or invalid:",
+        departmentResponse.data
+      );
+      return;
+    }
+
+    const departmentIds = departments.map((dep) => dep.department_id);
 
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash("EDL1234", salt);
