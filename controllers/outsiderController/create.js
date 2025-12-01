@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
         name: name,
       },
     });
+    
     if (checkOutsider) {
       return res.status(409).json({ message: "Outsider already exists" });
     }
