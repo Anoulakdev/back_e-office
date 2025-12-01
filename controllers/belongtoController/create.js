@@ -8,6 +8,15 @@ module.exports = async (req, res) => {
       return res.status(400).json({ message: "Invalid input fields" });
     }
 
+    const checkBelong = await prisma.belongTo.findFirst({
+      where: {
+        name: name,
+      },
+    });
+    if (checkBelong) {
+      return res.status(409).json({ message: "BelongTo already exists" });
+    }
+
     const maxId = await prisma.belongTo.aggregate({
       _max: { id: true },
     });

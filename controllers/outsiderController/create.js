@@ -8,10 +8,20 @@ module.exports = async (req, res) => {
       return res.status(400).json({ message: "Invalid input fields" });
     }
 
+    const checkOutsider = await prisma.outsider.findFirst({
+      where: {
+        belongId: Number(belongId),
+        name: name,
+      },
+    });
+    if (checkOutsider) {
+      return res.status(409).json({ message: "Outsider already exists" });
+    }
+
     // Create new user in the database
     const newOutsider = await prisma.outsider.create({
       data: {
-        belongId,
+        belongId: Number(belongId),
         name,
       },
     });
