@@ -124,6 +124,7 @@ module.exports = async (req, res) => {
         username: username,
       },
     });
+    
     if (!user) {
       return res.status(401).json({
         message: "ບໍ່​ມີ​ຂໍ້​ມູນຜູ້​ໃຊ້",
