@@ -107,10 +107,10 @@ module.exports = async (req, res) => {
             break;
           case 6:
             // filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
-            filter.where.employee = {
-              departmentId: Number(departmentId),
-            };
+            // filter.where.status = { not: "C" };
+            // filter.where.employee = {
+            //   departmentId: Number(departmentId),
+            // };
 
             if (
               extype === undefined ||
@@ -120,14 +120,23 @@ module.exports = async (req, res) => {
             ) {
               filter.where.roleId = Number(roleId);
               filter.where.rankId = { gt: Number(rankId) };
+              filter.where.status = { not: "C" };
+              filter.where.employee = {
+                departmentId: Number(departmentId),
+              };
             } else {
               filter.where.OR = [
                 {
-                  roleId: 2, // 👈 roleId 2 ไม่ต้องมี rank
+                  roleId: 2,
+                  status: { not: "C" },
                 },
                 {
                   roleId: Number(roleId),
-                  rankId: { lt: Number(rankId) }, // 👈 เช็ค rank เฉพาะ role ปกติ
+                  rankId: { lt: Number(rankId) },
+                  status: { not: "C" },
+                  employee: {
+                    departmentId: Number(departmentId),
+                  },
                 },
               ];
             }
