@@ -106,7 +106,7 @@ module.exports = async (req, res) => {
             filter.where.status = { not: "C" };
             break;
           case 6:
-            filter.where.roleId = Number(roleId);
+            // filter.where.roleId = Number(roleId);
             filter.where.status = { not: "C" };
             filter.where.employee = {
               departmentId: Number(departmentId),
@@ -118,9 +118,18 @@ module.exports = async (req, res) => {
               extype === "" ||
               Number(extype) === 1
             ) {
+              filter.where.roleId = Number(roleId);
               filter.where.rankId = { gt: Number(rankId) };
             } else {
-              filter.where.rankId = { lt: Number(rankId) };
+              filter.where.OR = [
+                {
+                  roleId: 2, // 👈 roleId 2 ไม่ต้องมี rank
+                },
+                {
+                  roleId: Number(roleId),
+                  rankId: { lt: Number(rankId) }, // 👈 เช็ค rank เฉพาะ role ปกติ
+                },
+              ];
             }
             break;
           case 7:

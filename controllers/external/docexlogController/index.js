@@ -5,6 +5,7 @@ const gethistory = require("./gethistory");
 const history = require("./history");
 const gethistoryall = require("./gethistoryall");
 const updatefilelog = require("./updatefilelog");
+const addexfile = require("./addexfile");
 
 module.exports = {
   listdocexternal,
@@ -14,4 +15,5 @@ module.exports = {
   gethistoryall,
   getdocumentall,
   updatefilelog,
+  addexfile,
 };
