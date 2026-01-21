@@ -33,6 +33,8 @@ module.exports = async (req, res) => {
     try {
       const { docexlogId } = req.params;
 
+      const { description } = req.body;
+
       // Step 1: Find the document to update
       const docexlog = await prisma.docexLog.findUnique({
         where: {
@@ -78,6 +80,7 @@ module.exports = async (req, res) => {
           id: Number(docexlogId),
         },
         data: {
+          description: description,
           docexlog_original: docexfileoriginal,
           docexlog_file: docexfile,
           docexlog_type: docextype,
