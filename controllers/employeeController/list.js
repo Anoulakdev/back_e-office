@@ -36,6 +36,11 @@ module.exports = async (req, res) => {
     const filter = {
       where,
       include: {
+        position: true,
+        department: true,
+        division: true,
+        office: true,
+        unit: true,
         user: {
           select: {
             username: true,
