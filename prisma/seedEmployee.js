@@ -10,7 +10,7 @@ async function loginAndGetToken() {
       {
         username: process.env.USERNAME_API,
         password: process.env.PASSWORD_API,
-      }
+      },
     );
 
     const token = loginResponse.data.data.accessToken;
@@ -28,14 +28,14 @@ async function seedEmployee() {
     // 1️⃣ ดึง department ทั้งหมดแบบ dynamic
     const departmentResponse = await axios.get(
       `${process.env.URL_API}/organization-svc/department/get`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     const departments = departmentResponse.data.data;
 
     if (!departments || !Array.isArray(departments)) {
       console.error(
         "❌ Departments data is empty or invalid:",
-        departmentResponse.data
+        departmentResponse.data,
       );
       return;
     }
@@ -49,7 +49,7 @@ async function seedEmployee() {
         `${process.env.URL_API}/organization-svc/employee/get?department_id=${departmentId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const usersData = response.data.data.employees;
@@ -61,7 +61,7 @@ async function seedEmployee() {
           });
           if (!unitExists) {
             console.error(
-              `Office with ID ${userData.office.unit_id} does not exist. Skipping...`
+              `Office with ID ${userData.office.unit_id} does not exist. Skipping...`,
             );
             continue;
           }
@@ -86,7 +86,7 @@ async function seedEmployee() {
             tel: userData.phone || null,
             email: userData.email || null,
             empimg: userData.image
-              ? `https://hrm.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+              ? `${process.env.URL_API}/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
               : null,
             createdAt: userData.created_at
               ? new Date(userData.created_at)
@@ -113,7 +113,7 @@ async function seedEmployee() {
             tel: userData.phone || null,
             email: userData.email || null,
             empimg: userData.image
-              ? `https://hrm.edl.com.la/api_v2/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
+              ? `${process.env.URL_API}/organization-svc/employee/getEmpImg/${userData.emp_code}/${userData.image}`
               : null,
             createdAt: userData.created_at
               ? new Date(userData.created_at)

@@ -147,8 +147,8 @@ model Office {
   office_name   String?    @db.VarChar(255)
   office_code   String?    @db.VarChar(50)
   office_status String     @default("A") @db.VarChar(50)
-  divisionId    Int
-  division      Division   @relation(fields: [divisionId], references: [id])
+  divisionId    Int?
+  division      Division?  @relation(fields: [divisionId], references: [id])
   units         Unit[]
   employees     Employee[]
   docexlogs     DocexLog[]
