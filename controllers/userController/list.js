@@ -3,8 +3,16 @@ const moment = require("moment-timezone");
 
 module.exports = async (req, res) => {
   try {
-    const { search, roleId, departmentId, divisionId, officeId, unitId } =
-      req.query;
+    const {
+      search,
+      roleId,
+      departmentId,
+      divisionId,
+      officeId,
+      unitId,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
     const where = {};
 
@@ -48,25 +56,33 @@ module.exports = async (req, res) => {
       };
     }
 
-    const filter = {
-      where,
-      orderBy: [{ roleId: "asc" }, { rankId: "asc" }],
-      include: {
-        rank: true,
-        role: true,
-        employee: {
-          include: {
-            position: true,
-            department: true,
-            division: true,
-            office: true,
-            unit: true,
+    const currentPage = Number(page);
+    const take = Number(limit);
+    const skip = (currentPage - 1) * take;
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: [{ roleId: "asc" }, { rankId: "asc" }],
+        include: {
+          rank: true,
+          role: true,
+          employee: {
+            include: {
+              position: true,
+              department: true,
+              division: true,
+              office: true,
+              unit: true,
+            },
           },
         },
-      },
-    };
+      }),
 
-    const users = await prisma.user.findMany(filter);
+      prisma.user.count({ where }),
+    ]);
 
     const formattedUsers = users.map(({ password, ...user }) => ({
       ...user,
@@ -85,7 +101,15 @@ module.exports = async (req, res) => {
         : null,
     }));
 
-    res.json(formattedUsers);
+    res.json({
+      data: formattedUsers,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
