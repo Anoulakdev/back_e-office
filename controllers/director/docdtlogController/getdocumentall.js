@@ -4,12 +4,34 @@ const moment = require("moment-timezone");
 module.exports = async (req, res) => {
   try {
     const { selectDateStart, selectDateEnd } = req.query;
+    const username = req.user.username;
 
+    // =========================
+    // STEP 1: หา docdtId ที่ user เกี่ยวข้อง
+    // =========================
+    const relatedDocs = await prisma.docdtLog.findMany({
+      where: {
+        OR: [{ assignerCode: username }, { receiverCode: username }],
+      },
+      select: {
+        docdtId: true,
+      },
+    });
+
+    const docdtIds = [...new Set(relatedDocs.map((doc) => doc.docdtId))];
+
+    // ถ้าไม่มี doc ที่เกี่ยวข้อง
+    if (docdtIds.length === 0) {
+      return res.json([]);
+    }
+
+    // =========================
+    // STEP 2: สร้าง where
+    // =========================
     let where = {
-      assignerCode: req.user.username,
-      // docstatusId: { notIn: [7] },
+      docdtId: { in: docdtIds },
       NOT: {
-        docdtlog_file: null, // กรอง null ตั้งแต่ใน query
+        docdtlog_file: null,
       },
     };
 
@@ -17,6 +39,7 @@ module.exports = async (req, res) => {
       const startDate = moment
         .tz(`${selectDateStart} 00:00:00`, "Asia/Vientiane")
         .toDate();
+
       const endDate = moment
         .tz(`${selectDateEnd} 23:59:59`, "Asia/Vientiane")
         .toDate();
@@ -27,6 +50,9 @@ module.exports = async (req, res) => {
       };
     }
 
+    // =========================
+    // STEP 3: query เอกสาร
+    // =========================
     const documents = await prisma.docdtLog.findMany({
       where,
       select: {
@@ -64,22 +90,27 @@ module.exports = async (req, res) => {
       },
     });
 
-    // กรองให้เหลือเฉพาะ docdtlog_file ไม่ซ้ำ
+    // =========================
+    // STEP 4: กรอง file ไม่ซ้ำ
+    // =========================
     const seenFiles = new Set();
-    const uniqueDocs = [];
 
-    for (const doc of documents) {
-      if (!seenFiles.has(doc.docdtlog_file)) {
+    const uniqueDocs = documents
+      .filter((doc) => {
+        if (seenFiles.has(doc.docdtlog_file)) return false;
         seenFiles.add(doc.docdtlog_file);
-        uniqueDocs.push({
-          ...doc,
-          createdAt: moment(doc.createdAt)
-            .tz("Asia/Vientiane")
-            .format("YYYY-MM-DD HH:mm:ss"),
-        });
-      }
-    }
+        return true;
+      })
+      .map((doc) => ({
+        ...doc,
+        createdAt: moment(doc.createdAt)
+          .tz("Asia/Vientiane")
+          .format("YYYY-MM-DD HH:mm:ss"),
+      }));
 
+    // =========================
+    // RESPONSE
+    // =========================
     res.json(uniqueDocs);
   } catch (err) {
     console.error(err);
