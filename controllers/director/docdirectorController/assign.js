@@ -35,6 +35,8 @@ module.exports = async (req, res) => {
         receiverCode,
         departmentId1 = [],
         departmentId2 = [],
+        divisionId1 = [],
+        divisionId2 = [],
         docstatusId,
         description,
       } = req.body;
@@ -50,7 +52,13 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (receiverCode) {
+      if (
+        receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length &&
+        !divisionId1.length &&
+        !divisionId2.length
+      ) {
         if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
             .status(400)
@@ -97,10 +105,15 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 description,
               },
-            })
+            }),
           );
         }
-      } else {
+      } else if (
+        (departmentId1.length || departmentId2.length) &&
+        !receiverCode &&
+        !divisionId1.length &&
+        !divisionId2.length
+      ) {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
@@ -164,7 +177,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -212,7 +225,126 @@ module.exports = async (req, res) => {
                 description,
                 departmentactive,
               },
-            })
+            }),
+          );
+        }
+      } else if (
+        (divisionId1.length || divisionId2.length) &&
+        !receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length
+      ) {
+        const allDivisions = [
+          ...(Array.isArray(divisionId1) && divisionId1.length
+            ? divisionId1.map((id) => ({
+                id: Number(id),
+                divisionactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(divisionId2) && divisionId2.length
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                divisionactive: 2,
+              }))
+            : []),
+        ];
+
+        if (!allDivisions.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one divisionId is required" });
+        }
+
+        for (const { id: divisionId, divisionactive } of allDivisions) {
+          const division = await prisma.division.findUnique({
+            where: { id: divisionId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 7,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const divisionWithUser = {
+            ...division,
+            employees: division?.employees?.length
+              ? division.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!divisionWithUser || !divisionWithUser.employees.length) {
+            return res.status(404).json({
+              message: `Division ${divisionId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = divisionWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in division ${divisionId} with specified rank and role`,
+            });
+          }
+
+          const docdt = await prisma.docDirector.findUnique({
+            where: {
+              id: Number(docdtId),
+            },
+          });
+
+          if (!docdt) {
+            return res.status(404).json({
+              message: "Document not found with the provided docdtId",
+            });
+          }
+
+          logTransactions.push(
+            prisma.docdtLog.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                rankId: Number(depUser.user.rankId) ?? null,
+                roleId: Number(depUser.user.roleId) ?? null,
+                positionId: Number(depUser.posId) ?? null,
+                docstatusId: Number(docstatusId) ?? null,
+                description,
+                departmentId: Number(depUser.departmentId) ?? null,
+                divisionId,
+                divisionactive,
+              },
+            }),
+            prisma.docdtTracking.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                docstatusId: Number(docstatusId),
+                description,
+                divisionactive,
+              },
+            }),
           );
         }
       }
