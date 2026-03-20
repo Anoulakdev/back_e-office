@@ -10,6 +10,7 @@ const {
   getById,
   create,
   update,
+  updateStatus,
   remove,
 } = require("../controllers/userController");
 // middleware
@@ -23,6 +24,7 @@ router.get("/users/internalorganize", auth, listinternalorganize);
 router.get("/users/:userId", auth, getById);
 router.post("/users", auth, upload.none(), create);
 router.put("/users/:userId", auth, upload.none(), update);
+router.put("/users/updatestatus/:userId", auth, upload.none(), updateStatus);
 router.delete("/users/:userId", auth, remove);
 
 module.exports = router;

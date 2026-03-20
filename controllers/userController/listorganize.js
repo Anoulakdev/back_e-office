@@ -39,11 +39,11 @@ module.exports = async (req, res) => {
           case 2:
           case 4:
             filter.where.roleId = 4;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
           case 7:
             filter.where.roleId = 6;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             filter.where.employee = {
               departmentId: Number(departmentId),
             };
@@ -54,11 +54,11 @@ module.exports = async (req, res) => {
         switch (Number(roleId)) {
           case 2:
             filter.where.roleId = 4;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
           case 6:
             filter.where.roleId = 2;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
         }
         break;
@@ -66,12 +66,12 @@ module.exports = async (req, res) => {
         switch (Number(roleId)) {
           case 4:
             filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             filter.where.rankId = { lt: Number(rankId) };
             break;
           case 6:
             filter.where.roleId = 4;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
         }
         break;
@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
         switch (Number(roleId)) {
           case 4:
             filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             filter.where.rankId = { gt: Number(rankId) };
             break;
         }
@@ -91,23 +91,23 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { gt: Number(rankId) },
                 },
                 {
                   roleId: 11,
-                  status: { not: "C" },
+                  status: "A",
                 },
               ],
             };
             break;
           case 11:
             filter.where.roleId = 6;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
           case 6:
             // filter.where.roleId = Number(roleId);
-            // filter.where.status = { not: "C" };
+            // filter.where.status = "A";
             // filter.where.employee = {
             //   departmentId: Number(departmentId),
             // };
@@ -120,7 +120,7 @@ module.exports = async (req, res) => {
             ) {
               filter.where.roleId = Number(roleId);
               filter.where.rankId = { gt: Number(rankId) };
-              filter.where.status = { not: "C" };
+              filter.where.status = "A";
               filter.where.employee = {
                 departmentId: Number(departmentId),
               };
@@ -128,12 +128,12 @@ module.exports = async (req, res) => {
               filter.where.OR = [
                 {
                   roleId: 2,
-                  status: { not: "C" },
+                  status: "A",
                 },
                 {
                   roleId: Number(roleId),
                   rankId: { lt: Number(rankId) },
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     departmentId: Number(departmentId),
                   },
@@ -144,13 +144,13 @@ module.exports = async (req, res) => {
           case 7:
             if (Number(rankId) === 1 && Number(extype) === 2) {
               filter.where.roleId = 6;
-              filter.where.status = { not: "C" };
+              filter.where.status = "A";
               filter.where.employee = {
                 departmentId: Number(departmentId),
               };
             } else {
               filter.where.roleId = Number(roleId);
-              filter.where.status = { not: "C" };
+              filter.where.status = "A";
               filter.where.rankId =
                 Number(extype) === 2
                   ? { lt: Number(rankId) }
@@ -163,13 +163,13 @@ module.exports = async (req, res) => {
           case 8:
             if (Number(rankId) === 1 && Number(extype) === 2) {
               filter.where.roleId = 7;
-              filter.where.status = { not: "C" };
+              filter.where.status = "A";
               filter.where.employee = {
                 divisionId: Number(divisionId),
               };
             } else {
               filter.where.roleId = Number(roleId);
-              filter.where.status = { not: "C" };
+              filter.where.status = "A";
               filter.where.rankId = { gt: Number(rankId) };
               filter.where.employee = {
                 officeId: Number(officeId),
@@ -182,14 +182,14 @@ module.exports = async (req, res) => {
                 OR: [
                   {
                     roleId: 9,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
                   },
                   {
                     roleId: 10,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
@@ -202,14 +202,14 @@ module.exports = async (req, res) => {
                   {
                     roleId: 9,
                     rankId: { gt: Number(rankId) },
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
                   },
                   {
                     roleId: 10,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
@@ -225,19 +225,19 @@ module.exports = async (req, res) => {
         switch (Number(roleId)) {
           case 4:
             filter.where.roleId = Number(roleId);
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             filter.where.rankId = { lt: Number(rankId) };
             break;
           case 11:
             filter.where.roleId = 4;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
           case 6:
             filter.where = {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { lt: Number(rankId) },
                   employee: {
                     departmentId: Number(departmentId),
@@ -245,11 +245,11 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: 4,
-                  status: { not: "C" },
+                  status: "A",
                 },
                 {
                   roleId: 11,
-                  status: { not: "C" },
+                  status: "A",
                 },
               ],
             };
@@ -264,7 +264,7 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { lt: Number(rankId) },
                   employee: {
                     divisionId: Number(divisionId),
@@ -272,7 +272,7 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: { lt: Number(roleId) },
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     departmentId: Number(departmentId),
                   },
@@ -287,7 +287,7 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { lt: Number(rankId) },
                   employee: {
                     officeId: Number(officeId),
@@ -295,7 +295,7 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: 7,
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     divisionId: Number(divisionId),
                   },
@@ -309,7 +309,7 @@ module.exports = async (req, res) => {
             const conditions = [
               {
                 roleId: Number(roleId),
-                status: { not: "C" },
+                status: "A",
                 rankId: { lt: Number(rankId) },
                 employee: {
                   unitId: Number(unitId),
@@ -320,7 +320,7 @@ module.exports = async (req, res) => {
             if (divisionId) {
               conditions.push({
                 roleId: 7,
-                status: { not: "C" },
+                status: "A",
                 employee: {
                   divisionId: Number(divisionId),
                 },
@@ -328,7 +328,7 @@ module.exports = async (req, res) => {
             } else if (officeId) {
               conditions.push({
                 roleId: 8,
-                status: { not: "C" },
+                status: "A",
                 employee: {
                   officeId: Number(officeId),
                 },
@@ -344,7 +344,7 @@ module.exports = async (req, res) => {
             break;
           case 10:
             filter.where.roleId = { lt: Number(roleId) };
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             filter.where.employee = {
               unitId: Number(unitId),
             };
@@ -359,19 +359,19 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { gt: Number(rankId) },
                 },
                 {
                   roleId: 6,
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     departmentId: Number(departmentId),
                   },
                 },
                 {
                   roleId: 11,
-                  status: { not: "C" },
+                  status: "A",
                 },
               ],
             };
@@ -382,14 +382,14 @@ module.exports = async (req, res) => {
             break;
           case 11:
             filter.where.roleId = 6;
-            filter.where.status = { not: "C" };
+            filter.where.status = "A";
             break;
           case 6:
             filter.where = {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { gt: Number(rankId) },
                   employee: {
                     departmentId: Number(departmentId),
@@ -397,7 +397,7 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: 7,
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     departmentId: Number(departmentId),
                   },
@@ -411,7 +411,7 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { gt: Number(rankId) },
                   employee: {
                     divisionId: Number(divisionId),
@@ -419,7 +419,7 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: { in: [8, 9] },
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     divisionId: Number(divisionId),
                   },
@@ -433,7 +433,7 @@ module.exports = async (req, res) => {
               OR: [
                 {
                   roleId: Number(roleId),
-                  status: { not: "C" },
+                  status: "A",
                   rankId: { gt: Number(rankId) },
                   employee: {
                     officeId: Number(officeId),
@@ -441,7 +441,7 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: 9,
-                  status: { not: "C" },
+                  status: "A",
                   employee: {
                     officeId: Number(officeId),
                   },
@@ -456,14 +456,14 @@ module.exports = async (req, res) => {
                 OR: [
                   {
                     roleId: 9,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
                   },
                   {
                     roleId: 10,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },
@@ -475,7 +475,7 @@ module.exports = async (req, res) => {
                 OR: [
                   {
                     roleId: Number(roleId),
-                    status: { not: "C" },
+                    status: "A",
                     rankId: { gt: Number(rankId) },
                     employee: {
                       unitId: Number(unitId),
@@ -483,7 +483,7 @@ module.exports = async (req, res) => {
                   },
                   {
                     roleId: 10,
-                    status: { not: "C" },
+                    status: "A",
                     employee: {
                       unitId: Number(unitId),
                     },

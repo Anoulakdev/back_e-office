@@ -4,6 +4,7 @@ const moment = require("moment-timezone");
 module.exports = async (req, res) => {
   try {
     const {
+      status,
       search,
       roleId,
       departmentId,
@@ -15,6 +16,8 @@ module.exports = async (req, res) => {
     } = req.query;
 
     const where = {};
+
+    if (status) where.status = status;
 
     if (search) {
       where.OR = [

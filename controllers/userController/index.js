@@ -4,6 +4,7 @@ const listorganize = require("./listorganize");
 const listinternalorganize = require("./listinternalorganize");
 const getById = require("./getById");
 const update = require("./update");
+const updateStatus = require("./updateStatus");
 const remove = require("./remove");
 
 module.exports = {
@@ -13,5 +14,6 @@ module.exports = {
   listinternalorganize,
   getById,
   update,
+  updateStatus,
   remove,
 };
