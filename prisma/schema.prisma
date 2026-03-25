@@ -349,6 +349,9 @@ model DocinTracking {
   docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
   dateline          DateTime?
   description       String?     @db.Text
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
   viewed            Boolean?    @default(false)
   docinlog_original String?     @db.VarChar(255)
   docinlog_file     String?     @db.VarChar(255)
@@ -385,6 +388,9 @@ model DocinLog {
   dateline          DateTime?
   description       String?     @db.Text
   direction         String?     @db.VarChar(255)
+  departmentactive  Int?
+  divisionactive    Int?
+  officeactive      Int?
   viewed            Boolean?    @default(false)
   docinlog_original String?     @db.VarChar(255)
   docinlog_file     String?     @db.VarChar(255)

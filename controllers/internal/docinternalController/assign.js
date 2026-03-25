@@ -33,9 +33,12 @@ module.exports = async (req, res) => {
       const {
         docinId,
         receiverCode,
-        departmentId,
-        divisionId,
-        officeId,
+        departmentId1 = [],
+        departmentId2 = [],
+        divisionId1 = [],
+        divisionId2 = [],
+        officeId1 = [],
+        officeId2 = [],
         docstatusId,
         description,
       } = req.body;
@@ -58,62 +61,95 @@ module.exports = async (req, res) => {
 
       let logTransactions = [];
 
-      if (receiverCode && !departmentId && !divisionId && !officeId) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: {
-            employee: true,
-          },
-        });
-
-        if (!user) {
+      if (
+        receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length &&
+        !divisionId1.length &&
+        !divisionId2.length &&
+        !officeId1.length &&
+        !officeId2.length
+      ) {
+        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+            .status(400)
+            .json({ message: "receiverCode must be a non-empty array" });
         }
 
-        logTransactions.push(
-          prisma.docinLog.create({
-            data: {
-              docinId: Number(docinId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: user.employee.posId
-                ? Number(user.employee.posId)
-                : null,
-              docstatusId: Number(docstatusId),
-              description,
-              departmentId: user.employee.departmentId
-                ? Number(user.employee.departmentId)
-                : null,
-              divisionId: user.employee.divisionId
-                ? Number(user.employee.divisionId)
-                : null,
-              officeId: user.employee.officeId
-                ? Number(user.employee.officeId)
-                : null,
-              unitId: user.employee.unitId
-                ? Number(user.employee.unitId)
-                : null,
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: {
+              employee: true,
             },
-          }),
-          prisma.docinTracking.create({
-            data: {
-              docinId: Number(docinId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              docstatusId: Number(docstatusId),
-              description,
-            },
-          })
-        );
-      } else if (departmentId && !receiverCode && !divisionId && !officeId) {
-        const allDepartments = Array.isArray(departmentId)
-          ? departmentId.map((id) => Number(id))
-          : [Number(departmentId)];
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: "User not found with the provided receiverCode",
+            });
+          }
+
+          logTransactions.push(
+            prisma.docinLog.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                rankId: user.rankId ? Number(user.rankId) : null,
+                roleId: user.roleId ? Number(user.roleId) : null,
+                positionId: user.employee.posId
+                  ? Number(user.employee.posId)
+                  : null,
+                docstatusId: Number(docstatusId),
+                description,
+                departmentId: user.employee.departmentId
+                  ? Number(user.employee.departmentId)
+                  : null,
+                divisionId: user.employee.divisionId
+                  ? Number(user.employee.divisionId)
+                  : null,
+                officeId: user.employee.officeId
+                  ? Number(user.employee.officeId)
+                  : null,
+                unitId: user.employee.unitId
+                  ? Number(user.employee.unitId)
+                  : null,
+              },
+            }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                docstatusId: Number(docstatusId),
+                description,
+              },
+            }),
+          );
+        }
+      } else if (
+        (departmentId1.length || departmentId2.length) &&
+        !receiverCode &&
+        !divisionId1.length &&
+        !divisionId2.length &&
+        !officeId1.length &&
+        !officeId2.length
+      ) {
+        const allDepartments = [
+          ...(Array.isArray(departmentId1) && departmentId1.length
+            ? departmentId1.map((id) => ({
+                id: Number(id),
+                departmentactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(departmentId2) && departmentId2.length
+            ? departmentId2.map((id) => ({
+                id: Number(id),
+                departmentactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allDepartments.length) {
           return res
@@ -121,7 +157,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one departmentId is required." });
         }
 
-        for (const departmentId of allDepartments) {
+        for (const { id: departmentId, departmentactive } of allDepartments) {
           const department = await prisma.department.findUnique({
             where: { id: departmentId },
             include: {
@@ -162,7 +198,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -185,6 +221,7 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId) ?? null,
                 description,
                 departmentId: Number(depUser.departmentId) ?? null,
+                departmentactive,
                 divisionId: Number(depUser.divisionId) ?? null,
               },
             }),
@@ -195,14 +232,33 @@ module.exports = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,
+                departmentactive,
               },
-            })
+            }),
           );
         }
-      } else if (divisionId && !receiverCode && !departmentId && !officeId) {
-        const allDivisions = Array.isArray(divisionId)
-          ? divisionId.map((id) => Number(id))
-          : [Number(divisionId)];
+      } else if (
+        (divisionId1.length || divisionId2.length) &&
+        !receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length &&
+        !officeId1.length &&
+        !officeId2.length
+      ) {
+        const allDivisions = [
+          ...(Array.isArray(divisionId1) && divisionId1.length
+            ? divisionId1.map((id) => ({
+                id: Number(id),
+                divisionactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(divisionId2) && divisionId2.length
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                divisionactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allDivisions.length) {
           return res
@@ -210,7 +266,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one divisionId is required." });
         }
 
-        for (const divisionId of allDivisions) {
+        for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
             where: { id: divisionId },
             include: {
@@ -251,7 +307,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = divisionWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 7
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7,
             );
             if (depUser) break;
           }
@@ -275,6 +331,7 @@ module.exports = async (req, res) => {
                 description,
                 departmentId: Number(depUser.departmentId) ?? null,
                 divisionId: Number(depUser.divisionId) ?? null,
+                divisionactive,
               },
             }),
             prisma.docinTracking.create({
@@ -284,14 +341,33 @@ module.exports = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,
+                divisionactive,
               },
-            })
+            }),
           );
         }
-      } else if (officeId && !receiverCode && !departmentId && !divisionId) {
-        const allOffices = Array.isArray(officeId)
-          ? officeId.map((id) => Number(id))
-          : [Number(officeId)];
+      } else if (
+        (officeId1.length || officeId2.length) &&
+        !receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length &&
+        !divisionId1.length &&
+        !divisionId2.length
+      ) {
+        const allOffices = [
+          ...(Array.isArray(officeId1) && officeId1.length
+            ? officeId1.map((id) => ({
+                id: Number(id),
+                officeactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(officeId2) && officeId2.length
+            ? officeId2.map((id) => ({
+                id: Number(id),
+                officeactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allOffices.length) {
           return res
@@ -299,7 +375,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one officeId is required." });
         }
 
-        for (const officeId of allOffices) {
+        for (const { id: officeId, officeactive } of allOffices) {
           const office = await prisma.office.findUnique({
             where: { id: officeId },
             include: {
@@ -340,7 +416,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = officeWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 8
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 8,
             );
             if (depUser) break;
           }
@@ -365,6 +441,7 @@ module.exports = async (req, res) => {
                 departmentId: Number(depUser.departmentId) ?? null,
                 divisionId: Number(depUser.divisionId) ?? null,
                 officeId: Number(depUser.officeId) ?? null,
+                officeactive,
               },
             }),
             prisma.docinTracking.create({
@@ -374,20 +451,30 @@ module.exports = async (req, res) => {
                 receiverCode: depUser.emp_code,
                 docstatusId: Number(docstatusId),
                 description,
+                officeactive,
               },
-            })
+            }),
           );
         }
-      } else if (receiverCode && departmentId) {
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: { employee: true },
-        });
+      } else if (
+        receiverCode &&
+        (departmentId1.length || departmentId2.length)
+      ) {
+        const users = [];
 
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
         }
 
         const createLogs = (
@@ -397,7 +484,8 @@ module.exports = async (req, res) => {
           positionId,
           departmentId,
           divisionId,
-          docstatusId
+          docstatusId,
+          departmentactive = null,
         ) => [
           prisma.docinLog.create({
             data: {
@@ -411,6 +499,7 @@ module.exports = async (req, res) => {
               description,
               departmentId,
               divisionId,
+              departmentactive,
             },
           }),
           prisma.docinTracking.create({
@@ -420,25 +509,41 @@ module.exports = async (req, res) => {
               receiverCode,
               docstatusId,
               description,
+              departmentactive,
             },
           }),
         ];
 
-        logTransactions.push(
-          ...createLogs(
-            user.username,
-            user.rankId ?? null,
-            user.roleId ?? null,
-            user.employee?.posId ?? null,
-            user.employee?.departmentId ?? null,
-            user.employee?.divisionId ?? null,
-            Number(docstatusId)
-          )
-        );
+        // ✅ create logs for receiverCode
+        for (const user of users) {
+          logTransactions.push(
+            ...createLogs(
+              user.username,
+              user.rankId ?? null,
+              user.roleId ?? null,
+              user.employee?.posId ?? null,
+              user.employee?.departmentId ?? null,
+              user.employee?.divisionId ?? null,
+              Number(docstatusId),
+              (departmentactive = null),
+            ),
+          );
+        }
 
-        const allDepartments = Array.isArray(departmentId)
-          ? departmentId.map((id) => Number(id))
-          : [Number(departmentId)];
+        const allDepartments = [
+          ...(Array.isArray(departmentId1) && departmentId1.length
+            ? departmentId1.map((id) => ({
+                id: Number(id),
+                departmentactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(departmentId2) && departmentId2.length
+            ? departmentId2.map((id) => ({
+                id: Number(id),
+                departmentactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allDepartments.length) {
           return res
@@ -446,7 +551,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one departmentId is required." });
         }
 
-        for (const departmentId of allDepartments) {
+        for (const { id: departmentId, departmentactive } of allDepartments) {
           const department = await prisma.department.findUnique({
             where: { id: departmentId },
             include: {
@@ -487,7 +592,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -506,20 +611,27 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2
-            )
+              2,
+              departmentactive,
+            ),
           );
         }
-      } else if (receiverCode && divisionId) {
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: { employee: true },
-        });
+      } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
+        const users = [];
 
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
         }
 
         const createLogs = (
@@ -529,7 +641,8 @@ module.exports = async (req, res) => {
           positionId,
           departmentId,
           divisionId,
-          docstatusId
+          docstatusId,
+          divisionactive = null,
         ) => [
           prisma.docinLog.create({
             data: {
@@ -543,6 +656,7 @@ module.exports = async (req, res) => {
               description,
               departmentId,
               divisionId,
+              divisionactive,
             },
           }),
           prisma.docinTracking.create({
@@ -552,25 +666,40 @@ module.exports = async (req, res) => {
               receiverCode,
               docstatusId,
               description,
+              divisionactive,
             },
           }),
         ];
 
-        logTransactions.push(
-          ...createLogs(
-            user.username,
-            user.rankId ?? null,
-            user.roleId ?? null,
-            user.employee?.posId ?? null,
-            user.employee?.departmentId ?? null,
-            user.employee?.divisionId ?? null,
-            Number(docstatusId)
-          )
-        );
+        for (const user of users) {
+          logTransactions.push(
+            ...createLogs(
+              user.username,
+              user.rankId ?? null,
+              user.roleId ?? null,
+              user.employee?.posId ?? null,
+              user.employee?.departmentId ?? null,
+              user.employee?.divisionId ?? null,
+              Number(docstatusId),
+              (divisionactive = null),
+            ),
+          );
+        }
 
-        const allDivisions = Array.isArray(divisionId)
-          ? divisionId.map((id) => Number(id))
-          : [Number(divisionId)];
+        const allDivisions = [
+          ...(Array.isArray(divisionId1) && divisionId1.length
+            ? divisionId1.map((id) => ({
+                id: Number(id),
+                divisionactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(divisionId2) && divisionId2.length
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                divisionactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allDivisions.length) {
           return res
@@ -578,7 +707,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one divisionId is required." });
         }
 
-        for (const divisionId of allDivisions) {
+        for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
             where: { id: divisionId },
             include: {
@@ -619,7 +748,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = divisionWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 7
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7,
             );
             if (depUser) break;
           }
@@ -638,20 +767,27 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2
-            )
+              2,
+              divisionactive,
+            ),
           );
         }
-      } else if (receiverCode && officeId) {
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: { employee: true },
-        });
+      } else if (receiverCode && (officeId1.length || officeId2.length)) {
+        const users = [];
 
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
         }
 
         const createLogs = (
@@ -662,7 +798,8 @@ module.exports = async (req, res) => {
           departmentId,
           divisionId,
           officeId,
-          docstatusId
+          docstatusId,
+          officeactive = null,
         ) => [
           prisma.docinLog.create({
             data: {
@@ -677,6 +814,7 @@ module.exports = async (req, res) => {
               departmentId,
               divisionId,
               officeId,
+              officeactive,
             },
           }),
           prisma.docinTracking.create({
@@ -686,26 +824,41 @@ module.exports = async (req, res) => {
               receiverCode,
               docstatusId,
               description,
+              officeactive,
             },
           }),
         ];
 
-        logTransactions.push(
-          ...createLogs(
-            user.username,
-            user.rankId ?? null,
-            user.roleId ?? null,
-            user.employee?.posId ?? null,
-            user.employee?.departmentId ?? null,
-            user.employee?.divisionId ?? null,
-            user.employee?.officeId ?? null,
-            Number(docstatusId)
-          )
-        );
+        for (const user of users) {
+          logTransactions.push(
+            ...createLogs(
+              user.username,
+              user.rankId ?? null,
+              user.roleId ?? null,
+              user.employee?.posId ?? null,
+              user.employee?.departmentId ?? null,
+              user.employee?.divisionId ?? null,
+              user.employee?.officeId ?? null,
+              Number(docstatusId),
+              (officeactive = null),
+            ),
+          );
+        }
 
-        const allOffices = Array.isArray(officeId)
-          ? officeId.map((id) => Number(id))
-          : [Number(officeId)];
+        const allOffices = [
+          ...(Array.isArray(officeId1) && officeId1.length
+            ? officeId1.map((id) => ({
+                id: Number(id),
+                officeactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(officeId2) && officeId2.length
+            ? officeId2.map((id) => ({
+                id: Number(id),
+                officeactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allOffices.length) {
           return res
@@ -713,7 +866,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one officeId is required." });
         }
 
-        for (const officeId of allOffices) {
+        for (const { id: officeId, officeactive } of allOffices) {
           const office = await prisma.office.findUnique({
             where: { id: officeId },
             include: {
@@ -754,7 +907,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = officeWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 8
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 8,
             );
             if (depUser) break;
           }
@@ -774,8 +927,9 @@ module.exports = async (req, res) => {
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
               depUser.officeId ?? null,
-              2
-            )
+              2,
+              officeactive,
+            ),
           );
         }
       }
