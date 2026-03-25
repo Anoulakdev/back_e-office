@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: "User not found with the provided receiverCode",
+              message: `User not found: ${receiverC}`,
             });
           }
 

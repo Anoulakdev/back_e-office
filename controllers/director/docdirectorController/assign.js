@@ -347,6 +347,323 @@ module.exports = async (req, res) => {
             }),
           );
         }
+      } else if (
+        receiverCode &&
+        (departmentId1.length || departmentId2.length)
+      ) {
+        const users = [];
+
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
+        }
+
+        const createLogs = (
+          receiverCode,
+          rankId,
+          roleId,
+          positionId,
+          departmentId,
+          divisionId,
+          docstatusId,
+          departmentactive = null,
+        ) => [
+          prisma.docdtLog.create({
+            data: {
+              docdtId: Number(docdtId),
+              assignerCode: req.user.username,
+              receiverCode,
+              rankId,
+              roleId,
+              positionId,
+              docstatusId,
+              description,
+              departmentId,
+              divisionId,
+              departmentactive,
+            },
+          }),
+          prisma.docdtTracking.create({
+            data: {
+              docdtId: Number(docdtId),
+              assignerCode: req.user.username,
+              receiverCode,
+              docstatusId,
+              description,
+              departmentactive,
+            },
+          }),
+        ];
+
+        // ✅ create logs for receiverCode
+        for (const user of users) {
+          logTransactions.push(
+            ...createLogs(
+              user.username,
+              user.rankId ?? null,
+              user.roleId ?? null,
+              user.employee?.posId ?? null,
+              user.employee?.departmentId ?? null,
+              user.employee?.divisionId ?? null,
+              Number(docstatusId),
+              (departmentactive = null),
+            ),
+          );
+        }
+
+        const allDepartments = [
+          ...(Array.isArray(departmentId1) && departmentId1.length
+            ? departmentId1.map((id) => ({
+                id: Number(id),
+                departmentactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(departmentId2) && departmentId2.length
+            ? departmentId2.map((id) => ({
+                id: Number(id),
+                departmentactive: 2,
+              }))
+            : []),
+        ];
+
+        if (!allDepartments.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one departmentId is required." });
+        }
+
+        for (const { id: departmentId, departmentactive } of allDepartments) {
+          const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 6,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
+            return res.status(404).json({
+              message: `department ${departmentId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in department ${departmentId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            ...createLogs(
+              depUser.emp_code,
+              depUser.user?.rankId ?? null,
+              depUser.user?.roleId ?? null,
+              depUser.posId ?? null,
+              depUser.departmentId ?? null,
+              depUser.divisionId ?? null,
+              2,
+              departmentactive,
+            ),
+          );
+        }
+      } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
+        const users = [];
+
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
+        }
+
+        const createLogs = (
+          receiverCode,
+          rankId,
+          roleId,
+          positionId,
+          departmentId,
+          divisionId,
+          docstatusId,
+          divisionactive = null,
+        ) => [
+          prisma.docdtLog.create({
+            data: {
+              docdtId: Number(docdtId),
+              assignerCode: req.user.username,
+              receiverCode,
+              rankId,
+              roleId,
+              positionId,
+              docstatusId,
+              description,
+              departmentId,
+              divisionId,
+              divisionactive,
+            },
+          }),
+          prisma.docdtTracking.create({
+            data: {
+              docdtId: Number(docdtId),
+              assignerCode: req.user.username,
+              receiverCode,
+              docstatusId,
+              description,
+              divisionactive,
+            },
+          }),
+        ];
+
+        // ✅ create logs for receiverCode
+        for (const user of users) {
+          logTransactions.push(
+            ...createLogs(
+              user.username,
+              user.rankId ?? null,
+              user.roleId ?? null,
+              user.employee?.posId ?? null,
+              user.employee?.departmentId ?? null,
+              user.employee?.divisionId ?? null,
+              Number(docstatusId),
+              (divisionactive = null),
+            ),
+          );
+        }
+
+        const allDivisions = [
+          ...(Array.isArray(divisionId1) && divisionId1.length
+            ? divisionId1.map((id) => ({
+                id: Number(id),
+                divisionactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(divisionId2) && divisionId2.length
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                divisionactive: 2,
+              }))
+            : []),
+        ];
+
+        if (!allDivisions.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one divisionId is required." });
+        }
+
+        for (const { id: divisionId, divisionactive } of allDivisions) {
+          const division = await prisma.division.findUnique({
+            where: { id: divisionId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 7,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const divisionWithUser = {
+            ...division,
+            employees: division?.employees?.length
+              ? division.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!divisionWithUser || !divisionWithUser.employees.length) {
+            return res.status(404).json({
+              message: `division ${divisionId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = divisionWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 7,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in division ${divisionId} with specified rank and role`,
+            });
+          }
+
+          logTransactions.push(
+            ...createLogs(
+              depUser.emp_code,
+              depUser.user?.rankId ?? null,
+              depUser.user?.roleId ?? null,
+              depUser.posId ?? null,
+              depUser.departmentId ?? null,
+              depUser.divisionId ?? null,
+              2,
+              divisionactive,
+            ),
+          );
+        }
       }
 
       // อัปเดตสถานะของ docDirector
