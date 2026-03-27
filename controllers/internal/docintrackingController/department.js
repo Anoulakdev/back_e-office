@@ -678,7 +678,7 @@ module.exports = async (req, res) => {
             depUser.posId ?? null,
             depUser.departmentId ?? null,
             depUser.divisionId ?? null,
-            2,
+            Number(docstatusId),
             departmentactive,
           );
         }
@@ -863,8 +863,8 @@ module.exports = async (req, res) => {
             depUser.posId ?? null,
             depUser.departmentId ?? null,
             depUser.divisionId ?? null,
-            2,
-            departmentactive,
+            Number(docstatusId),
+            existingTracking?.departmentactive,
             divisionactive,
           );
         }
