@@ -94,7 +94,6 @@ module.exports = async (req, res) => {
                 description,
                 departmentId: user.employee.departmentId ?? null,
                 divisionId: user.employee.divisionId ?? null,
-                departmentactive: null,
               },
             }),
             prisma.docdtTracking.create({
@@ -212,8 +211,8 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId) ?? null,
                 description,
                 departmentId,
-                departmentactive,
                 divisionId: Number(depUser.divisionId) ?? null,
+                departmentactive,
               },
             }),
             prisma.docdtTracking.create({
@@ -502,7 +501,7 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2,
+              Number(docstatusId),
               departmentactive,
             ),
           );
@@ -659,7 +658,7 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2,
+              Number(docstatusId),
               divisionactive,
             ),
           );

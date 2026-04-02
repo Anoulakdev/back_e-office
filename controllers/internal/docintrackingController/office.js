@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
       const {
         docinId,
         receiverCode,
-        officeId,
+        officeId1 = [],
+        officeId2 = [],
         unitId,
         docstatusId,
         description,
@@ -54,7 +55,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (!receiverCode && !officeId && !unitId) {
+      if (!receiverCode && !officeId1.length && !officeId2.length && !unitId) {
         logTransactions.push(
           prisma.docinLog.create({
             data: {
@@ -70,244 +71,157 @@ module.exports = async (req, res) => {
               docinlog_type: req.file ? req.file.mimetype : null,
               docinlog_size: req.file ? req.file.size : null,
             },
-          })
+          }),
         );
         if (existingTracking) {
           logTransactions.push(
-            prisma.docinTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
-      } else if (receiverCode && !officeId && !unitId) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: {
-            employee: true,
-          },
-        });
-
-        if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
-        }
-
-        const datelineValue = dateline
-          ? new Date(dateline)
-          : existingTracking?.dateline
-          ? new Date(existingTracking.dateline)
-          : null;
-
-        let docinlogfileData = {
-          docinlog_original: null,
-          docinlog_file: null,
-          docinlog_type: null,
-          docinlog_size: null,
-        };
-
-        if (req.file) {
-          docinlogfileData = {
-            docinlog_original: Buffer.from(
-              req.file.originalname,
-              "latin1"
-            ).toString("utf8"),
-            docinlog_file: req.file.filename,
-            docinlog_type: req.file.mimetype,
-            docinlog_size: req.file.size,
-          };
-        } else if (Number(docstatusId) === 6) {
-          if (existingTracking) {
-            if (existingTracking.docstatusId === 5) {
-              docinlogfileData = {
-                docinlog_original: null,
-                docinlog_file: null,
-                docinlog_type: null,
-                docinlog_size: null,
-              };
-            } else if (existingTracking.docstatusId === 6) {
-              docinlogfileData = {
-                docinlog_original: existingTracking.docinlog_original ?? null,
-                docinlog_file: existingTracking.docinlog_file ?? null,
-                docinlog_type: existingTracking.docinlog_type ?? null,
-                docinlog_size: existingTracking.docinlog_size ?? null,
-              };
-            }
-          }
-        } else if (Number(docstatusId) === 7) {
-          docinlogfileData = {
-            docinlog_original: existingTracking?.docinlog_original ?? null,
-            docinlog_file: existingTracking?.docinlog_file ?? null,
-            docinlog_type: existingTracking?.docinlog_type ?? null,
-            docinlog_size: existingTracking?.docinlog_size ?? null,
-          };
-        }
-
-        logTransactions.push(
-          prisma.docinLog.create({
-            data: {
-              docinId: Number(docinId),
-              assignerCode: req.user.username,
-              receiverCode: user.username,
-              rankId: user.rankId ? Number(user.rankId) : null,
-              roleId: user.roleId ? Number(user.roleId) : null,
-              positionId: user.employee.posId
-                ? Number(user.employee.posId)
-                : null,
-              docstatusId: Number(docstatusId),
-              dateline: datelineValue,
-              description: description ?? null,
-              departmentId: user.employee.departmentId
-                ? Number(user.employee.departmentId)
-                : null,
-              divisionId: user.employee.divisionId
-                ? Number(user.employee.divisionId)
-                : null,
-              officeId: user.employee.officeId
-                ? Number(user.employee.officeId)
-                : null,
-              unitId: user.employee.unitId
-                ? Number(user.employee.unitId)
-                : null,
-              ...docinlogfileData,
+      } else if (
+        receiverCode &&
+        !officeId1.length &&
+        !officeId2.length &&
+        !unitId
+      ) {
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: {
+              employee: true,
             },
-          })
-        );
+          });
 
-        if (existingTracking) {
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          const datelineValue = dateline
+            ? new Date(dateline)
+            : existingTracking?.dateline
+              ? new Date(existingTracking.dateline)
+              : null;
+
+          let docinlogfileData = {
+            docinlog_original: null,
+            docinlog_file: null,
+            docinlog_type: null,
+            docinlog_size: null,
+          };
+
+          if (req.file) {
+            docinlogfileData = {
+              docinlog_original: Buffer.from(
+                req.file.originalname,
+                "latin1",
+              ).toString("utf8"),
+              docinlog_file: req.file.filename,
+              docinlog_type: req.file.mimetype,
+              docinlog_size: req.file.size,
+            };
+          } else if (Number(docstatusId) === 6) {
+            if (existingTracking) {
+              if (existingTracking.docstatusId === 5) {
+                docinlogfileData = {
+                  docinlog_original: null,
+                  docinlog_file: null,
+                  docinlog_type: null,
+                  docinlog_size: null,
+                };
+              } else if (existingTracking.docstatusId === 6) {
+                docinlogfileData = {
+                  docinlog_original: existingTracking.docinlog_original ?? null,
+                  docinlog_file: existingTracking.docinlog_file ?? null,
+                  docinlog_type: existingTracking.docinlog_type ?? null,
+                  docinlog_size: existingTracking.docinlog_size ?? null,
+                };
+              }
+            }
+          } else if (Number(docstatusId) === 7) {
+            docinlogfileData = {
+              docinlog_original: existingTracking?.docinlog_original ?? null,
+              docinlog_file: existingTracking?.docinlog_file ?? null,
+              docinlog_type: existingTracking?.docinlog_type ?? null,
+              docinlog_size: existingTracking?.docinlog_size ?? null,
+            };
+          }
+
           logTransactions.push(
-            prisma.docinTracking.update({
-              where: { id: existingTracking.id },
+            prisma.docinLog.create({
               data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                rankId: user.rankId ? Number(user.rankId) : null,
+                roleId: user.roleId ? Number(user.roleId) : null,
+                positionId: user.employee.posId
+                  ? Number(user.employee.posId)
+                  : null,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                departmentId: user.employee.departmentId
+                  ? Number(user.employee.departmentId)
+                  : null,
+                divisionId: user.employee.divisionId
+                  ? Number(user.employee.divisionId)
+                  : null,
+                officeId: user.employee.officeId
+                  ? Number(user.employee.officeId)
+                  : null,
+                unitId: user.employee.unitId
+                  ? Number(user.employee.unitId)
+                  : null,
+                ...docinlogfileData,
+                departmentactive: existingTracking.departmentactive,
+                divisionactive: existingTracking.divisionactive,
+                officeactive: existingTracking.officeactive,
+              },
+            }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
                 assignerCode: req.user.username,
                 receiverCode: user.username,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                viewed: false,
                 ...docinlogfileData,
+                departmentactive: existingTracking.departmentactive,
+                divisionactive: existingTracking.divisionactive,
+                officeactive: existingTracking.officeactive,
               },
-            })
+            }),
           );
         }
-      } else if (unitId && !receiverCode && !officeId) {
-        const unit = await prisma.unit.findUnique({
-          where: { id: Number(unitId) },
-          include: {
-            employees: {
-              include: {
-                user: {
-                  where: {
-                    roleId: 9,
-                  },
-                  select: {
-                    rankId: true,
-                    roleId: true,
-                  },
-                },
-              },
-            },
-          },
-        });
-
-        const unitWithUser = {
-          ...unit,
-          employees: unit?.employees?.length
-            ? unit.employees.map((employee) => ({
-                ...employee,
-                user: employee.user[0] || null,
-              }))
-            : [],
-        };
-
-        if (!unitWithUser || !unitWithUser.employees.length) {
-          return res.status(404).json({
-            message: `unit ${unitId} or employees not found`,
-          });
-        }
-
-        let depUser = null;
-        const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
-
-        for (const rankId of rankPriority) {
-          depUser = unitWithUser.employees.find(
-            (u) => u.user?.rankId === rankId && u.user?.roleId === 9
-          );
-          if (depUser) break;
-        }
-
-        if (!depUser) {
-          return res.status(404).json({
-            message: `No matching user found in unit ${unitId} with specified rank and role`,
-          });
-        }
-
-        const datelineValue = dateline
-          ? new Date(dateline)
-          : existingTracking?.dateline
-          ? new Date(existingTracking.dateline)
-          : null;
-
-        logTransactions.push(
-          prisma.docinLog.create({
-            data: {
-              docinId: Number(docinId),
-              assignerCode: req.user.username,
-              receiverCode: depUser.emp_code,
-              rankId: depUser.user?.rankId
-                ? Number(depUser.user?.rankId)
-                : null,
-              roleId: depUser.user?.roleId
-                ? Number(depUser.user?.roleId)
-                : null,
-              positionId: depUser.posId ? Number(depUser.posId) : null,
-              docstatusId: Number(docstatusId),
-              dateline: datelineValue,
-              description: description ?? null,
-              departmentId: depUser.departmentId
-                ? Number(depUser.departmentId)
-                : null,
-              divisionId: depUser.divisionId
-                ? Number(depUser.divisionId)
-                : null,
-              officeId: depUser.officeId ? Number(depUser.officeId) : null,
-              unitId: depUser.unitId ? Number(depUser.unitId) : null,
-              docinlog_original: req.file
-                ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
-                : null,
-              docinlog_file: req.file ? req.file.filename : null,
-              docinlog_type: req.file ? req.file.mimetype : null,
-              docinlog_size: req.file ? req.file.size : null,
-            },
-          })
-        );
-
         if (existingTracking) {
           logTransactions.push(
-            prisma.docinTracking.update({
+            prisma.docinTracking.delete({
               where: { id: existingTracking.id },
-              data: {
-                assignerCode: req.user.username,
-                receiverCode: depUser.emp_code,
-                docstatusId: Number(docstatusId),
-                dateline: datelineValue,
-                description: description ?? null,
-                viewed: false,
-                docinlog_original: req.file
-                  ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
-                    )
-                  : null,
-                docinlog_file: req.file ? req.file.filename : null,
-                docinlog_type: req.file ? req.file.mimetype : null,
-                docinlog_size: req.file ? req.file.size : null,
-              },
-            })
+            }),
           );
         }
-      } else if (officeId && !receiverCode && !unitId) {
-        const allOffices = Array.isArray(officeId)
-          ? officeId.map((id) => Number(id))
-          : [Number(officeId)];
+      } else if (
+        (officeId1.length || officeId2.length) &&
+        !receiverCode &&
+        !unitId
+      ) {
+        const allOffices = [
+          ...(Array.isArray(officeId1) && officeId1.length
+            ? officeId1.map((id) => ({
+                id: Number(id),
+                officeactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(officeId2) && officeId2.length
+            ? officeId2.map((id) => ({
+                id: Number(id),
+                officeactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allOffices.length) {
           return res
@@ -315,7 +229,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one officeId is required." });
         }
 
-        for (const officeId of allOffices) {
+        for (const { id: officeId, officeactive } of allOffices) {
           const office = await prisma.office.findUnique({
             where: { id: officeId },
             include: {
@@ -356,7 +270,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = officeWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 8
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 8,
             );
             if (depUser) break;
           }
@@ -370,8 +284,8 @@ module.exports = async (req, res) => {
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           logTransactions.push(
             prisma.docinLog.create({
@@ -398,14 +312,17 @@ module.exports = async (req, res) => {
                 officeId: depUser.officeId ? Number(depUser.officeId) : null,
                 docinlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docinlog_file: req.file?.filename ?? null,
                 docinlog_type: req.file?.mimetype ?? null,
                 docinlog_size: req.file?.size ?? null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive,
               },
-            })
+            }),
           );
           logTransactions.push(
             prisma.docinTracking.create({
@@ -418,39 +335,195 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 docinlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docinlog_file: req.file?.filename ?? null,
                 docinlog_type: req.file?.mimetype ?? null,
                 docinlog_size: req.file?.size ?? null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive,
               },
-            })
+            }),
           );
         }
         if (existingTracking) {
           logTransactions.push(
-            prisma.docinTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
-      } else if (receiverCode && officeId) {
-        const user = await prisma.user.findUnique({
-          where: { username: receiverCode },
-          include: { employee: true },
-        });
-        if (!user) return res.status(404).json({ message: "User not found" });
+      } else if (
+        unitId &&
+        !receiverCode &&
+        !officeId1.length &&
+        !officeId2.length
+      ) {
+        const allUnits = Array.isArray(unitId)
+          ? unitId.map((id) => Number(id))
+          : [Number(unitId)];
+
+        if (!allUnits.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one unitId is required." });
+        }
+
+        for (const unitId of allUnits) {
+          const unit = await prisma.unit.findUnique({
+            where: { id: Number(unitId) },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 9,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const unitWithUser = {
+            ...unit,
+            employees: unit?.employees?.length
+              ? unit.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!unitWithUser || !unitWithUser.employees.length) {
+            return res.status(404).json({
+              message: `unit ${unitId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = unitWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 9,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in unit ${unitId} with specified rank and role`,
+            });
+          }
+
+          const datelineValue = dateline
+            ? new Date(dateline)
+            : existingTracking?.dateline
+              ? new Date(existingTracking.dateline)
+              : null;
+
+          logTransactions.push(
+            prisma.docinLog.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                rankId: depUser.user?.rankId
+                  ? Number(depUser.user?.rankId)
+                  : null,
+                roleId: depUser.user?.roleId
+                  ? Number(depUser.user?.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                departmentId: depUser.departmentId
+                  ? Number(depUser.departmentId)
+                  : null,
+                divisionId: depUser.divisionId
+                  ? Number(depUser.divisionId)
+                  : null,
+                officeId: depUser.officeId ? Number(depUser.officeId) : null,
+                unitId: depUser.unitId ? Number(depUser.unitId) : null,
+                docinlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8",
+                    )
+                  : null,
+                docinlog_file: req.file ? req.file.filename : null,
+                docinlog_type: req.file ? req.file.mimetype : null,
+                docinlog_size: req.file ? req.file.size : null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive: existingTracking?.officeactive,
+              },
+            }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                docinlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8",
+                    )
+                  : null,
+                docinlog_file: req.file ? req.file.filename : null,
+                docinlog_type: req.file ? req.file.mimetype : null,
+                docinlog_size: req.file ? req.file.size : null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive: existingTracking?.officeactive,
+              },
+            }),
+          );
+
+          if (existingTracking) {
+            logTransactions.push(
+              prisma.docinTracking.delete({
+                where: { id: existingTracking.id },
+              }),
+            );
+          }
+        }
+      } else if (receiverCode && (officeId1.length || officeId2.length)) {
+        const users = [];
+
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
+        }
 
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
-          ? new Date(existingTracking.dateline)
-          : null;
+            ? new Date(existingTracking.dateline)
+            : null;
 
         const fileData = req.file
           ? {
               docinlog_original: Buffer.from(
                 req.file.originalname,
-                "latin1"
+                "latin1",
               ).toString("utf8"),
               docinlog_file: req.file.filename,
               docinlog_type: req.file.mimetype,
@@ -466,7 +539,10 @@ module.exports = async (req, res) => {
           departmentId,
           divisionId,
           officeId,
-          docstatusId
+          docstatusId,
+          departmentactive = null,
+          divisionactive = null,
+          officeactive = null,
         ) => {
           logTransactions.push(
             prisma.docinLog.create({
@@ -484,8 +560,11 @@ module.exports = async (req, res) => {
                 divisionId: divisionId,
                 officeId: officeId,
                 ...fileData,
+                departmentactive,
+                divisionactive,
+                officeactive,
               },
-            })
+            }),
           );
           logTransactions.push(
             prisma.docinTracking.create({
@@ -497,27 +576,46 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...fileData,
+                departmentactive,
+                divisionactive,
+                officeactive,
               },
-            })
+            }),
           );
         };
 
         // บันทึกของผู้รับโดยตรง
-        createLogAndTrack(
-          user.username,
-          user.rankId ?? null,
-          user.roleId ?? null,
-          user.employee?.posId ?? null,
-          user.employee?.departmentId ?? null,
-          user.employee?.divisionId ?? null,
-          user.employee?.officeId ?? null,
-          Number(docstatusId)
-        );
+        for (const user of users) {
+          createLogAndTrack(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null,
+            user.employee?.officeId ?? null,
+            Number(docstatusId),
+            existingTracking?.departmentactive,
+            existingTracking?.divisionactive,
+            existingTracking?.officeId,
+          );
+        }
 
         // บันทึกของแผนก
-        const allOffices = Array.isArray(officeId)
-          ? officeId.map((id) => Number(id))
-          : [Number(officeId)];
+        const allOffices = [
+          ...(Array.isArray(officeId1) && officeId1.length
+            ? officeId1.map((id) => ({
+                id: Number(id),
+                officeactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(divisionId2) && divisionId2.length
+            ? divisionId2.map((id) => ({
+                id: Number(id),
+                officeactive: 2,
+              }))
+            : []),
+        ];
 
         if (!allOffices.length) {
           return res
@@ -525,7 +623,7 @@ module.exports = async (req, res) => {
             .json({ message: "At least one officeId is required." });
         }
 
-        for (const officeId of allOffices) {
+        for (const { id: officeId, officeactive } of allOffices) {
           const office = await prisma.office.findUnique({
             where: { id: officeId },
             include: {
@@ -566,7 +664,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = officeWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 8
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 8,
             );
             if (depUser) break;
           }
@@ -585,14 +683,202 @@ module.exports = async (req, res) => {
             depUser.departmentId ?? null,
             depUser.divisionId ?? null,
             depUser.officeId ?? null,
-            2
+            Number(docstatusId),
+            existingTracking?.departmentactive,
+            existingTracking?.divisionactive,
+            officeactive,
           );
         }
 
         // ลบ tracking เก่า (ถ้ามี)
         if (existingTracking) {
           logTransactions.push(
-            prisma.docinTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
+          );
+        }
+      } else if (receiverCode && unitId) {
+        const users = [];
+
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
+        }
+
+        const datelineValue = dateline
+          ? new Date(dateline)
+          : existingTracking?.dateline
+            ? new Date(existingTracking.dateline)
+            : null;
+
+        const fileData = req.file
+          ? {
+              docinlog_original: Buffer.from(
+                req.file.originalname,
+                "latin1",
+              ).toString("utf8"),
+              docinlog_file: req.file.filename,
+              docinlog_type: req.file.mimetype,
+              docinlog_size: req.file.size,
+            }
+          : {};
+
+        const createLogAndTrack = (
+          receiverCode,
+          rankId,
+          roleId,
+          posId,
+          deptId,
+          divId,
+          docstatusId,
+          departmentactive = null,
+          divisionactive = null,
+          officeId = null,
+        ) => {
+          logTransactions.push(
+            prisma.docinLog.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode,
+                rankId,
+                roleId,
+                positionId: posId,
+                docstatusId,
+                dateline: datelineValue,
+                description: description ?? null,
+                departmentId: deptId,
+                divisionId: divId,
+                ...fileData,
+                departmentactive,
+                divisionactive,
+                officeId,
+              },
+            }),
+          );
+          logTransactions.push(
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode,
+                docstatusId,
+                dateline: datelineValue,
+                description: description ?? null,
+                ...fileData,
+                departmentactive,
+                divisionactive,
+                officeId,
+              },
+            }),
+          );
+        };
+
+        // บันทึกของผู้รับโดยตรง
+        for (const user of users) {
+          createLogAndTrack(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null,
+            Number(docstatusId),
+            existingTracking?.departmentactive,
+            existingTracking?.divisionactive,
+            existingTracking?.officeId,
+          );
+        }
+
+        const allUnits = Array.isArray(unitId)
+          ? unitId.map((id) => Number(id))
+          : [Number(unitId)];
+
+        if (!allUnits.length) {
+          return res
+            .status(400)
+            .json({ message: "At least one unitId is required." });
+        }
+
+        for (const unitId of allUnits) {
+          const unit = await prisma.unit.findUnique({
+            where: { id: Number(unitId) },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: {
+                      roleId: 9,
+                    },
+                    select: {
+                      rankId: true,
+                      roleId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const unitWithUser = {
+            ...unit,
+            employees: unit?.employees?.length
+              ? unit.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!unitWithUser || !unitWithUser.employees.length) {
+            return res.status(404).json({
+              message: `unit ${unitId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = unitWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 9,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser) {
+            return res.status(404).json({
+              message: `No matching user found in unit ${unitId} with specified rank and role`,
+            });
+          }
+
+          createLogAndTrack(
+            depUser.emp_code,
+            depUser.user?.rankId ?? null,
+            depUser.user?.roleId ?? null,
+            depUser.posId ?? null,
+            depUser.departmentId ?? null,
+            depUser.divisionId ?? null,
+            Number(docstatusId),
+            existingTracking?.departmentactive,
+            existingTracking?.divisionactive,
+            existingTracking?.officeId,
+          );
+        }
+
+        // ลบ tracking เก่า (ถ้ามี)
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
       }

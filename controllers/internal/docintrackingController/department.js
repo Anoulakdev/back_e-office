@@ -191,25 +191,27 @@ module.exports = async (req, res) => {
                 divisionactive: existingTracking?.divisionactive,
               },
             }),
+            prisma.docinTracking.create({
+              data: {
+                docinId: Number(docinId),
+                assignerCode: req.user.username,
+                receiverCode: user.username,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                ...docinlogfileData,
+                departmentactive: existingTracking.departmentactive,
+                divisionactive: existingTracking.divisionactive,
+              },
+            }),
           );
-          if (existingTracking) {
-            logTransactions.push(
-              prisma.docinTracking.update({
-                where: { id: existingTracking.id },
-                data: {
-                  assignerCode: req.user.username,
-                  receiverCode: user.username,
-                  docstatusId: Number(docstatusId),
-                  dateline: datelineValue,
-                  description: description ?? null,
-                  viewed: false,
-                  ...docinlogfileData,
-                  departmentactive: existingTracking.departmentactive,
-                  divisionactive: existingTracking.divisionactive,
-                },
-              }),
-            );
-          }
+        }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docinTracking.delete({
+              where: { id: existingTracking.id },
+            }),
+          );
         }
       } else if (
         (divisionId1.length || divisionId2.length) &&
@@ -837,7 +839,7 @@ module.exports = async (req, res) => {
 
           if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `division ${divisionId} or employees not found`,
+              message: `ພະແນກ ${divisionId} ຫຼື ຜູ້ຊີ້ນຳບໍ່ພົບ`,
             });
           }
 
@@ -853,7 +855,7 @@ module.exports = async (req, res) => {
 
           if (!depUser)
             return res.status(404).json({
-              message: `No matching user found in division ${divisionId} with specified rank and role`,
+              message: `ບໍ່ພົບຜູ້ໃຊ້ໃນພະແນກ ${divisionId} ກັບຕໍ່ລຳດັບແລະສິດທີ່ກໍານົດ`,
             });
 
           createLogAndTrack(

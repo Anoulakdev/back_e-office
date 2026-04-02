@@ -70,11 +70,11 @@ module.exports = async (req, res) => {
               docdtlog_type: req.file ? req.file.mimetype : null,
               docdtlog_size: req.file ? req.file.size : null,
             },
-          })
+          }),
         );
         if (existingTracking) {
           logTransactions.push(
-            prisma.docdtTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docdtTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
       } else if (
@@ -96,13 +96,17 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!user) return res.status(404).json({ message: "User not found" });
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
 
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           const updateData = {};
           if (priorityId) {
@@ -120,7 +124,7 @@ module.exports = async (req, res) => {
             docdtlogfileData = {
               docdtlog_original: Buffer.from(
                 req.file.originalname,
-                "latin1"
+                "latin1",
               ).toString("utf8"),
               docdtlog_file: req.file.filename,
               docdtlog_type: req.file.mimetype,
@@ -190,20 +194,19 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 ...docdtlogfileData,
               },
-            })
+            }),
           );
         }
         if (existingTracking) {
           logTransactions.push(
             prisma.docdtTracking.delete({
               where: { id: existingTracking.id },
-            })
+            }),
           );
         }
       } else if (
-        !receiverCode &&
-        departmentId1.length &&
-        departmentId2.length
+        (departmentId1.length || departmentId2.length) &&
+        !receiverCode
       ) {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [
@@ -269,7 +272,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -283,8 +286,8 @@ module.exports = async (req, res) => {
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           const updateData = {};
           if (priorityId) {
@@ -318,7 +321,7 @@ module.exports = async (req, res) => {
                   : null,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
@@ -337,14 +340,14 @@ module.exports = async (req, res) => {
                 departmentactive,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
               },
-            })
+            }),
           );
         }
 
@@ -353,10 +356,13 @@ module.exports = async (req, res) => {
           logTransactions.push(
             prisma.docdtTracking.delete({
               where: { id: existingTracking.id },
-            })
+            }),
           );
         }
-      } else if (receiverCode && departmentId1.length && departmentId2.length) {
+      } else if (
+        receiverCode &&
+        (departmentId1.length || departmentId2.length)
+      ) {
         if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
             .status(400)
@@ -370,13 +376,17 @@ module.exports = async (req, res) => {
             },
           });
 
-          if (!user) return res.status(404).json({ message: "User not found" });
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
 
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           let docdtlogfileData = {
             docdtlog_original: null,
@@ -389,7 +399,7 @@ module.exports = async (req, res) => {
             docdtlogfileData = {
               docdtlog_original: Buffer.from(
                 req.file.originalname,
-                "latin1"
+                "latin1",
               ).toString("utf8"),
               docdtlog_file: req.file.filename,
               docdtlog_type: req.file.mimetype,
@@ -429,7 +439,7 @@ module.exports = async (req, res) => {
               prisma.docDirector.update({
                 where: { id: Number(docdtId) },
                 data: updateData,
-              })
+              }),
             );
           }
 
@@ -466,7 +476,7 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 ...docdtlogfileData,
               },
-            })
+            }),
           );
         }
 
@@ -533,7 +543,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -547,8 +557,8 @@ module.exports = async (req, res) => {
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           logTransactions.push(
             prisma.docdtLog.create({
@@ -573,7 +583,7 @@ module.exports = async (req, res) => {
                   : null,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
@@ -592,14 +602,14 @@ module.exports = async (req, res) => {
                 departmentactive,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
               },
-            })
+            }),
           );
         }
 
@@ -608,7 +618,7 @@ module.exports = async (req, res) => {
           logTransactions.push(
             prisma.docdtTracking.delete({
               where: { id: existingTracking.id },
-            })
+            }),
           );
         }
       }
