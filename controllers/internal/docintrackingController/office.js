@@ -389,19 +389,24 @@ module.exports = async (req, res) => {
             },
           });
 
-          const unitWithUser = {
-            ...unit,
-            employees: unit?.employees?.length
-              ? unit.employees.map((employee) => ({
-                  ...employee,
-                  user: employee.user[0] || null,
-                }))
-              : [],
-          };
-
-          if (!unitWithUser || !unitWithUser.employees.length) {
+          if (!unit) {
             return res.status(404).json({
-              message: `unit ${unitId} or employees not found`,
+              message: `unit ${unitId} not found`,
+            });
+          }
+
+          // ✅ กรองเฉพาะ employee ที่มี user จริง
+          const employeesWithUser = unit.employees
+            .map((emp) => ({
+              ...emp,
+              user: emp.user[0] || null,
+            }))
+            .filter((emp) => emp.user !== null);
+
+          // ❌ ถ้าไม่มี user เลย → block ทันที
+          if (!employeesWithUser.length) {
+            return res.status(400).json({
+              message: `unit ${unitId} has no user with roleId = 9`,
             });
           }
 
@@ -409,15 +414,14 @@ module.exports = async (req, res) => {
           const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
 
           for (const rankId of rankPriority) {
-            depUser = unitWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 9,
-            );
+            depUser = employeesWithUser.find((u) => u.user?.rankId === rankId);
             if (depUser) break;
           }
 
+          // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
-            return res.status(404).json({
-              message: `No matching user found in unit ${unitId} with specified rank and role`,
+            return res.status(400).json({
+              message: `unit ${unitId} has users but none match required rank`,
             });
           }
 
@@ -829,19 +833,23 @@ module.exports = async (req, res) => {
             },
           });
 
-          const unitWithUser = {
-            ...unit,
-            employees: unit?.employees?.length
-              ? unit.employees.map((employee) => ({
-                  ...employee,
-                  user: employee.user[0] || null,
-                }))
-              : [],
-          };
-
-          if (!unitWithUser || !unitWithUser.employees.length) {
+          if (!unit) {
             return res.status(404).json({
-              message: `unit ${unitId} or employees not found`,
+              message: `unit ${unitId} not found`,
+            });
+          }
+
+          const employeesWithUser = unit.employees
+            .map((emp) => ({
+              ...emp,
+              user: emp.user[0] || null,
+            }))
+            .filter((emp) => emp.user !== null);
+
+          // ❌ ถ้าไม่มี user เลย → block ทันที
+          if (!employeesWithUser.length) {
+            return res.status(400).json({
+              message: `unit ${unitId} has no user with roleId = 9`,
             });
           }
 
@@ -849,15 +857,14 @@ module.exports = async (req, res) => {
           const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
 
           for (const rankId of rankPriority) {
-            depUser = unitWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 9,
-            );
+            depUser = employeesWithUser.find((u) => u.user?.rankId === rankId);
             if (depUser) break;
           }
 
+          // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
-            return res.status(404).json({
-              message: `No matching user found in unit ${unitId} with specified rank and role`,
+            return res.status(400).json({
+              message: `unit ${unitId} has users but none match required rank`,
             });
           }
 

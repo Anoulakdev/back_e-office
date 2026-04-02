@@ -175,9 +175,9 @@ module.exports = async (req, res) => {
                 unitId: user.employee.unitId
                   ? Number(user.employee.unitId)
                   : null,
+                ...docdtlogfileData,
                 departmentactive: Number(existingTracking.departmentactive),
                 divisionactive: Number(existingTracking.divisionactive),
-                ...docdtlogfileData,
               },
             }),
             prisma.docdtTracking.create({
@@ -189,6 +189,8 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docdtlogfileData,
+                departmentactive: Number(existingTracking.departmentactive),
+                divisionactive: Number(existingTracking.divisionactive),
               },
             }),
           );
@@ -462,31 +464,33 @@ module.exports = async (req, res) => {
                 officeactive: existingTracking?.officeactive,
               },
             }),
+            prisma.docdtTracking.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode: depUser.emp_code,
+                docstatusId: Number(docstatusId),
+                dateline: datelineValue,
+                description: description ?? null,
+                docdtlog_original: req.file
+                  ? Buffer.from(req.file.originalname, "latin1").toString(
+                      "utf8",
+                    )
+                  : null,
+                docdtlog_file: req.file ? req.file.filename : null,
+                docdtlog_type: req.file ? req.file.mimetype : null,
+                docdtlog_size: req.file ? req.file.size : null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive: existingTracking?.officeactive,
+              },
+            }),
           );
 
           if (existingTracking) {
             logTransactions.push(
-              prisma.docdtTracking.update({
+              prisma.docdtTracking.delete({
                 where: { id: existingTracking.id },
-                data: {
-                  assignerCode: req.user.username,
-                  receiverCode: depUser.emp_code,
-                  docstatusId: Number(docstatusId),
-                  dateline: datelineValue,
-                  description: description ?? null,
-                  viewed: false,
-                  docdtlog_original: req.file
-                    ? Buffer.from(req.file.originalname, "latin1").toString(
-                        "utf8",
-                      )
-                    : null,
-                  docdtlog_file: req.file ? req.file.filename : null,
-                  docdtlog_type: req.file ? req.file.mimetype : null,
-                  docdtlog_size: req.file ? req.file.size : null,
-                  departmentactive: existingTracking?.departmentactive,
-                  divisionactive: existingTracking?.divisionactive,
-                  officeactive: existingTracking?.officeactive,
-                },
               }),
             );
           }

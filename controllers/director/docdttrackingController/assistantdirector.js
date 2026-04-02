@@ -76,7 +76,11 @@ module.exports = async (req, res) => {
             prisma.docdtTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
-      } else if (receiverCode) {
+      } else if (
+        receiverCode &&
+        !departmentId1.length &&
+        !departmentId2.length
+      ) {
         // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
         for (const receiverC of receiverCode) {
           const user = await prisma.user.findUnique({
@@ -186,7 +190,10 @@ module.exports = async (req, res) => {
             }),
           );
         }
-      } else {
+      } else if (
+        (departmentId1.length || departmentId2.length) &&
+        !receiverCode
+      ) {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
@@ -323,6 +330,189 @@ module.exports = async (req, res) => {
             prisma.docdtTracking.delete({
               where: { id: existingTracking.id },
             }),
+          );
+        }
+      } else if (
+        receiverCode &&
+        (departmentId1.length || departmentId2.length)
+      ) {
+        const users = [];
+
+        for (const receiverC of receiverCode) {
+          const user = await prisma.user.findUnique({
+            where: { username: receiverC },
+            include: { employee: true },
+          });
+
+          if (!user) {
+            return res.status(404).json({
+              message: `User not found: ${receiverC}`,
+            });
+          }
+
+          users.push(user);
+        }
+
+        const datelineValue = dateline
+          ? new Date(dateline)
+          : existingTracking?.dateline
+            ? new Date(existingTracking.dateline)
+            : null;
+
+        const fileData = req.file
+          ? {
+              docdtlog_original: Buffer.from(
+                req.file.originalname,
+                "latin1",
+              ).toString("utf8"),
+              docdtlog_file: req.file.filename,
+              docdtlog_type: req.file.mimetype,
+              docdtlog_size: req.file.size,
+            }
+          : {};
+
+        const createLogAndTrack = (
+          receiverCode,
+          rankId,
+          roleId,
+          posId,
+          deptId,
+          divId,
+          docstatusId,
+          departmentactive = null,
+        ) => {
+          logTransactions.push(
+            prisma.docdtLog.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode,
+                rankId,
+                roleId,
+                positionId: posId,
+                docstatusId,
+                dateline: datelineValue,
+                description: description ?? null,
+                departmentId: deptId,
+                divisionId: divId,
+                ...fileData,
+                departmentactive,
+              },
+            }),
+          );
+          logTransactions.push(
+            prisma.docdtTracking.create({
+              data: {
+                docdtId: Number(docdtId),
+                assignerCode: req.user.username,
+                receiverCode,
+                docstatusId,
+                dateline: datelineValue,
+                description: description ?? null,
+                ...fileData,
+                departmentactive,
+              },
+            }),
+          );
+        };
+
+        // บันทึกของผู้รับโดยตรง
+        for (const user of users) {
+          createLogAndTrack(
+            user.username,
+            user.rankId ?? null,
+            user.roleId ?? null,
+            user.employee?.posId ?? null,
+            user.employee?.departmentId ?? null,
+            user.employee?.divisionId ?? null,
+            Number(docstatusId),
+            existingTracking?.departmentactive,
+          );
+        }
+
+        // บันทึกของแผนก
+        const allDepartments = [
+          ...(Array.isArray(departmentId1) && departmentId1.length
+            ? departmentId1.map((id) => ({
+                id: Number(id),
+                departmentactive: 1,
+              }))
+            : []),
+          ...(Array.isArray(departmentId2) && departmentId2.length
+            ? departmentId2.map((id) => ({
+                id: Number(id),
+                departmentactive: 2,
+              }))
+            : []),
+        ];
+
+        if (!allDepartments.length)
+          return res
+            .status(400)
+            .json({ message: "At least one departmentId is required." });
+
+        for (const { id: departmentId, departmentactive } of allDepartments) {
+          const department = await prisma.department.findUnique({
+            where: { id: departmentId },
+            include: {
+              employees: {
+                include: {
+                  user: {
+                    where: { roleId: 6 },
+                    select: { rankId: true, roleId: true },
+                  },
+                },
+              },
+            },
+          });
+
+          const departmentWithUser = {
+            ...department,
+            employees: department?.employees?.length
+              ? department.employees.map((employee) => ({
+                  ...employee,
+                  user: employee.user[0] || null,
+                }))
+              : [],
+          };
+
+          if (!departmentWithUser || !departmentWithUser.employees.length) {
+            return res.status(404).json({
+              message: `department ${departmentId} or employees not found`,
+            });
+          }
+
+          let depUser = null;
+          const rankPriority = [1, 2, 3, 4, 5, 6, 7]; // ปรับลำดับความสำคัญตามต้องการ
+
+          for (const rankId of rankPriority) {
+            depUser = departmentWithUser.employees.find(
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
+            );
+            if (depUser) break;
+          }
+
+          if (!depUser)
+            return res.status(404).json({
+              message: `No matching user found in department ${departmentId} with specified rank and role`,
+            });
+
+          createLogAndTrack(
+            depUser.emp_code,
+            depUser.user?.rankId ?? null,
+            depUser.user?.roleId ?? null,
+            depUser.posId ?? null,
+            depUser.departmentId ?? null,
+            depUser.divisionId ?? null,
+            Number(docstatusId),
+            departmentactive,
+          );
+        }
+
+        // ลบ tracking เก่า (ถ้ามี)
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docdtTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
       }

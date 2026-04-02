@@ -170,8 +170,8 @@ module.exports = async (req, res) => {
                 divisionId: user.employee.divisionId
                   ? Number(user.employee.divisionId)
                   : null,
-                departmentactive: existingTracking?.departmentactive ?? null,
                 ...docdtlogfileData,
+                departmentactive: existingTracking?.departmentactive ?? null,
               },
             }),
             prisma.docdtTracking.create({
@@ -183,16 +183,17 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docdtlogfileData,
+                departmentactive: existingTracking?.departmentactive ?? null,
               },
             }),
           );
-          if (existingTracking) {
-            logTransactions.push(
-              prisma.docdtTracking.delete({
-                where: { id: existingTracking.id },
-              }),
-            );
-          }
+        }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docdtTracking.delete({
+              where: { id: existingTracking.id },
+            }),
+          );
         }
       } else if ((divisionId1.length || divisionId2.length) && !receiverCode) {
         const allDivisions = [
