@@ -647,14 +647,14 @@ module.exports = async (req, res) => {
               },
             }),
           );
+        }
 
-          if (existingTracking) {
-            logTransactions.push(
-              prisma.docinTracking.delete({
-                where: { id: existingTracking.id },
-              }),
-            );
-          }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docinTracking.delete({
+              where: { id: existingTracking.id },
+            }),
+          );
         }
       } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
         const users = [];

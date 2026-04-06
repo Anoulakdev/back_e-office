@@ -486,14 +486,14 @@ module.exports = async (req, res) => {
               },
             }),
           );
+        }
 
-          if (existingTracking) {
-            logTransactions.push(
-              prisma.docdtTracking.delete({
-                where: { id: existingTracking.id },
-              }),
-            );
-          }
+        if (existingTracking) {
+          logTransactions.push(
+            prisma.docdtTracking.delete({
+              where: { id: existingTracking.id },
+            }),
+          );
         }
       } else if (receiverCode && (officeId1.length || officeId2.length)) {
         const users = [];
