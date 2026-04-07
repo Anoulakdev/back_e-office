@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found with the provided ${receiverC}`,
+              message: `User not found: ${receiverC}`,
             });
           }
 
@@ -103,19 +103,19 @@ module.exports = async (req, res) => {
                 extype: Number(docex.extype) ?? null,
                 description,
               },
-            })
+            }),
           );
+        }
 
-          if (user.roleId === 4) {
-            logTransactions.push(
-              prisma.docExternal.update({
-                where: { id: Number(docexId) },
-                data: {
-                  md: true,
-                },
-              })
-            );
-          }
+        if (user.roleId === 4) {
+          logTransactions.push(
+            prisma.docExternal.update({
+              where: { id: Number(docexId) },
+              data: {
+                md: true,
+              },
+            }),
+          );
         }
       } else {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
@@ -181,7 +181,7 @@ module.exports = async (req, res) => {
 
           for (const rankId of rankPriority) {
             depUser = departmentWithUser.employees.find(
-              (u) => u.user?.rankId === rankId && u.user?.roleId === 6
+              (u) => u.user?.rankId === rankId && u.user?.roleId === 6,
             );
             if (depUser) break;
           }
@@ -225,7 +225,7 @@ module.exports = async (req, res) => {
                 extype: Number(docex.extype) ?? null,
                 departmentactive,
               },
-            })
+            }),
           );
         }
       }
