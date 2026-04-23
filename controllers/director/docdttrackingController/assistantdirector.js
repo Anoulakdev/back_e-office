@@ -515,6 +515,11 @@ module.exports = async (req, res) => {
             prisma.docdtTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
+      } else {
+        return res.status(400).json({
+          message: "ຂໍ້ມູນມີການຜິດພາດ",
+          error: "Invalid payload: no matching assignment condition found",
+        });
       }
 
       const results = await prisma.$transaction(logTransactions);
