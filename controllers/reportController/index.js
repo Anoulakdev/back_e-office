@@ -1,4 +1,5 @@
 const list = require("./list");
-const out = require("./out");
+const outdoc = require("./outdoc");
+const indoc = require("./indoc");
 
-module.exports = { list, out };
+module.exports = { list, outdoc, indoc };
