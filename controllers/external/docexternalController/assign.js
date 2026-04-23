@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (receiverCode) {
+      if (receiverCode && !departmentId1.length && !departmentId2.length) {
         if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
           return res
             .status(400)
@@ -117,7 +117,10 @@ module.exports = async (req, res) => {
             }),
           );
         }
-      } else {
+      } else if (
+        (departmentId1.length || departmentId2.length) &&
+        !receiverCode
+      ) {
         // 🔹 ถ้าไม่มี receiverCode ใช้ departmentId1 และ departmentId2 (ถ้ามี)
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
@@ -228,6 +231,11 @@ module.exports = async (req, res) => {
             }),
           );
         }
+      } else {
+        return res.status(400).json({
+          message: "ຂໍ້ມູນມີການຜິດພາດ",
+          error: "Invalid payload: no matching assignment condition found",
+        });
       }
 
       // อัปเดตสถานะของ docexternal

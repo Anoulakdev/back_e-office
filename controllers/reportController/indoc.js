@@ -20,13 +20,15 @@ module.exports = async (req, res) => {
       logs.forEach((log) => {
         if (!log.divisionId) return;
 
-        const key = `${log[docKey]}-${log.divisionId}`;
+        const key = `${log[docKey]}-${log.divisionId}-${log.departmentId}`;
 
-        // กันซ้ำ doc + division
+        // กันซ้ำ doc + division + department
         if (!uniqueMap.has(key)) {
           uniqueMap.set(key, {
             divisionId: log.divisionId,
             division_name: log.division?.division_name || "Unknown",
+            departmentId: log.departmentId || null,
+            department_name: log.department?.department_name || "Unknown",
           });
         }
       });
@@ -34,20 +36,28 @@ module.exports = async (req, res) => {
       const result = {};
 
       uniqueMap.forEach((item) => {
-        const { divisionId, division_name } = item;
+        const { divisionId, division_name, departmentId, department_name } =
+          item;
 
-        if (!result[divisionId]) {
-          result[divisionId] = {
+        const groupKey = `${divisionId}-${departmentId}`;
+
+        if (!result[groupKey]) {
+          result[groupKey] = {
             divisionId,
             division_name,
+            departmentId,
+            department_name,
             count: 0,
           };
         }
 
-        result[divisionId].count += 1;
+        result[groupKey].count += 1;
       });
 
-      return Object.values(result);
+      // ✅ sort ตาม departmentId
+      return Object.values(result).sort(
+        (a, b) => (a.departmentId || 0) - (b.departmentId || 0),
+      );
     };
 
     const [exLogs, inLogs, dtLogs] = await Promise.all([
@@ -55,6 +65,10 @@ module.exports = async (req, res) => {
         where,
         select: {
           docexId: true,
+          departmentId: true,
+          department: {
+            select: { department_name: true },
+          },
           divisionId: true,
           division: {
             select: { division_name: true },
@@ -65,6 +79,10 @@ module.exports = async (req, res) => {
         where,
         select: {
           docinId: true,
+          departmentId: true,
+          department: {
+            select: { department_name: true },
+          },
           divisionId: true,
           division: {
             select: { division_name: true },
@@ -75,6 +93,10 @@ module.exports = async (req, res) => {
         where,
         select: {
           docdtId: true,
+          departmentId: true,
+          department: {
+            select: { department_name: true },
+          },
           divisionId: true,
           division: {
             select: { division_name: true },

@@ -24,6 +24,8 @@ module.exports = async (req, res) => {
             select: {
               divisionId: true,
               division: true,
+              departmentId: true,
+              department: true,
             },
           },
         },
@@ -36,26 +38,40 @@ module.exports = async (req, res) => {
       prisma.docDirector.findMany({ where, select }),
     ]);
 
-    // ✅ function group + count
+    // 🔥 group by division + department
     const groupByDivision = (data) => {
-      return Object.values(
-        data.reduce((acc, item) => {
-          const divisionId = item.creator?.employee?.divisionId || "unknown";
+      return (
+        Object.values(
+          data.reduce((acc, item) => {
+            const emp = item.creator?.employee;
 
-          const division = item.creator?.employee?.division || null;
+            const divisionId = emp?.divisionId || "unknown";
+            const departmentId = emp?.departmentId || "unknown";
 
-          if (!acc[divisionId]) {
-            acc[divisionId] = {
-              divisionId,
-              division_name: division?.division_name || "Unknown",
-              count: 0,
-            };
-          }
+            const division_name = emp?.division?.division_name || "Unknown";
 
-          acc[divisionId].count += 1;
+            const department_name =
+              emp?.department?.department_name || "Unknown";
 
-          return acc;
-        }, {}),
+            const key = `${divisionId}-${departmentId}`;
+
+            if (!acc[key]) {
+              acc[key] = {
+                divisionId,
+                division_name,
+                departmentId,
+                department_name,
+                count: 0,
+              };
+            }
+
+            acc[key].count += 1;
+
+            return acc;
+          }, {}),
+        )
+          // 🔥 orderBy departmentId
+          .sort((a, b) => (a.departmentId || 0) - (b.departmentId || 0))
       );
     };
 
