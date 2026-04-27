@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -217,7 +217,7 @@ module.exports = async (req, res) => {
         if (!allDivisions.length)
           return res
             .status(400)
-            .json({ message: "At least one divisionId is required" });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ divisionId" });
 
         for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
@@ -251,7 +251,7 @@ module.exports = async (req, res) => {
 
           if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `division ${divisionId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນພະແນກ ${divisionId}`,
             });
           }
 
@@ -268,7 +268,7 @@ module.exports = async (req, res) => {
           if (!depUser)
             return res
               .status(404)
-              .json({ message: `No matching user in division ${divisionId}` });
+              .json({ message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນພະແນກ ${divisionId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ` });
 
           const datelineValue = dateline
             ? new Date(dateline)
@@ -349,7 +349,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -457,7 +457,7 @@ module.exports = async (req, res) => {
         if (!allDivisions.length)
           return res
             .status(400)
-            .json({ message: "At least one divisionId is required" });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ divisionId" });
 
         for (const { id: divisionId, divisionactive } of allDivisions) {
           const division = await prisma.division.findUnique({
@@ -491,7 +491,7 @@ module.exports = async (req, res) => {
 
           if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `division ${divisionId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນພະແນກ ${divisionId}`,
             });
           }
 
@@ -508,7 +508,7 @@ module.exports = async (req, res) => {
           if (!depUser)
             return res
               .status(404)
-              .json({ message: `No matching user in division ${divisionId}` });
+              .json({ message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນພະແນກ ${divisionId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ` });
 
           createLogAndTrack(
             depUser.emp_code,
@@ -537,7 +537,7 @@ module.exports = async (req, res) => {
       const results = await prisma.$transaction(logTransactions);
       res
         .status(201)
-        .json({ message: "Document assigned successfully", data: results });
+        .json({ message: "ມອບໝາຍເອກະສານສຳເລັດ", data: results });
     } catch (error) {
       console.error("Error assigning document:", error);
       res.status(500).json({ message: "Server Error", error: error.message });

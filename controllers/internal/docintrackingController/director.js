@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -218,7 +218,7 @@ module.exports = async (req, res) => {
         if (!allDepartments.length) {
           return res
             .status(400)
-            .json({ message: "At least one departmentId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ departmentId" });
         }
 
         for (const { id: departmentId, departmentactive } of allDepartments) {
@@ -253,7 +253,7 @@ module.exports = async (req, res) => {
 
           if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
-              message: `department ${departmentId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຝ່າຍ ${departmentId}`,
             });
           }
 
@@ -269,7 +269,7 @@ module.exports = async (req, res) => {
 
           if (!depUser) {
             return res.status(404).json({
-              message: `No matching user found in department ${departmentId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -355,7 +355,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -458,7 +458,7 @@ module.exports = async (req, res) => {
         if (!allDepartments.length)
           return res
             .status(400)
-            .json({ message: "At least one departmentId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ departmentId" });
 
         for (const { id: departmentId, departmentactive } of allDepartments) {
           const department = await prisma.department.findUnique({
@@ -487,7 +487,7 @@ module.exports = async (req, res) => {
 
           if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
-              message: `department ${departmentId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຝ່າຍ ${departmentId}`,
             });
           }
 
@@ -503,7 +503,7 @@ module.exports = async (req, res) => {
 
           if (!depUser)
             return res.status(404).json({
-              message: `No matching user found in department ${departmentId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
 
           createLogAndTrack(
@@ -534,7 +534,7 @@ module.exports = async (req, res) => {
       const results = await prisma.$transaction(logTransactions);
 
       res.status(201).json({
-        message: "Document assigned successfully",
+        message: "ມອບໝາຍເອກະສານສຳເລັດ",
         data: results,
       });
     } catch (error) {

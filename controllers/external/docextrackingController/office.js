@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -208,7 +208,7 @@ module.exports = async (req, res) => {
         if (!allUnits.length) {
           return res
             .status(400)
-            .json({ message: "At least one unitId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ unitId." });
         }
 
         for (const unitId of allUnits) {
@@ -233,7 +233,7 @@ module.exports = async (req, res) => {
 
           if (!unit) {
             return res.status(404).json({
-              message: `unit ${unitId} not found`,
+              message: `ບໍ່ພົບເຫັນ ${unitId}`,
             });
           }
 
@@ -248,7 +248,7 @@ module.exports = async (req, res) => {
           // ❌ ถ้าไม่มี user เลย → block ทันที
           if (!employeesWithUser.length) {
             return res.status(400).json({
-              message: `unit ${unitId} has no user with roleId = 9`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unitId}`,
             });
           }
 
@@ -263,7 +263,7 @@ module.exports = async (req, res) => {
           // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
             return res.status(400).json({
-              message: `unit ${unitId} has users but none match required rank`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unitId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -354,7 +354,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -458,7 +458,7 @@ module.exports = async (req, res) => {
         if (!allUnits.length) {
           return res
             .status(400)
-            .json({ message: "At least one unitId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ unitId." });
         }
 
         for (const unitId of allUnits) {
@@ -483,7 +483,7 @@ module.exports = async (req, res) => {
 
           if (!unit) {
             return res.status(404).json({
-              message: `unit ${unitId} not found`,
+              message: `ບໍ່ພົບເຫັນ ${unitId}`,
             });
           }
 
@@ -497,7 +497,7 @@ module.exports = async (req, res) => {
           // ❌ ถ้าไม่มี user เลย → block ทันที
           if (!employeesWithUser.length) {
             return res.status(400).json({
-              message: `unit ${unitId} has no user with roleId = 9`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unitId}`,
             });
           }
 
@@ -512,7 +512,7 @@ module.exports = async (req, res) => {
           // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
             return res.status(400).json({
-              message: `unit ${unitId} has users but none match required rank`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unitId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -547,7 +547,7 @@ module.exports = async (req, res) => {
       const results = await prisma.$transaction(logTransactions);
 
       res.status(201).json({
-        message: "Document assigned successfully",
+        message: "ມອບໝາຍເອກະສານສຳເລັດ",
         data: results,
       });
     } catch (error) {

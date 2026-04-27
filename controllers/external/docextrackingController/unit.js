@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -174,7 +174,7 @@ module.exports = async (req, res) => {
         const results = await prisma.$transaction(logTransactions);
 
         res.status(201).json({
-          message: "Document assigned successfully",
+          message: "ມອບໝາຍເອກະສານສຳເລັດ",
           data: results,
         });
       } else {

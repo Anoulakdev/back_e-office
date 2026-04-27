@@ -56,16 +56,14 @@ module.exports = async (req, res) => {
         });
 
         if (!user) {
-          return res
-            .status(404)
-            .json({ message: "User not found with the provided receiverCode" });
+          return res.status(404).json({ message: "ບໍ່ພົບເຫັນພະນັກງານ" });
         }
 
         const datelineValue = dateline
           ? new Date(dateline)
           : existingTracking?.dateline
-          ? new Date(existingTracking.dateline)
-          : null;
+            ? new Date(existingTracking.dateline)
+            : null;
 
         let docdtlogfileData = {
           docdtlog_original: null,
@@ -78,7 +76,7 @@ module.exports = async (req, res) => {
           docdtlogfileData = {
             docdtlog_original: Buffer.from(
               req.file.originalname,
-              "latin1"
+              "latin1",
             ).toString("utf8"),
             docdtlog_file: req.file.filename,
             docdtlog_type: req.file.mimetype,
@@ -142,7 +140,7 @@ module.exports = async (req, res) => {
               officeactive: existingTracking?.officeactive ?? null,
               ...docdtlogfileData,
             },
-          })
+          }),
         );
 
         if (existingTracking) {
@@ -158,14 +156,14 @@ module.exports = async (req, res) => {
                 viewed: false,
                 ...docdtlogfileData,
               },
-            })
+            }),
           );
         }
 
         const results = await prisma.$transaction(logTransactions);
 
         res.status(201).json({
-          message: "Document assigned successfully",
+          message: "ມອບໝາຍເອກະສານສຳເລັດ",
           data: results,
         });
       } else {
@@ -180,18 +178,18 @@ module.exports = async (req, res) => {
                 viewed: true,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
+                      "utf8",
                     )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
               },
-            })
+            }),
           );
 
           logTransactions.push(
-            prisma.docdtTracking.delete({ where: { id: existingTracking.id } })
+            prisma.docdtTracking.delete({ where: { id: existingTracking.id } }),
           );
 
           const results = await prisma.$transaction(logTransactions);

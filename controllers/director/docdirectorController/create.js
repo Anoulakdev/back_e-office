@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
       });
 
       res.status(201).json({
-        message: "Document created successfully",
+        message: "ສ້າງເອກະສານສຳເລັດ",
         data: newDirector,
       });
     } catch (error) {

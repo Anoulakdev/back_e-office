@@ -20,12 +20,12 @@ module.exports = async (req, res) => {
   upload(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
       return res.status(500).json({
-        message: "Multer error occurred during upload.",
+        message: "ເກີດຂໍ້ຜິດພາດໃນລະຫວ່າງການອັບໂຫລດ.",
         error: err,
       });
     } else if (err) {
       return res.status(500).json({
-        message: "Unknown error occurred during upload.",
+        message: "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຮູ້ຈັກໃນລະຫວ່າງການອັບໂຫລດ.",
         error: err,
       });
     }
@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
       } = req.body;
 
       if (!docdtId) {
-        return res.status(400).json({ message: "docdtId is required" });
+        return res.status(400).json({ message: "ຕ້ອງປ້ອນ docdtId" });
       }
 
       let logTransactions = [];
@@ -74,11 +74,11 @@ module.exports = async (req, res) => {
           });
 
           if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "ບໍ່ເຫັນຜູ້ໃຊ້" });
           }
 
           if (!docdt) {
-            return res.status(404).json({ message: "Document not found" });
+            return res.status(404).json({ message: "ບໍ່ເຫັນເອກະສານ" });
           }
 
           logTransactions.push(
@@ -132,7 +132,7 @@ module.exports = async (req, res) => {
         if (!allDepartments.length) {
           return res
             .status(400)
-            .json({ message: "At least one departmentId is required" });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ departmentId" });
         }
 
         for (const { id: departmentId, departmentactive } of allDepartments) {
@@ -167,7 +167,7 @@ module.exports = async (req, res) => {
 
           if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
-              message: `Department ${departmentId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຝ່າຍ ${departmentId}`,
             });
           }
 
@@ -183,7 +183,7 @@ module.exports = async (req, res) => {
 
           if (!depUser) {
             return res.status(404).json({
-              message: `No matching user found in department ${departmentId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -195,7 +195,7 @@ module.exports = async (req, res) => {
 
           if (!docdt) {
             return res.status(404).json({
-              message: "Document not found with the provided docdtId",
+              message: "ບໍ່ພົບເອກະສານ docdtId",
             });
           }
 
@@ -251,7 +251,7 @@ module.exports = async (req, res) => {
         if (!allDivisions.length) {
           return res
             .status(400)
-            .json({ message: "At least one divisionId is required" });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ divisionId" });
         }
 
         for (const { id: divisionId, divisionactive } of allDivisions) {
@@ -286,7 +286,7 @@ module.exports = async (req, res) => {
 
           if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `Division ${divisionId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນພະແນກ ${divisionId}`,
             });
           }
 
@@ -302,7 +302,7 @@ module.exports = async (req, res) => {
 
           if (!depUser) {
             return res.status(404).json({
-              message: `No matching user found in division ${divisionId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນພະແນກ ${divisionId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -314,7 +314,7 @@ module.exports = async (req, res) => {
 
           if (!docdt) {
             return res.status(404).json({
-              message: "Document not found with the provided docdtId",
+              message: "ບໍ່ພົບເຫັນເອກະສານ docdtId",
             });
           }
 
@@ -360,7 +360,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -438,7 +438,7 @@ module.exports = async (req, res) => {
         if (!allDepartments.length) {
           return res
             .status(400)
-            .json({ message: "At least one departmentId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ departmentId." });
         }
 
         for (const { id: departmentId, departmentactive } of allDepartments) {
@@ -473,7 +473,7 @@ module.exports = async (req, res) => {
 
           if (!departmentWithUser || !departmentWithUser.employees.length) {
             return res.status(404).json({
-              message: `department ${departmentId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຝ່າຍ ${departmentId}`,
             });
           }
 
@@ -489,7 +489,7 @@ module.exports = async (req, res) => {
 
           if (!depUser) {
             return res.status(404).json({
-              message: `No matching user found in department ${departmentId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -517,7 +517,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `User not found: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 
@@ -595,7 +595,7 @@ module.exports = async (req, res) => {
         if (!allDivisions.length) {
           return res
             .status(400)
-            .json({ message: "At least one divisionId is required." });
+            .json({ message: "ຕ້ອງມີຢ່າງນ້ອຍໜຶ່ງ divisionId" });
         }
 
         for (const { id: divisionId, divisionactive } of allDivisions) {
@@ -630,7 +630,7 @@ module.exports = async (req, res) => {
 
           if (!divisionWithUser || !divisionWithUser.employees.length) {
             return res.status(404).json({
-              message: `division ${divisionId} or employees not found`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນພະແນກ ${divisionId}`,
             });
           }
 
@@ -646,7 +646,7 @@ module.exports = async (req, res) => {
 
           if (!depUser) {
             return res.status(404).json({
-              message: `No matching user found in division ${divisionId} with specified rank and role`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນພະແນກ ${divisionId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -685,7 +685,7 @@ module.exports = async (req, res) => {
       const results = await prisma.$transaction(transactions);
 
       res.status(201).json({
-        message: "Document assigned successfully",
+        message: "ມອບໝາຍເອກະສານສຳເລັດ",
         data: results,
       });
     } catch (error) {
