@@ -611,7 +611,7 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              Number(docstatusId),
+              2,
               departmentactive,
             ),
           );
@@ -767,7 +767,7 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              Number(docstatusId),
+              2,
               divisionactive,
             ),
           );
@@ -927,7 +927,7 @@ module.exports = async (req, res) => {
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
               depUser.officeId ?? null,
-              Number(docstatusId),
+              2,
               officeactive,
             ),
           );
