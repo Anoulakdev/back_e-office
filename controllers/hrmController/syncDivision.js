@@ -66,6 +66,8 @@ module.exports = async (req, res) => {
             division_status: d.division_status,
             branch_id: d.branch.branch_id,
             departmentId: d.department_id,
+            short_name: d.short_name,
+            insur_code: d.insur_code,
           },
           create: {
             id: d.division_id,
@@ -74,6 +76,8 @@ module.exports = async (req, res) => {
             division_status: d.division_status,
             branch_id: d.branch.branch_id,
             departmentId: d.department_id,
+            short_name: d.short_name,
+            insur_code: d.insur_code,
           },
         });
       }),

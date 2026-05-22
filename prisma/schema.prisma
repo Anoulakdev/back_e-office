@@ -132,6 +132,8 @@ model Division {
   division_code   String?    @db.VarChar(50)
   division_status String     @default("A") @db.VarChar(50)
   branch_id       Int?
+  short_name      String?    @db.VarChar(255)
+  insur_code      String?    @db.VarChar(255)
   departmentId    Int
   department      Department @relation(fields: [departmentId], references: [id])
   offices         Office[]
