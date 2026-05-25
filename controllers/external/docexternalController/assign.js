@@ -57,6 +57,7 @@ module.exports = async (req, res) => {
             .json({ message: "receiverCode must be a non-empty array" });
         }
 
+        let isMd = false;
         for (const receiverC of receiverCode) {
           const user = await prisma.user.findUnique({
             where: { username: receiverC },
@@ -67,7 +68,7 @@ module.exports = async (req, res) => {
 
           if (!user) {
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນักງານ: ${receiverC}`,
             });
           }
 
@@ -75,6 +76,10 @@ module.exports = async (req, res) => {
             return res.status(404).json({
               message: "Document not found with the provided docexId",
             });
+          }
+
+          if (user.roleId === 4) {
+            isMd = true;
           }
 
           logTransactions.push(
@@ -107,7 +112,7 @@ module.exports = async (req, res) => {
           );
         }
 
-        if (user.roleId === 4) {
+        if (isMd) {
           logTransactions.push(
             prisma.docExternal.update({
               where: { id: Number(docexId) },
