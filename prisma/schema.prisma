@@ -46,6 +46,10 @@ model User {
   DocdtLogReceiver      DocdtLog[]      @relation("ReceiverRelation")
   DocExportSignator     DocExport[]     @relation("SignatorRelation")
   DocExportExporter     DocExport[]     @relation("ExporterRelation")
+
+  @@index([employeeId])
+  @@index([rankId])
+  @@index([roleId])
 }
 
 model Employee {
@@ -71,6 +75,12 @@ model Employee {
   createdAt    DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt    DateTime    @updatedAt @db.Timestamptz(0)
   user         User[]
+
+  @@index([posId])
+  @@index([departmentId])
+  @@index([divisionId])
+  @@index([officeId])
+  @@index([unitId])
 }
 
 model Rank {
@@ -102,6 +112,8 @@ model RoleMenu {
   title       String?      @db.VarChar(255)
   path        String?      @db.VarChar(255)
   permissions Permission[]
+
+  @@index([roleId])
 }
 
 model Permission {
@@ -112,6 +124,8 @@ model Permission {
   R          Boolean  @default(false)
   U          Boolean  @default(false)
   D          Boolean  @default(false)
+
+  @@index([rolemenuId])
 }
 
 model Department {
@@ -142,6 +156,8 @@ model Division {
   docexlogs       DocexLog[]
   docinlogs       DocinLog[]
   docdtlogs       DocdtLog[]
+
+  @@index([departmentId])
 }
 
 model Office {
@@ -156,6 +172,8 @@ model Office {
   docexlogs     DocexLog[]
   docinlogs     DocinLog[]
   docdtlogs     DocdtLog[]
+
+  @@index([divisionId])
 }
 
 model Unit {
@@ -172,6 +190,9 @@ model Unit {
   docexlogs   DocexLog[]
   docinlogs   DocinLog[]
   docdtlogs   DocdtLog[]
+
+  @@index([divisionId])
+  @@index([officeId])
 }
 
 model PositionGroup {
@@ -187,6 +208,8 @@ model PositionCode {
   posgroupId      Int
   positiongroup   PositionGroup @relation(fields: [posgroupId], references: [id])
   positions       Position[]
+
+  @@index([posgroupId])
 }
 
 model Position {
@@ -199,6 +222,8 @@ model Position {
   docexlogs    DocexLog[]
   docinlogs    DocinLog[]
   docdtlogs    DocdtLog[]
+
+  @@index([poscodeId])
 }
 
 model DocExport {
@@ -221,6 +246,10 @@ model DocExport {
   export_filesize     Int?
   createdAt           DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt           DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docexId])
+  @@index([signatorCode])
+  @@index([exporterCode])
 }
 
 model DocExternal {
@@ -249,6 +278,12 @@ model DocExternal {
   docextrackings     DocexTracking[]
   docexlogs          DocexLog[]
   docexports         DocExport[]
+
+  @@index([creatorCode])
+  @@index([createdAt])
+  @@index([priorityId])
+  @@index([doctypeId])
+  @@index([outsiderId])
 }
 
 model DocexTracking {
@@ -274,6 +309,11 @@ model DocexTracking {
   docexlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docexId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([docstatusId])
 }
 
 model DocexLog {
@@ -314,6 +354,17 @@ model DocexLog {
   docexlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docexId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([rankId])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([divisionId])
+  @@index([officeId])
+  @@index([unitId])
+  @@index([docstatusId])
 }
 
 model DocInternal {
@@ -337,6 +388,11 @@ model DocInternal {
   updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
   docintrackings     DocinTracking[]
   docinlogs          DocinLog[]
+
+  @@index([creatorCode])
+  @@index([createdAt])
+  @@index([priorityId])
+  @@index([doctypeId])
 }
 
 model DocinTracking {
@@ -361,6 +417,11 @@ model DocinTracking {
   docinlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docinId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([docstatusId])
 }
 
 model DocinLog {
@@ -400,6 +461,17 @@ model DocinLog {
   docinlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docinId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([rankId])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([divisionId])
+  @@index([officeId])
+  @@index([unitId])
+  @@index([docstatusId])
 }
 
 model DocDirector {
@@ -423,6 +495,11 @@ model DocDirector {
   updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
   docdttrackings     DocdtTracking[]
   docdtlogs          DocdtLog[]
+
+  @@index([creatorCode])
+  @@index([createdAt])
+  @@index([priorityId])
+  @@index([doctypeId])
 }
 
 model DocdtTracking {
@@ -447,6 +524,11 @@ model DocdtTracking {
   docdtlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docdtId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([docstatusId])
 }
 
 model DocdtLog {
@@ -486,6 +568,17 @@ model DocdtLog {
   docdtlog_size     Int?
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
+
+  @@index([docdtId])
+  @@index([receiverCode])
+  @@index([assignerCode])
+  @@index([rankId])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([divisionId])
+  @@index([officeId])
+  @@index([unitId])
+  @@index([docstatusId])
 }
 
 model DocType {
@@ -531,4 +624,6 @@ model Outsider {
   belongto     BelongTo?     @relation(fields: [belongId], references: [id])
   name         String?       @db.VarChar(255)
   docexternals DocExternal[]
+
+  @@index([belongId])
 }

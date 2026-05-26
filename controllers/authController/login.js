@@ -15,6 +15,34 @@ module.exports = async (req, res) => {
       return res.status(401).json({ message: "ກະ​ລຸ​ນາ​ເພີ່ມລະ​ຫັດ" });
     }
 
+    // Step 1 Check Email/Username in DB
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    
+    if (!user) {
+      return res.status(401).json({
+        message: "ບໍ່​ມີ​ຂໍ້​ມູນຜູ້​ໃຊ້",
+      });
+    }
+
+    // if (user.actived !== 'A') {
+    //   return res.status(400).json({
+    //     message: "ລະ​ຫັດ​ຂອງ​ທ່ານ​ໄດ້​ຖືກ​ປິດ​ການ​ໃຊ້​ງານ",
+    //   });
+    // }
+
+    // Step 2 Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "​ລະ​ຫັດ​ບໍ່​ຖືກ​ຕ້ອງ",
+      });
+    }
+
+    // Step 3 Local authentication succeeded. Sync employee details from External API
     async function loginAndGetToken() {
       try {
         const loginResponse = await axios.post(
@@ -117,32 +145,6 @@ module.exports = async (req, res) => {
       } catch (err) {
         console.warn("Failed to fetch employee info. Continuing without sync.");
       }
-    }
-    // Step 1 Check Email in DB
-    const user = await prisma.user.findUnique({
-      where: {
-        username: username,
-      },
-    });
-    
-    if (!user) {
-      return res.status(401).json({
-        message: "ບໍ່​ມີ​ຂໍ້​ມູນຜູ້​ໃຊ້",
-      });
-    }
-
-    // if (user.actived !== 'A') {
-    //   return res.status(400).json({
-    //     message: "ລະ​ຫັດ​ຂອງ​ທ່ານ​ໄດ້​ຖືກ​ປິດ​ການ​ໃຊ້​ງານ",
-    //   });
-    // }
-
-    // Step 2 Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({
-        message: "​ລະ​ຫັດ​ບໍ່​ຖືກ​ຕ້ອງ",
-      });
     }
 
     const userWithAll = await prisma.user.findUnique({

@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
 
     // Step 3: Hash default password (you might want to allow password as input)
     const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash("EDL1234", salt);
+    const hashPassword = await bcrypt.hash(process.env.DEFAULT_PASSWORD || "123456", salt);
 
     const maxId = await prisma.user.aggregate({
       _max: { id: true },
