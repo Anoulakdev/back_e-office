@@ -45,39 +45,23 @@ module.exports = async (req, res) => {
 
     const existingIds = new Set(existing.map((d) => d.id));
 
-    // const divisions = await prisma.division.findMany({
-    //   select: { id: true },
-    // });
+    const divisions = await prisma.division.findMany({
+      select: { id: true },
+    });
 
-    // const divisionIds = new Set(divisions.map((d) => d.id));
+    const divisionIds = new Set(divisions.map((d) => d.id));
 
-    // const offices = await prisma.office.findMany({
-    //   select: { id: true },
-    // });
+    const offices = await prisma.office.findMany({
+      select: { id: true },
+    });
 
-    // const officeIds = new Set(offices.map((d) => d.id));
+    const officeIds = new Set(offices.map((d) => d.id));
 
     let updated = 0;
     let created = 0;
-    // let skipped = 0;
 
     await Promise.all(
       unitsData.map(async (d) => {
-        // if (!divisionIds.has(d.division_id) || !officeIds.has(d.office_id)) {
-        //   skipped++;
-        //   if (!divisionIds.has(d.division_id)) {
-        //     console.warn(
-        //       `Skip unit ${d.unit_name} (division ${d.division_id} not found)`,
-        //     );
-        //   }
-        //   if (!officeIds.has(d.office_id)) {
-        //     console.warn(
-        //       `Skip unit ${d.unit_name} (office ${d.office_id} not found)`,
-        //     );
-        //   }
-        //   return null; // skip unit นี้
-        // }
-
         const isNew = !existingIds.has(d.unit_id);
 
         if (isNew) {
@@ -86,6 +70,16 @@ module.exports = async (req, res) => {
           updated++;
         }
 
+        const validDivisionId =
+          d.division_id && divisionIds.has(d.division_id)
+            ? d.division_id
+            : null;
+
+        const validOfficeId =
+          d.office_id && officeIds.has(d.office_id)
+            ? d.office_id
+            : null;
+
         return prisma.unit.upsert({
           where: { id: d.unit_id },
           update: {
@@ -93,12 +87,8 @@ module.exports = async (req, res) => {
             unit_code: d.unit_code,
             unit_status: d.unit_status,
             unit_type: d.unit_type,
-            divisionId:
-              d.division_id === 0 || d.division_id === null
-                ? null
-                : d.division_id,
-            officeId:
-              d.office_id === 0 || d.office_id === null ? null : d.office_id,
+            divisionId: validDivisionId,
+            officeId: validOfficeId,
           },
           create: {
             id: d.unit_id,
@@ -106,12 +96,8 @@ module.exports = async (req, res) => {
             unit_code: d.unit_code,
             unit_status: d.unit_status,
             unit_type: d.unit_type,
-            divisionId:
-              d.division_id === 0 || d.division_id === null
-                ? null
-                : d.division_id,
-            officeId:
-              d.office_id === 0 || d.office_id === null ? null : d.office_id,
+            divisionId: validDivisionId,
+            officeId: validOfficeId,
           },
         });
       }),

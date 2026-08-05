@@ -45,26 +45,17 @@ module.exports = async (req, res) => {
 
     const existingIds = new Set(existing.map((d) => d.id));
 
-    // const divisions = await prisma.division.findMany({
-    //   select: { id: true },
-    // });
+    const divisions = await prisma.division.findMany({
+      select: { id: true },
+    });
 
-    // const divisionIds = new Set(divisions.map((d) => d.id));
+    const divisionIds = new Set(divisions.map((d) => d.id));
 
     let updated = 0;
     let created = 0;
-    // let skipped = 0;
 
     await Promise.all(
       officesData.map(async (d) => {
-        // if (!divisionIds.has(d.division_id)) {
-        //   skipped++;
-        //   console.warn(
-        //     `Skip office ${d.office_name} (division ${d.division_id} not found)`,
-        //   );
-        //   return null;
-        // }
-
         const isNew = !existingIds.has(d.office_id);
 
         if (isNew) {
@@ -73,26 +64,25 @@ module.exports = async (req, res) => {
           updated++;
         }
 
+        const validDivisionId =
+          d.division_id && divisionIds.has(d.division_id)
+            ? d.division_id
+            : null;
+
         return prisma.office.upsert({
           where: { id: d.office_id },
           update: {
             office_name: d.office_name,
             office_code: d.office_code,
             office_status: d.office_status,
-            divisionId:
-              d.division_id === 0 || d.division_id === null
-                ? null
-                : d.division_id,
+            divisionId: validDivisionId,
           },
           create: {
             id: d.office_id,
             office_name: d.office_name,
             office_code: d.office_code,
             office_status: d.office_status,
-            divisionId:
-              d.division_id === 0 || d.division_id === null
-                ? null
-                : d.division_id,
+            divisionId: validDivisionId,
           },
         });
       }),
