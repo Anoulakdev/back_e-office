@@ -36,6 +36,9 @@ module.exports = async (req, res) => {
         docin_description,
         priorityId,
         doctypeId,
+        departure_type,
+        fromDepartmentId,
+        fromDivisionId,
       } = req.body;
 
       if (!docin_no) {
@@ -50,6 +53,9 @@ module.exports = async (req, res) => {
           docin_description,
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          departure_type: Number(departure_type),
+          fromDepartmentId: fromDepartmentId ? Number(fromDepartmentId) : null,
+          fromDivisionId: fromDivisionId ? Number(fromDivisionId) : null,
           creatorCode: req.user.username,
           docin_fileoriginal: req.file
             ? Buffer.from(req.file.originalname, "latin1").toString("utf8")
@@ -61,6 +67,8 @@ module.exports = async (req, res) => {
         include: {
           priority: true,
           doctype: true,
+          fromDepartment: true,
+          fromDivision: true,
           creator: {
             select: {
               username: true,

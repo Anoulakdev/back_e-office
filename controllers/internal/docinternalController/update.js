@@ -39,6 +39,8 @@ module.exports = async (req, res) => {
         docin_description,
         priorityId,
         doctypeId,
+        fromDepartmentId,
+        fromDivisionId,
       } = req.body;
 
       // Step 1: Find the document to update
@@ -93,6 +95,8 @@ module.exports = async (req, res) => {
           docin_description,
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          fromDepartmentId: Number(fromDepartmentId),
+          fromDivisionId: Number(fromDivisionId),
           creatorCode: req.user.username,
           docin_fileoriginal: docinfileoriginal,
           docin_file: docinfile,
@@ -102,6 +106,8 @@ module.exports = async (req, res) => {
         include: {
           priority: true,
           doctype: true,
+          fromDepartment: true,
+          fromDivision: true,
           creator: {
             select: {
               username: true,

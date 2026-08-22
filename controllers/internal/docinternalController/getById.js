@@ -27,6 +27,8 @@ module.exports = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
+        fromDepartment: true,
+        fromDivision: true,
         creator: {
           select: {
             username: true,

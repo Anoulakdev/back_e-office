@@ -86,6 +86,8 @@ module.exports = async (req, res) => {
         },
         priority: true,
         doctype: true,
+        fromDepartment: true,
+        fromDivision: true,
         creator: {
           select: {
             username: true,

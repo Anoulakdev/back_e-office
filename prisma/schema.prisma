@@ -129,33 +129,35 @@ model Permission {
 }
 
 model Department {
-  id                Int        @id @default(autoincrement())
-  department_name   String?    @db.VarChar(255)
-  department_code   String?    @db.VarChar(50)
-  department_status String     @default("A") @db.VarChar(50)
+  id                Int           @id @default(autoincrement())
+  department_name   String?       @db.VarChar(255)
+  department_code   String?       @db.VarChar(50)
+  department_status String        @default("A") @db.VarChar(50)
   divisions         Division[]
   employees         Employee[]
   docexlogs         DocexLog[]
   docinlogs         DocinLog[]
   docdtlogs         DocdtLog[]
+  docinternals      DocInternal[]
 }
 
 model Division {
-  id              Int        @id @default(autoincrement())
-  division_name   String?    @db.VarChar(255)
-  division_code   String?    @db.VarChar(50)
-  division_status String     @default("A") @db.VarChar(50)
+  id              Int           @id @default(autoincrement())
+  division_name   String?       @db.VarChar(255)
+  division_code   String?       @db.VarChar(50)
+  division_status String        @default("A") @db.VarChar(50)
   branch_id       Int?
-  short_name      String?    @db.VarChar(255)
-  insur_code      String?    @db.VarChar(255)
+  short_name      String?       @db.VarChar(255)
+  insur_code      String?       @db.VarChar(255)
   departmentId    Int
-  department      Department @relation(fields: [departmentId], references: [id])
+  department      Department    @relation(fields: [departmentId], references: [id])
   offices         Office[]
   units           Unit[]
   employees       Employee[]
   docexlogs       DocexLog[]
   docinlogs       DocinLog[]
   docdtlogs       DocdtLog[]
+  docinternals    DocInternal[]
 
   @@index([departmentId])
 }
@@ -377,6 +379,11 @@ model DocInternal {
   docin_file         String?         @db.VarChar(255)
   docin_filetype     String?         @db.VarChar(50)
   docin_filesize     Int?
+  departure_type     Int?            @default(1)
+  fromDepartmentId   Int?
+  fromDepartment     Department?     @relation(fields: [fromDepartmentId], references: [id])
+  fromDivisionId     Int?
+  fromDivision       Division?       @relation(fields: [fromDivisionId], references: [id])
   assignto           Int?
   creatorCode        String          @db.VarChar(255)
   creator            User            @relation(fields: [creatorCode], references: [username], name: "creatorRelation")
