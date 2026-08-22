@@ -86,13 +86,14 @@ module.exports = async (req, res) => {
           );
         }
       } else if (receiverCode && !divisionId1.length && !divisionId2.length) {
+        const users = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(users.map((u) => [u.username, u]));
+
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: {
-              employee: true,
-            },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({
@@ -337,13 +338,15 @@ module.exports = async (req, res) => {
           );
         }
       } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
+        const fetchedUsers = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: { employee: true },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({

@@ -1,0 +1,100 @@
+const fs = require("fs").promises;
+const fsSync = require("fs");
+const path = require("path");
+const prisma = require("../../../prisma/prisma");
+
+module.exports = async (req, res) => {
+  try {
+    const { docinternalIds } = req.body;
+
+    if (!docinternalIds || !Array.isArray(docinternalIds) || docinternalIds.length === 0) {
+      return res.status(400).json({
+        message: "docinternalIds must be a non-empty array",
+      });
+    }
+
+    // แปลงค่าเป็นตัวเลขและกรองเฉพาะ ID ที่ถูกต้อง
+    const targetIds = docinternalIds
+      .map((id) => Number(id))
+      .filter((id) => !isNaN(id) && id > 0);
+
+    if (targetIds.length === 0) {
+      return res.status(400).json({
+        message: "No valid IDs provided in docinternalIds",
+      });
+    }
+
+    const deletedFiles = new Set(); // ป้องกันการลบไฟล์ซ้ำ
+    let deletedCount = 0;
+
+    // วน Loop ลบแต่ละ docinternalId
+    for (const id of targetIds) {
+      const docin = await prisma.docInternal.findUnique({
+        where: { id },
+      });
+
+      if (!docin) {
+        continue; // ถ้าไม่พบเอกสารนี้ ให้ข้ามไป
+      }
+
+      // 1. ลบไฟล์เอกสารของ docInternal แบบ Non-blocking
+      if (docin.docin_file) {
+        const filedocPath = path.join(
+          __dirname,
+          "../../../uploads/document",
+          docin.docin_file
+        );
+        if (!deletedFiles.has(filedocPath) && fsSync.existsSync(filedocPath)) {
+          deletedFiles.add(filedocPath);
+          await fs.unlink(filedocPath).catch((fileErr) => {
+            console.error(`Error deleting file ${filedocPath}:`, fileErr.message);
+          });
+        }
+      }
+
+      // 2. ค้นหาและลบไฟล์แนบของ docinLog ที่เกี่ยวข้อง
+      const docinLogs = await prisma.docinLog.findMany({
+        where: { docinId: id },
+      });
+
+      for (const log of docinLogs) {
+        if (log.docinlog_file) {
+          const logFilePath = path.join(
+            __dirname,
+            "../../../uploads/documentlog",
+            log.docinlog_file
+          );
+          if (!deletedFiles.has(logFilePath) && fsSync.existsSync(logFilePath)) {
+            deletedFiles.add(logFilePath);
+            await fs.unlink(logFilePath).catch((fileErr) => {
+              console.error(`Error deleting log file ${logFilePath}:`, fileErr.message);
+            });
+          }
+        }
+      }
+
+      // 3. ลบข้อมูลในฐานข้อมูล (Logs, Tracking, DocInternal)
+      await prisma.$transaction([
+        prisma.docinLog.deleteMany({
+          where: { docinId: id },
+        }),
+        prisma.docinTracking.deleteMany({
+          where: { docinId: id },
+        }),
+        prisma.docInternal.delete({
+          where: { id },
+        }),
+      ]);
+
+      deletedCount++;
+    }
+
+    res.status(200).json({
+      message: `Deleted ${deletedCount} documents successfully!`,
+      deletedCount,
+    });
+  } catch (err) {
+    console.error("Error in removeall:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+};

@@ -10,16 +10,20 @@ const {
   update,
   remove,
   assign,
+  listdepartment,
+  removeall,
 } = require("../controllers/internal/docinternalController");
 // middleware
 const { auth } = require("../middleware/auth");
 
 router.get("/docinternals", auth, list);
+router.get("/docinternals/listdepartment", auth, listdepartment);
 router.get("/docinternals/:docinternalId", auth, getById);
 router.get("/docinternals/getdocument/:docinternalId", auth, getdocument);
 router.post("/docinternals", auth, create);
 router.post("/docinternals/assignto", auth, assign);
 router.put("/docinternals/:docinternalId", auth, update);
+router.delete("/docinternals/removeall", auth, removeall);
 router.delete("/docinternals/:docinternalId", auth, remove);
 
 module.exports = router;

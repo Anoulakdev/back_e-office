@@ -65,20 +65,17 @@ module.exports = async (req, res) => {
             .json({ message: "receiverCode must be a non-empty array" });
         }
 
+        const users = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(users.map((u) => [u.username, u]));
+
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: {
-              employee: true,
-            },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({ message: "ບໍ່ເຫັນຜູ້ໃຊ້" });
-          }
-
-          if (!docdt) {
-            return res.status(404).json({ message: "ບໍ່ເຫັນເອກະສານ" });
           }
 
           logTransactions.push(
@@ -187,17 +184,7 @@ module.exports = async (req, res) => {
             });
           }
 
-          const docdt = await prisma.docDirector.findUnique({
-            where: {
-              id: Number(docdtId),
-            },
-          });
 
-          if (!docdt) {
-            return res.status(404).json({
-              message: "ບໍ່ພົບເອກະສານ docdtId",
-            });
-          }
 
           logTransactions.push(
             prisma.docdtLog.create({
@@ -306,17 +293,7 @@ module.exports = async (req, res) => {
             });
           }
 
-          const docdt = await prisma.docDirector.findUnique({
-            where: {
-              id: Number(docdtId),
-            },
-          });
 
-          if (!docdt) {
-            return res.status(404).json({
-              message: "ບໍ່ພົບເຫັນເອກະສານ docdtId",
-            });
-          }
 
           logTransactions.push(
             prisma.docdtLog.create({
@@ -350,13 +327,15 @@ module.exports = async (req, res) => {
         receiverCode &&
         (departmentId1.length || departmentId2.length)
       ) {
+        const fetchedUsers = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: { employee: true },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({
@@ -507,13 +486,15 @@ module.exports = async (req, res) => {
           );
         }
       } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
+        const fetchedUsers = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: { employee: true },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({

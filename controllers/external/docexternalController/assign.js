@@ -57,18 +57,19 @@ module.exports = async (req, res) => {
             .json({ message: "receiverCode must be a non-empty array" });
         }
 
+        const users = await prisma.user.findMany({
+          where: { username: { in: receiverCode } },
+          include: { employee: true },
+        });
+        const userMap = new Map(users.map((u) => [u.username, u]));
+
         let isMd = false;
         for (const receiverC of receiverCode) {
-          const user = await prisma.user.findUnique({
-            where: { username: receiverC },
-            include: {
-              employee: true,
-            },
-          });
+          const user = userMap.get(receiverC);
 
           if (!user) {
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນักງານ: ${receiverC}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານ: ${receiverC}`,
             });
           }
 

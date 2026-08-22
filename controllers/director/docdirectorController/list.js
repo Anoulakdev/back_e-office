@@ -1,20 +1,5 @@
-const fs = require("fs");
 const prisma = require("../../../prisma/prisma");
-const multer = require("multer");
-const path = require("path");
 const moment = require("moment-timezone");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/document");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage }).single("docdt_file");
 
 module.exports = async (req, res) => {
   try {

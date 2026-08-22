@@ -4,27 +4,36 @@ const moment = require("moment-timezone");
 module.exports = async (req, res) => {
   try {
     const {
+      departmentId,
+      departure_type,
       search,
-      priority,
-      assignto,
-      selectDateStart,
-      selectDateEnd,
-      // page,
-      // limit,
+      page,
+      limit,
     } = req.query;
 
     // แปลงค่า page & limit เป็นตัวเลข
-    // const pageNumber = Number(page) || 1;
-    // const pageSize = Number(limit) || 10;
+    const pageNumber = Number(page) || 1;
+    const pageSize = Number(limit) || 10;
 
     // คำนวณค่าการแบ่งหน้า
-    // const skip = (pageNumber - 1) * pageSize;
-    // const take = pageSize;
+    const skip = (pageNumber - 1) * pageSize;
+    const take = pageSize;
 
     // สร้างเงื่อนไข where
-    const where = {
-      creatorCode: req.user.username,
-    };
+    const where = {};
+
+    // ถ้ามี departmentId ให้ค้นหาจาก department ของ employee หรือ fromDepartmentId
+    if (departmentId && Number(departmentId) > 0) {
+      where.creator = {
+        employee: {
+          departmentId: Number(departmentId),
+        },
+      };
+    }
+
+    if (departure_type && Number(departure_type) > 0) {
+      where.departure_type = Number(departure_type);
+    }
 
     if (search) {
       where.OR = [
@@ -33,42 +42,14 @@ module.exports = async (req, res) => {
       ];
     }
 
-    if (priority) {
-      where.priorityId = Number(priority);
-    }
-
-    if (assignto) {
-      where.assignto = Number(assignto);
-    } else if (assignto === null || assignto === "null") {
-      where.assignto = null;
-    }
-
-    if (selectDateStart && selectDateEnd) {
-      const startDate = new Date(`${selectDateStart}T00:00:00+07:00`);
-
-      const endDate = new Date(`${selectDateEnd}T23:59:59+07:00`);
-
-      where.createdAt = {
-        gte: new Date(startDate.toISOString()),
-        lte: new Date(endDate.toISOString()),
-      };
-    }
-
     const docinternals = await prisma.docInternal.findMany({
       where,
-      // skip,
-      // take,
+      skip,
+      take,
       orderBy: {
         createdAt: "desc",
       },
       include: {
-        docinlogs: {
-          include: {
-            docstatus: true,
-          },
-          take: 1,
-          orderBy: { createdAt: "desc" },
-        },
         priority: true,
         doctype: true,
         fromDepartment: true,
@@ -94,7 +75,7 @@ module.exports = async (req, res) => {
       },
     });
 
-    // const total = await prisma.docExternal.count({ where });
+    const total = await prisma.docInternal.count({ where });
 
     // Format dates
     const formattedDocs = docinternals.map((doc) => ({
@@ -104,15 +85,13 @@ module.exports = async (req, res) => {
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
     }));
 
-    res.json(formattedDocs);
-
-    // res.json({
-    //   total,
-    //   page: pageNumber,
-    //   limit: pageSize,
-    //   totalPages: Math.ceil(total / pageSize),
-    //   formattedDocs,
-    // });
+    res.json({
+      total,
+      page: pageNumber,
+      limit: pageSize,
+      totalPages: Math.ceil(total / pageSize),
+      formattedDocs,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server Error" });

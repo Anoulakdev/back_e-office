@@ -11,6 +11,7 @@ const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
 const { auth } = require("./middleware/auth");
+const compression = require("compression");
 
 // const authRoutes = require("./routers/auth");
 // const belongtoRoutes = require("./routers/belongto");
@@ -35,6 +36,7 @@ const { auth } = require("./middleware/auth");
 // const userRoutes = require("./routers/user");
 
 // middleware
+app.use(compression());
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(cors());
