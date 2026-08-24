@@ -21,18 +21,18 @@ module.exports = async (req, res) => {
         username: username,
       },
     });
-    
+
     if (!user) {
       return res.status(401).json({
         message: "ບໍ່​ມີ​ຂໍ້​ມູນຜູ້​ໃຊ້",
       });
     }
 
-    // if (user.actived !== 'A') {
-    //   return res.status(400).json({
-    //     message: "ລະ​ຫັດ​ຂອງ​ທ່ານ​ໄດ້​ຖືກ​ປິດ​ການ​ໃຊ້​ງານ",
-    //   });
-    // }
+    if (user.status !== 'A') {
+      return res.status(400).json({
+        message: "ລະ​ຫັດ​ຂອງ​ທ່ານ​ໄດ້​ຖືກ​ປິດ​ການ​ໃຊ້​ງານ",
+      });
+    }
 
     // Step 2 Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -90,7 +90,7 @@ module.exports = async (req, res) => {
               officeId: Number(userData.office?.office_id) || null,
               unitId:
                 userData.office.unit_id === 0 ||
-                userData.office.unit_id === null
+                  userData.office.unit_id === null
                   ? null
                   : userData.office?.unit_id,
               tel: userData.phone || null,
@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
               officeId: Number(userData.office?.office_id) || null,
               unitId:
                 userData.office.unit_id === 0 ||
-                userData.office.unit_id === null
+                  userData.office.unit_id === null
                   ? null
                   : userData.office?.unit_id,
               tel: userData.phone || null,
@@ -169,7 +169,6 @@ module.exports = async (req, res) => {
     const payload = {
       id: userWithAll.id,
       username: userWithAll.username,
-      name: userWithAll.name,
       userimg: userWithAll.userimg,
       status: userWithAll.status,
       employee_code: userWithAll.employee_code,

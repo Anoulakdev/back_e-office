@@ -42,7 +42,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Static Middleware (ถ้าจำเป็น)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // File route
 app.get("/upload/user/:filename", auth, (req, res) => {
