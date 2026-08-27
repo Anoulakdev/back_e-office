@@ -11,6 +11,7 @@ const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
 const { auth } = require("./middleware/auth");
+const { apiLimiter } = require("./middleware/rateLimiter");
 const compression = require("compression");
 
 // const authRoutes = require("./routers/auth");
@@ -34,6 +35,9 @@ const compression = require("compression");
 // const rolemenuRoutes = require("./routers/rolemenu");
 // const unitRoutes = require("./routers/unit");
 // const userRoutes = require("./routers/user");
+
+// Enable trust proxy for accurate client IP detection behind reverse proxies
+app.set("trust proxy", 1);
 
 // middleware
 app.use(compression());
@@ -95,6 +99,8 @@ app.get("/upload/docexport/:filename", auth, (req, res) => {
 
 // Other middleware and routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Rate limit general API requests
+app.use("/api", apiLimiter);
 // Step 3 Routing
 readdirSync("./routers").map((r) => app.use("/api", require("./routers/" + r)));
 
