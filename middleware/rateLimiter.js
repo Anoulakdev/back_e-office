@@ -10,7 +10,8 @@ const authLimiter = rateLimit({
     : 15 * 60 * 1000, // 15 minutes default
   max: process.env.AUTH_RATE_LIMIT_MAX
     ? parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10)
-    : 10, // Limit each IP to 10 login requests per windowMs
+    : 50, // Limit each IP to 50 failed attempts per window (safe for shared office IP)
+  skipSuccessfulRequests: true, // Only count failed attempts; successful logins won't consume rate limit quota
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   message: {
@@ -29,16 +30,16 @@ const authLimiter = rateLimit({
 const apiLimiter = rateLimit({
   windowMs: process.env.API_RATE_LIMIT_WINDOW_MS
     ? parseInt(process.env.API_RATE_LIMIT_WINDOW_MS, 10)
-    : 15 * 60 * 1000, // 15 minutes default
+    : 1 * 60 * 1000, // 1 minute window (resets quickly to avoid blocking office users)
   max: process.env.API_RATE_LIMIT_MAX
     ? parseInt(process.env.API_RATE_LIMIT_MAX, 10)
-    : 300, // Limit each IP to 300 requests per windowMs
+    : 600, // 600 requests/min per IP (~10 req/sec, suitable for corporate network with 2000 users)
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 429,
     message:
-      "ມີການຮ້ອງຂໍຫຼາຍເກີນໄປ, ກະລຸນາລອງໃໝ່ອີກຄັ້ງໃນພາຍຫຼັງ (Too many requests, please try again later)",
+      "ມີການຮ້ອງຂໍຫຼາຍເກີນໄປ, ກະລຸນາລອງໃໝ່ອີກຄັ້ງໃນ 1 ນາທີ (Too many requests, please try again in 1 minute)",
   },
   handler: (req, res, next, options) => {
     res.status(options.statusCode).json(options.message);
@@ -49,3 +50,4 @@ module.exports = {
   authLimiter,
   apiLimiter,
 };
+
