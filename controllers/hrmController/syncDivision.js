@@ -45,12 +45,27 @@ module.exports = async (req, res) => {
 
     const existingIds = new Set(existing.map((d) => d.id));
 
+    const departments = await prisma.department.findMany({
+      select: { id: true },
+    });
+
+    const departmentIds = new Set(departments.map((d) => d.id));
+
     let updated = 0;
     let created = 0;
+    let skipped = 0;
 
     await Promise.all(
       divisionsData.map(async (d) => {
-        const isNew = !existingIds.has(d.division_id);
+        const divisionId = Number(d.division_id);
+        const departmentId = Number(d.department_id);
+
+        if (!divisionId || !departmentId || !departmentIds.has(departmentId)) {
+          skipped++;
+          return null;
+        }
+
+        const isNew = !existingIds.has(divisionId);
 
         if (isNew) {
           created++;
@@ -58,24 +73,26 @@ module.exports = async (req, res) => {
           updated++;
         }
 
+        const branchId = d.branch?.branch_id ? Number(d.branch.branch_id) : null;
+
         return prisma.division.upsert({
-          where: { id: d.division_id },
+          where: { id: divisionId },
           update: {
             division_name: d.division_name,
             division_code: d.division_code,
             division_status: d.division_status,
-            branch_id: d.branch.branch_id,
-            departmentId: d.department_id,
+            branch_id: branchId,
+            departmentId: departmentId,
             short_name: d.short_name,
             insur_code: d.insur_code,
           },
           create: {
-            id: d.division_id,
+            id: divisionId,
             division_name: d.division_name,
             division_code: d.division_code,
             division_status: d.division_status,
-            branch_id: d.branch.branch_id,
-            departmentId: d.department_id,
+            branch_id: branchId,
+            departmentId: departmentId,
             short_name: d.short_name,
             insur_code: d.insur_code,
           },
@@ -88,6 +105,7 @@ module.exports = async (req, res) => {
       total: divisionsData.length,
       updated,
       created,
+      skipped,
       message: "division sync completed",
     });
   } catch (err) {

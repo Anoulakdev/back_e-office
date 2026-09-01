@@ -45,7 +45,11 @@ module.exports = async (req, res) => {
       },
     );
 
-    const employeesData = response.data.data.employees;
+    const employeesData = Array.isArray(response.data?.data?.employees)
+      ? response.data.data.employees
+      : Array.isArray(response.data?.data)
+      ? response.data.data
+      : null;
 
     if (!Array.isArray(employeesData)) {
       return res.status(400).json({
@@ -55,18 +59,36 @@ module.exports = async (req, res) => {
     }
 
     // 3. Upsert
-    const existing = await prisma.employee.findMany({
-      select: { id: true },
-    });
+    const [existing, positions, departments, divisions, offices, units] =
+      await Promise.all([
+        prisma.employee.findMany({ select: { id: true } }),
+        prisma.position.findMany({ select: { id: true } }),
+        prisma.department.findMany({ select: { id: true } }),
+        prisma.division.findMany({ select: { id: true } }),
+        prisma.office.findMany({ select: { id: true } }),
+        prisma.unit.findMany({ select: { id: true } }),
+      ]);
 
     const existingIds = new Set(existing.map((d) => d.id));
+    const positionIds = new Set(positions.map((p) => p.id));
+    const departmentIds = new Set(departments.map((d) => d.id));
+    const divisionIds = new Set(divisions.map((d) => d.id));
+    const officeIds = new Set(offices.map((o) => o.id));
+    const unitIds = new Set(units.map((u) => u.id));
 
     let updated = 0;
     let created = 0;
+    let skipped = 0;
 
     await Promise.all(
       employeesData.map(async (d) => {
-        const isNew = !existingIds.has(d.emp_id);
+        const empId = Number(d.emp_id);
+        if (!empId) {
+          skipped++;
+          return null;
+        }
+
+        const isNew = !existingIds.has(empId);
 
         if (isNew) {
           created++;
@@ -74,25 +96,37 @@ module.exports = async (req, res) => {
           updated++;
         }
 
+        const rawPosId = Number(d.office?.pos_id);
+        const rawDepId = Number(d.office?.department_id);
+        const rawDivId = Number(d.office?.division_id);
+        const rawOffId = Number(d.office?.office_id);
+        const rawUnitId = Number(d.office?.unit_id);
+
+        const posId = rawPosId && positionIds.has(rawPosId) ? rawPosId : null;
+        const departmentId =
+          rawDepId && departmentIds.has(rawDepId) ? rawDepId : null;
+        const divisionId =
+          rawDivId && divisionIds.has(rawDivId) ? rawDivId : null;
+        const officeId =
+          rawOffId && officeIds.has(rawOffId) ? rawOffId : null;
+        const unitId =
+          rawUnitId && unitIds.has(rawUnitId) ? rawUnitId : null;
+
+        const gender = d.gender === "Female" ? "Female" : "Male";
+
         return prisma.employee.upsert({
-          where: { id: d.emp_id },
+          where: { id: empId },
           update: {
             first_name: d.first_name_la,
             last_name: d.last_name_la,
             emp_code: d.emp_code,
             status: d.status,
-            gender: d.gender,
-            posId: Number(d.office?.pos_id) || null,
-            departmentId: Number(d.office?.department_id) || null,
-            divisionId: Number(d.office?.division_id) || null,
-            officeId:
-              d.office?.office_id && d.office.office_id !== 0
-                ? d.office.office_id
-                : null,
-            unitId:
-              d.office?.unit_id && d.office.unit_id !== 0
-                ? d.office.unit_id
-                : null,
+            gender: gender,
+            posId: posId,
+            departmentId: departmentId,
+            divisionId: divisionId,
+            officeId: officeId,
+            unitId: unitId,
             tel: d.phone || null,
             email: d.email || null,
             empimg: d.image
@@ -102,23 +136,17 @@ module.exports = async (req, res) => {
             updatedAt: d.created_at ? new Date(d.created_at) : new Date(),
           },
           create: {
-            id: d.emp_id,
+            id: empId,
             first_name: d.first_name_la,
             last_name: d.last_name_la,
             emp_code: d.emp_code,
             status: d.status,
-            gender: d.gender,
-            posId: Number(d.office?.pos_id) || null,
-            departmentId: Number(d.office?.department_id) || null,
-            divisionId: Number(d.office?.division_id) || null,
-            officeId:
-              d.office?.office_id && d.office.office_id !== 0
-                ? d.office.office_id
-                : null,
-            unitId:
-              d.office?.unit_id && d.office.unit_id !== 0
-                ? d.office.unit_id
-                : null,
+            gender: gender,
+            posId: posId,
+            departmentId: departmentId,
+            divisionId: divisionId,
+            officeId: officeId,
+            unitId: unitId,
             tel: d.phone || null,
             email: d.email || null,
             empimg: d.image
@@ -136,6 +164,7 @@ module.exports = async (req, res) => {
       total: employeesData.length,
       updated,
       created,
+      skipped,
       message: "employee sync completed",
     });
   } catch (err) {

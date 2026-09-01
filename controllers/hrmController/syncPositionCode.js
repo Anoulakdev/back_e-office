@@ -45,12 +45,27 @@ module.exports = async (req, res) => {
 
     const existingIds = new Set(existing.map((d) => d.id));
 
+    const positionGroups = await prisma.positionGroup.findMany({
+      select: { id: true },
+    });
+
+    const positionGroupIds = new Set(positionGroups.map((d) => d.id));
+
     let updated = 0;
     let created = 0;
+    let skipped = 0;
 
     await Promise.all(
       positioncodesData.map(async (d) => {
-        const isNew = !existingIds.has(d.pos_code_id);
+        const posCodeId = Number(d.pos_code_id);
+        const posGroupId = Number(d.pos_group_id);
+
+        if (!posCodeId || !posGroupId || !positionGroupIds.has(posGroupId)) {
+          skipped++;
+          return null;
+        }
+
+        const isNew = !existingIds.has(posCodeId);
 
         if (isNew) {
           created++;
@@ -59,17 +74,17 @@ module.exports = async (req, res) => {
         }
 
         return prisma.positionCode.upsert({
-          where: { id: d.pos_group_id },
+          where: { id: posCodeId },
           update: {
             pos_code_name: d.pos_code_name,
             pos_code_status: d.pos_code_status,
-            posgroupId: d.pos_group_id,
+            posgroupId: posGroupId,
           },
           create: {
-            id: d.pos_code_id,
+            id: posCodeId,
             pos_code_name: d.pos_code_name,
             pos_code_status: d.pos_code_status,
-            posgroupId: d.pos_group_id,
+            posgroupId: posGroupId,
           },
         });
       }),
@@ -80,6 +95,7 @@ module.exports = async (req, res) => {
       total: positioncodesData.length,
       updated,
       created,
+      skipped,
       message: "positioncode sync completed",
     });
   } catch (err) {

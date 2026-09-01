@@ -45,12 +45,27 @@ module.exports = async (req, res) => {
 
     const existingIds = new Set(existing.map((d) => d.id));
 
+    const positionCodes = await prisma.positionCode.findMany({
+      select: { id: true },
+    });
+
+    const positionCodeIds = new Set(positionCodes.map((d) => d.id));
+
     let updated = 0;
     let created = 0;
+    let skipped = 0;
 
     await Promise.all(
       positionsData.map(async (d) => {
-        const isNew = !existingIds.has(d.pos_id);
+        const posId = Number(d.pos_id);
+        const posCodeId = Number(d.pos_code_id);
+
+        if (!posId || !posCodeId || !positionCodeIds.has(posCodeId)) {
+          skipped++;
+          return null;
+        }
+
+        const isNew = !existingIds.has(posId);
 
         if (isNew) {
           created++;
@@ -59,17 +74,17 @@ module.exports = async (req, res) => {
         }
 
         return prisma.position.upsert({
-          where: { id: d.pos_id },
+          where: { id: posId },
           update: {
             pos_name: d.pos_name,
             pos_status: d.pos_status,
-            poscodeId: d.pos_code_id,
+            poscodeId: posCodeId,
           },
           create: {
-            id: d.pos_id,
+            id: posId,
             pos_name: d.pos_name,
             pos_status: d.pos_status,
-            poscodeId: d.pos_code_id,
+            poscodeId: posCodeId,
           },
         });
       }),
@@ -80,6 +95,7 @@ module.exports = async (req, res) => {
       total: positionsData.length,
       updated,
       created,
+      skipped,
       message: "position sync completed",
     });
   } catch (err) {
