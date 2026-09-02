@@ -5,7 +5,8 @@ const getdocument = require("./getdocument");
 const update = require("./update");
 const remove = require("./remove");
 const assign = require("./assign");
+const departmentremove = require("./departmentremove");
 const listdepartment = require("./listdepartment");
 const removeall = require("./removeall");
 
-module.exports = { create, list, getById, update, remove, assign, getdocument, listdepartment, removeall };
+module.exports = { create, list, getById, update, remove, assign, getdocument, departmentremove, listdepartment, removeall };

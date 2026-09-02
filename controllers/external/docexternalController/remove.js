@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
       return res.status(404).json({ message: "Document not found" });
     }
 
-    // ลบไฟล์ของ docExternal แบบ Non-blocking Async
+    // 1. ลบไฟล์ของ docExternal แบบ Non-blocking Async
     if (docex.docex_file) {
       const filedocPath = path.join(
         __dirname,
@@ -29,12 +29,11 @@ module.exports = async (req, res) => {
       }
     }
 
-    // ค้นหา logs ที่เกี่ยวข้อง
+    // 2. ค้นหาและลบไฟล์ของ logs ที่เกี่ยวข้อง
     const docexLogs = await prisma.docexLog.findMany({
       where: { docexId: Number(docexternalId) },
     });
 
-    // ลบไฟล์ของแต่ละ log โดยไม่ให้บล็อก Event Loop
     const deletedFiles = new Set();
     for (const log of docexLogs) {
       if (log.docexlog_file) {
@@ -51,7 +50,30 @@ module.exports = async (req, res) => {
       }
     }
 
+    // 3. ค้นหาและลบไฟล์ของ docExport ที่เกี่ยวข้อง (ถ้ามี)
+    const docExports = await prisma.docExport.findMany({
+      where: { docexId: Number(docexternalId) },
+    });
+
+    for (const exp of docExports) {
+      if (exp.export_file) {
+        const expFilePath = path.join(
+          __dirname,
+          "../../../uploads/docexport",
+          exp.export_file
+        );
+        if (!deletedFiles.has(exp.export_file) && fsSync.existsSync(expFilePath)) {
+          deletedFiles.add(exp.export_file);
+          await fs.unlink(expFilePath).catch((err) => console.error("Error deleting export file:", err.message));
+        }
+      }
+    }
+
+    // 4. ลบข้อมูลในฐานข้อมูล (DocExport, DocexLog, DocexTracking, DocExternal)
     await prisma.$transaction([
+      prisma.docExport.deleteMany({
+        where: { docexId: Number(docexternalId) },
+      }),
       prisma.docexLog.deleteMany({
         where: { docexId: Number(docexternalId) },
       }),

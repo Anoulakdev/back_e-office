@@ -10,16 +10,20 @@ const {
   update,
   remove,
   assign,
+  listdepartment,
+  removeall,
 } = require("../controllers/external/docexternalController");
 // middleware
 const { auth } = require("../middleware/auth");
 
 router.get("/docexternals", auth, list);
+router.get("/docexternals/listdepartment", auth, listdepartment);
 router.get("/docexternals/:docexternalId", auth, getById);
 router.get("/docexternals/getdocument/:docexternalId", auth, getdocument);
 router.post("/docexternals", auth, create);
 router.post("/docexternals/assignto", auth, assign);
 router.put("/docexternals/:docexternalId", auth, update);
+router.delete("/docexternals/removeall", auth, removeall);
 router.delete("/docexternals/:docexternalId", auth, remove);
 
 module.exports = router;

@@ -5,7 +5,6 @@ module.exports = async (req, res) => {
   try {
     const {
       departmentId,
-      departure_type,
       search,
       startDate,
       endDate,
@@ -33,14 +32,10 @@ module.exports = async (req, res) => {
       };
     }
 
-    if (departure_type && Number(departure_type) > 0) {
-      where.departure_type = Number(departure_type);
-    }
-
     if (search) {
       where.OR = [
-        { docin_no: { contains: search, mode: "insensitive" } },
-        { docin_title: { contains: search, mode: "insensitive" } },
+        { docdt_no: { contains: search, mode: "insensitive" } },
+        { docdt_title: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -54,7 +49,7 @@ module.exports = async (req, res) => {
       };
     }
 
-    const docinternals = await prisma.docInternal.findMany({
+    const docdirectors = await prisma.docDirector.findMany({
       where,
       skip,
       take,
@@ -64,8 +59,6 @@ module.exports = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
-        fromDepartment: true,
-        fromDivision: true,
         creator: {
           select: {
             username: true,
@@ -87,11 +80,11 @@ module.exports = async (req, res) => {
       },
     });
 
-    const total = await prisma.docInternal.count({ where });
+    const total = await prisma.docDirector.count({ where });
 
     // Format dates
-    const formattedDocs = docinternals.map((doc) => ({
-      docinId: doc.id,
+    const formattedDocs = docdirectors.map((doc) => ({
+      docdtId: doc.id,
       ...doc,
       createdAt: moment(doc.createdAt).tz("Asia/Vientiane").format(),
       updatedAt: moment(doc.updatedAt).tz("Asia/Vientiane").format(),
