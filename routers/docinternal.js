@@ -13,11 +13,13 @@ const {
   listdepartment,
   departmentremove,
   removeall,
+  documentByMe,
 } = require("../controllers/internal/docinternalController");
 // middleware
 const { auth } = require("../middleware/auth");
 
 router.get("/docinternals", auth, list);
+router.get("/docinternals/documentbyme", auth, documentByMe);
 router.get("/docinternals/departmentremove", auth, departmentremove);
 router.get("/docinternals/listdepartment", auth, listdepartment);
 router.get("/docinternals/:docinternalId", auth, getById);
