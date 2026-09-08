@@ -7,13 +7,48 @@ module.exports = async (req, res) => {
     let where = {};
 
     if (selectDateStart && selectDateEnd) {
-      const startDate = new Date(`${selectDateStart}T00:00:00+07:00`);
-      const endDate = new Date(`${selectDateEnd}T23:59:59+07:00`);
-
       where.createdAt = {
-        gte: new Date(startDate.toISOString()),
-        lte: new Date(endDate.toISOString()),
+        gte: new Date(`${selectDateStart}T00:00:00+07:00`),
+        lte: new Date(`${selectDateEnd}T23:59:59+07:00`),
       };
+    }
+
+    const user = req.user;
+    const roleId = user?.roleId ? Number(user.roleId) : null;
+
+    if ([2, 3, 4, 11].includes(roleId)) {
+      // แบบเดิม: เห็นทั้งหมด ไม่ต้อง filter เพิ่ม (แสดงทั้ง department, division และ office)
+    } else if (roleId === 6) {
+      const departmentId = user?.employee?.departmentId || user?.departmentId;
+      if (departmentId) {
+        where.creator = {
+          employee: {
+            departmentId: Number(departmentId),
+          },
+        };
+      }
+    } else if (roleId === 7) {
+      const divisionId = user?.employee?.divisionId || user?.divisionId;
+      if (divisionId) {
+        where.creator = {
+          employee: {
+            divisionId: Number(divisionId),
+          },
+        };
+      }
+    } else if (roleId === 8) {
+      const officeId = user?.employee?.officeId || user?.officeId;
+      if (officeId) {
+        where.creator = {
+          employee: {
+            officeId: Number(officeId),
+          },
+        };
+      }
+    } else if ([9, 10].includes(roleId)) {
+      if (user?.username) {
+        where.creatorCode = user.username;
+      }
     }
 
     const select = {
@@ -22,10 +57,18 @@ module.exports = async (req, res) => {
         select: {
           employee: {
             select: {
+              officeId: true,
+              office: {
+                select: { office_name: true },
+              },
               divisionId: true,
-              division: true,
+              division: {
+                select: { division_name: true },
+              },
               departmentId: true,
-              department: true,
+              department: {
+                select: { department_name: true },
+              },
             },
           },
         },
@@ -38,40 +81,46 @@ module.exports = async (req, res) => {
       prisma.docDirector.findMany({ where, select }),
     ]);
 
-    // 🔥 group by division + department
+    // 🔥 group by office + division + department
     const groupByDivision = (data) => {
-      return (
-        Object.values(
-          data.reduce((acc, item) => {
-            const emp = item.creator?.employee;
+      const result = {};
 
-            const divisionId = emp?.divisionId || "unknown";
-            const departmentId = emp?.departmentId || "unknown";
+      data.forEach((item) => {
+        const emp = item.creator?.employee;
+        if (!emp?.divisionId && !emp?.officeId) return;
 
-            const division_name = emp?.division?.division_name || "Unknown";
+        const officeId = emp?.officeId || null;
+        const office_name = officeId
+          ? emp?.office?.office_name || "Unknown"
+          : null;
+        const divisionId = emp?.divisionId || null;
+        const division_name = emp?.division?.division_name || "Unknown";
+        const departmentId = emp?.departmentId || null;
+        const department_name = emp?.department?.department_name || "Unknown";
 
-            const department_name =
-              emp?.department?.department_name || "Unknown";
+        const groupKey = `${officeId || "no-office"}-${divisionId}-${departmentId}`;
 
-            const key = `${divisionId}-${departmentId}`;
+        if (!result[groupKey]) {
+          result[groupKey] = {
+            officeId,
+            office_name,
+            divisionId,
+            division_name,
+            departmentId,
+            department_name,
+            count: 0,
+          };
+        }
 
-            if (!acc[key]) {
-              acc[key] = {
-                divisionId,
-                division_name,
-                departmentId,
-                department_name,
-                count: 0,
-              };
-            }
+        result[groupKey].count += 1;
+      });
 
-            acc[key].count += 1;
-
-            return acc;
-          }, {}),
-        )
-          // 🔥 orderBy departmentId
-          .sort((a, b) => (a.departmentId || 0) - (b.departmentId || 0))
+      // ✅ sort ตาม officeId, divisionId, departmentId
+      return Object.values(result).sort(
+        (a, b) =>
+          (a.officeId || 0) - (b.officeId || 0) ||
+          (a.divisionId || 0) - (b.divisionId || 0) ||
+          (a.departmentId || 0) - (b.departmentId || 0),
       );
     };
 
