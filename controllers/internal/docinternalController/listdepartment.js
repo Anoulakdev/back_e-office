@@ -9,6 +9,7 @@ module.exports = async (req, res) => {
       search,
       startDate,
       endDate,
+      doctypeId,
       page,
       limit,
     } = req.query;
@@ -24,13 +25,36 @@ module.exports = async (req, res) => {
     // สร้างเงื่อนไข where
     const where = {};
 
-    // ถ้ามี departmentId ให้ค้นหาจาก department ของ employee หรือ fromDepartmentId
-    if (departmentId && Number(departmentId) > 0) {
+    if (Number(req.user?.roleId) === 6) {
       where.creator = {
         employee: {
-          departmentId: Number(departmentId),
+          departmentId: Number(req.user?.employee?.departmentId),
         },
       };
+    } else if (Number(req.user?.roleId) === 7) {
+      where.creator = {
+        employee: {
+          divisionId: Number(req.user?.employee?.divisionId),
+        },
+      };
+    } else if (Number(req.user?.roleId) === 8) {
+      where.creator = {
+        employee: {
+          officeId: Number(req.user?.employee?.officeId),
+        },
+      };
+    } else if (Number(req.user?.roleId) === 1) {
+      if (departmentId && Number(departmentId) > 0) {
+        where.creator = {
+          employee: {
+            departmentId: Number(departmentId),
+          },
+        };
+      }
+    }
+
+    if (doctypeId && Number(doctypeId) > 0) {
+      where.doctypeId = Number(doctypeId);
     }
 
     if (departure_type && Number(departure_type) > 0) {

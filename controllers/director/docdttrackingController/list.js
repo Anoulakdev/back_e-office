@@ -18,7 +18,7 @@ const upload = multer({ storage: storage }).single("docdtlog_file");
 
 module.exports = async (req, res) => {
   try {
-    const { selectDateStart, selectDateEnd } = req.query;
+    const { selectDateStart, selectDateEnd, doctypeId } = req.query;
     const where = {};
 
     if (selectDateStart && selectDateEnd) {
@@ -31,6 +31,13 @@ module.exports = async (req, res) => {
         lte: new Date(endDate.toISOString()),
       };
     }
+
+    if (doctypeId) {
+      where.docdirector = {
+        doctypeId: Number(doctypeId),
+      };
+    }
+
     const doctrackings = await prisma.docdtTracking.findMany({
       where: {
         ...where,

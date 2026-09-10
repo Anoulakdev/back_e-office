@@ -9,6 +9,7 @@ module.exports = async (req, res) => {
       assignto,
       selectDateStart,
       selectDateEnd,
+      doctypeId,
       // page,
       // limit,
     } = req.query;
@@ -25,6 +26,10 @@ module.exports = async (req, res) => {
     const where = {
       creatorCode: req.user.username,
     };
+
+    if (doctypeId) {
+      where.doctypeId = Number(doctypeId);
+    }
 
     if (search) {
       where.OR = [

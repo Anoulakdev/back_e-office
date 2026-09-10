@@ -11,6 +11,7 @@ module.exports = async (req, res) => {
       // extype,
       selectDateStart,
       selectDateEnd,
+      doctypeId,
       // page,
       // limit,
     } = req.query;
@@ -30,6 +31,10 @@ module.exports = async (req, res) => {
       where.extype = 1;
     } else {
       where.creatorCode = req.user.username;
+    }
+
+    if (doctypeId) {
+      where.doctypeId = Number(doctypeId);
     }
 
     if (search) {

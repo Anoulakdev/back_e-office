@@ -18,7 +18,7 @@ const upload = multer({ storage: storage }).single("docexlog_file");
 
 module.exports = async (req, res) => {
   try {
-    const { selectDateStart, selectDateEnd } = req.query;
+    const { selectDateStart, selectDateEnd, doctypeId } = req.query;
     const where = {};
 
     if (selectDateStart && selectDateEnd) {
@@ -38,6 +38,12 @@ module.exports = async (req, res) => {
       };
     } else {
       where.receiverCode = req.user.username;
+    }
+
+    if (doctypeId) {
+      where.docexternal = {
+        doctypeId: Number(doctypeId),
+      };
     }
 
     const doctrackings = await prisma.docexTracking.findMany({
