@@ -9,6 +9,7 @@ const {
   gethistory,
   gethistoryall,
   getdocumentall,
+  updatefilelog,
 } = require("../controllers/internal/docinlogController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -19,5 +20,6 @@ router.get("/docinlogs/person", auth, person);
 router.get("/docinlogs/history", auth, history);
 router.get("/docinlogs/:docinId", auth, gethistory);
 router.get("/docinlogs/historyall/:docinId", auth, gethistoryall);
+router.put("/docinlogs/updatefilelog/:docinlogId", auth, updatefilelog);
 
 module.exports = router;

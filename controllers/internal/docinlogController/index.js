@@ -4,6 +4,7 @@ const person = require("./person");
 const gethistory = require("./gethistory");
 const history = require("./history");
 const gethistoryall = require("./gethistoryall");
+const updatefilelog = require("./updatefilelog");
 
 module.exports = {
   listdocinternal,
@@ -12,4 +13,5 @@ module.exports = {
   history,
   gethistoryall,
   getdocumentall,
+  updatefilelog,
 };
