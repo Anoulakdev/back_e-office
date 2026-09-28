@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docinId, receiverCode, docstatusId, description, dateline } =
+      const { docinId, receiverCode, docstatusId, description, dateline, docinlog_url } =
         req.body;
 
       if (!docinId) {
@@ -85,8 +85,8 @@ module.exports = async (req, res) => {
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           let docinlogfileData = {
             docinlog_original: null,
@@ -150,6 +150,7 @@ module.exports = async (req, res) => {
                   ? Number(user.employee.departmentId)
                   : null,
                 ...docinlogfileData,
+                docinlog_url: docinlog_url ?? null,
               },
             }),
             prisma.docinTracking.create({
@@ -161,6 +162,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docinlogfileData,
+                docinlog_url: docinlog_url ?? null,
               },
             })
           );
@@ -190,12 +192,13 @@ module.exports = async (req, res) => {
                 viewed: true,
                 docinlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
-                    )
+                    "utf8"
+                  )
                   : null,
                 docinlog_file: req.file ? req.file.filename : null,
                 docinlog_type: req.file ? req.file.mimetype : null,
                 docinlog_size: req.file ? req.file.size : null,
+                docinlog_url: docinlog_url ?? null,
               },
             })
           );

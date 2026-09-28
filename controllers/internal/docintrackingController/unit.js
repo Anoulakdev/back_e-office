@@ -28,8 +28,7 @@ module.exports = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docinId, receiverCode, docstatusId, description, dateline } =
-        req.body;
+      const { docinId, receiverCode, docstatusId, description, dateline, docinlog_url } = req.body;
 
       if (!docinId) {
         return res.status(400).json({ message: "docinId is required" });
@@ -139,6 +138,7 @@ module.exports = async (req, res) => {
                   ? Number(user.employee.unitId)
                   : null,
                 ...docinlogfileData,
+                docinlog_url: docinlog_url ?? null,
                 departmentactive: existingTracking.departmentactive,
                 divisionactive: existingTracking.divisionactive,
                 officeactive: existingTracking.officeactive,
@@ -153,6 +153,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docinlogfileData,
+                docinlog_url: docinlog_url ?? null,
                 departmentactive: existingTracking.departmentactive,
                 divisionactive: existingTracking.divisionactive,
                 officeactive: existingTracking.officeactive,
@@ -187,12 +188,13 @@ module.exports = async (req, res) => {
                 viewed: true,
                 docinlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8",
-                    )
+                    "utf8",
+                  )
                   : null,
                 docinlog_file: req.file ? req.file.filename : null,
                 docinlog_type: req.file ? req.file.mimetype : null,
                 docinlog_size: req.file ? req.file.size : null,
+                docinlog_url: docinlog_url ?? null,
               },
             }),
           );

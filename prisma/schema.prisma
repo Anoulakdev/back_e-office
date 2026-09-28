@@ -311,6 +311,7 @@ model DocexTracking {
   docexlog_file     String?     @db.VarChar(255)
   docexlog_type     String?     @db.VarChar(255)
   docexlog_size     Int?
+  docexlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 
@@ -358,6 +359,7 @@ model DocexLog {
   docexlog_file     String?     @db.VarChar(255)
   docexlog_type     String?     @db.VarChar(255)
   docexlog_size     Int?
+  docexlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 
@@ -432,6 +434,7 @@ model DocinTracking {
   docinlog_file     String?     @db.VarChar(255)
   docinlog_type     String?     @db.VarChar(255)
   docinlog_size     Int?
+  docinlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 
@@ -478,6 +481,7 @@ model DocinLog {
   docinlog_file     String?     @db.VarChar(255)
   docinlog_type     String?     @db.VarChar(255)
   docinlog_size     Int?
+  docinlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 
@@ -544,6 +548,7 @@ model DocdtTracking {
   docdtlog_file     String?     @db.VarChar(255)
   docdtlog_type     String?     @db.VarChar(255)
   docdtlog_size     Int?
+  docdtlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 
@@ -590,6 +595,7 @@ model DocdtLog {
   docdtlog_file     String?     @db.VarChar(255)
   docdtlog_type     String?     @db.VarChar(255)
   docdtlog_size     Int?
+  docdtlog_url      String?     @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(0)
 

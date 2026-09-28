@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
     try {
       const { docinlogId } = req.params;
 
-      const { description } = req.body;
+      const { description, docinlog_url } = req.body;
 
       // Step 1: Find the document to update
       const docinlog = await prisma.docinLog.findUnique({
@@ -85,6 +85,7 @@ module.exports = async (req, res) => {
           docinlog_file: docinlogfile,
           docinlog_type: docinlogtype,
           docinlog_size: docinlogsize,
+          docinlog_url: docinlog_url ?? null,
         },
       });
 
