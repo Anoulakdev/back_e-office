@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docdtId, receiverCode, docstatusId, description, dateline } =
+      const { docdtId, receiverCode, docstatusId, description, dateline, docdtlog_url } =
         req.body;
 
       if (!docdtId) {
@@ -155,6 +155,7 @@ module.exports = async (req, res) => {
                 divisionactive: existingTracking?.divisionactive ?? null,
                 officeactive: existingTracking?.officeactive ?? null,
                 ...docdtlogfileData,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
             prisma.docdtTracking.create({
@@ -169,6 +170,7 @@ module.exports = async (req, res) => {
                 divisionactive: existingTracking?.divisionactive ?? null,
                 officeactive: existingTracking?.officeactive ?? null,
                 ...docdtlogfileData,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
           );
@@ -205,12 +207,13 @@ module.exports = async (req, res) => {
               viewed: true,
               docdtlog_original: req.file
                 ? Buffer.from(req.file.originalname, "latin1").toString(
-                    "utf8",
-                  )
+                  "utf8",
+                )
                 : null,
               docdtlog_file: req.file ? req.file.filename : null,
               docdtlog_type: req.file ? req.file.mimetype : null,
               docdtlog_size: req.file ? req.file.size : null,
+              docdtlog_url: docdtlog_url ?? null,
             },
           }),
         );

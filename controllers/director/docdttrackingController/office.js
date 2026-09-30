@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
         docstatusId,
         description,
         dateline,
+        docdtlog_url,
       } = req.body;
 
       if (!docdtId) {
@@ -68,6 +69,7 @@ module.exports = async (req, res) => {
               docdtlog_file: req.file ? req.file.filename : null,
               docdtlog_type: req.file ? req.file.mimetype : null,
               docdtlog_size: req.file ? req.file.size : null,
+              docdtlog_url: docdtlog_url ?? null,
             },
           }),
         );
@@ -77,13 +79,17 @@ module.exports = async (req, res) => {
           );
         }
       } else if (receiverCode && !unitId) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -135,7 +141,7 @@ module.exports = async (req, res) => {
             }
           } else if (Number(docstatusId) === 7) {
             docdtlogfileData = {
-              docdtlog_original: existingTracking.docdtlog_original ?? null,
+              docdtlog_original: existingTracking?.docdtlog_original ?? null,
               docdtlog_file: existingTracking?.docdtlog_file ?? null,
               docdtlog_type: existingTracking?.docdtlog_type ?? null,
               docdtlog_size: existingTracking?.docdtlog_size ?? null,
@@ -150,28 +156,29 @@ module.exports = async (req, res) => {
                 receiverCode: user.username,
                 rankId: user.rankId ? Number(user.rankId) : null,
                 roleId: user.roleId ? Number(user.roleId) : null,
-                positionId: user.employee.posId
+                positionId: user.employee?.posId
                   ? Number(user.employee.posId)
                   : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                departmentId: user.employee.departmentId
+                departmentId: user.employee?.departmentId
                   ? Number(user.employee.departmentId)
                   : null,
-                divisionId: user.employee.divisionId
+                divisionId: user.employee?.divisionId
                   ? Number(user.employee.divisionId)
                   : null,
-                officeId: user.employee.officeId
+                officeId: user.employee?.officeId
                   ? Number(user.employee.officeId)
                   : null,
-                unitId: user.employee.unitId
+                unitId: user.employee?.unitId
                   ? Number(user.employee.unitId)
                   : null,
                 ...docdtlogfileData,
-                departmentactive: Number(existingTracking.departmentactive),
-                divisionactive: Number(existingTracking.divisionactive),
-                officeactive: Number(existingTracking.officeactive),
+                docdtlog_url: docdtlog_url ?? null,
+                departmentactive: Number(existingTracking?.departmentactive),
+                divisionactive: Number(existingTracking?.divisionactive),
+                officeactive: Number(existingTracking?.officeactive),
               },
             }),
             prisma.docdtTracking.create({
@@ -183,9 +190,10 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docdtlogfileData,
-                departmentactive: existingTracking.departmentactive,
-                divisionactive: existingTracking.divisionactive,
-                officeactive: existingTracking.officeactive,
+                docdtlog_url: docdtlog_url ?? null,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
+                officeactive: existingTracking?.officeactive,
               },
             }),
           );
@@ -302,6 +310,7 @@ module.exports = async (req, res) => {
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive: existingTracking?.departmentactive,
                 divisionactive: existingTracking?.divisionactive,
                 officeactive: existingTracking?.officeactive,
@@ -323,6 +332,7 @@ module.exports = async (req, res) => {
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive: existingTracking?.departmentactive,
                 divisionactive: existingTracking?.divisionactive,
                 officeactive: existingTracking?.officeactive,
@@ -339,14 +349,18 @@ module.exports = async (req, res) => {
           );
         }
       } else if (receiverCode && unitId) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const fetchedUsers = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -405,6 +419,7 @@ module.exports = async (req, res) => {
                 divisionId: divId,
                 officeId: officeId,
                 ...fileData,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive,
                 divisionactive,
                 officeactive,
@@ -421,6 +436,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...fileData,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive,
                 divisionactive,
                 officeactive,
@@ -509,6 +525,23 @@ module.exports = async (req, res) => {
             return res.status(400).json({
               message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unitId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
+          }
+
+          // ຖ້າ depUser.emp_code ກົງກັບ receiverCode ໃຫ້ບັນທຶກສະເພາະໃນ receiverCode (ບໍ່ຕ້ອງບັນທຶກໃນ unit)
+          const isReceiverAlreadyAdded =
+            users.some(
+              (u) =>
+                String(u.username).trim() === String(depUser.emp_code).trim() ||
+                (u.employee?.emp_code &&
+                  String(u.employee.emp_code).trim() ===
+                  String(depUser.emp_code).trim()),
+            ) ||
+            receiverCodes.some(
+              (c) => String(c).trim() === String(depUser.emp_code).trim(),
+            );
+
+          if (isReceiverAlreadyAdded) {
+            continue;
           }
 
           createLogAndTrack(

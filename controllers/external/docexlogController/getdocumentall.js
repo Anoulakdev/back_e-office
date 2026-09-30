@@ -61,6 +61,7 @@ module.exports = async (req, res) => {
         docexlog_file: true,
         docexlog_type: true,
         docexlog_size: true,
+        docexlog_url: true,
         docstatus: true,
         createdAt: true,
         assigner: {

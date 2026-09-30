@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
         docstatusId,
         description,
         dateline,
+        docdtlog_url,
       } = req.body;
 
       if (!docdtId) {
@@ -68,6 +69,7 @@ module.exports = async (req, res) => {
               docdtlog_file: req.file ? req.file.filename : null,
               docdtlog_type: req.file ? req.file.mimetype : null,
               docdtlog_size: req.file ? req.file.size : null,
+              docdtlog_url: docdtlog_url ?? null,
             },
           }),
         );
@@ -81,14 +83,17 @@ module.exports = async (req, res) => {
         !departmentId1.length &&
         !departmentId2.length
       ) {
-        // 🔹 ถ้ามี receiverCode ใช้ข้อมูลนี้เท่านั้น
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -155,19 +160,20 @@ module.exports = async (req, res) => {
                 receiverCode: user.username,
                 rankId: user.rankId ? Number(user.rankId) : null,
                 roleId: user.roleId ? Number(user.roleId) : null,
-                positionId: user.employee.posId
+                positionId: user.employee?.posId
                   ? Number(user.employee.posId)
                   : null,
                 docstatusId: Number(docstatusId),
-                departmentId: user.employee.departmentId
+                departmentId: user.employee?.departmentId
                   ? Number(user.employee.departmentId)
                   : null,
-                divisionId: user.employee.divisionId
+                divisionId: user.employee?.divisionId
                   ? Number(user.employee.divisionId)
                   : null,
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docdtlogfileData,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
             prisma.docdtTracking.create({
@@ -179,6 +185,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...docdtlogfileData,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
           );
@@ -199,15 +206,15 @@ module.exports = async (req, res) => {
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
             ? departmentId1.map((id) => ({
-                id: Number(id),
-                departmentactive: 1,
-              }))
+              id: Number(id),
+              departmentactive: 1,
+            }))
             : []),
           ...(Array.isArray(departmentId2) && departmentId2.length
             ? departmentId2.map((id) => ({
-                id: Number(id),
-                departmentactive: 2,
-              }))
+              id: Number(id),
+              departmentactive: 2,
+            }))
             : []),
         ];
 
@@ -242,9 +249,9 @@ module.exports = async (req, res) => {
             ...department,
             employees: department?.employees?.length
               ? department.employees.map((employee) => ({
-                  ...employee,
-                  user: employee.user[0] || null,
-                }))
+                ...employee,
+                user: employee.user[0] || null,
+              }))
               : [],
           };
 
@@ -295,12 +302,13 @@ module.exports = async (req, res) => {
                   : null,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8",
-                    )
+                    "utf8",
+                  )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
             prisma.docdtTracking.create({
@@ -314,12 +322,13 @@ module.exports = async (req, res) => {
                 departmentactive,
                 docdtlog_original: req.file
                   ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8",
-                    )
+                    "utf8",
+                  )
                   : null,
                 docdtlog_file: req.file ? req.file.filename : null,
                 docdtlog_type: req.file ? req.file.mimetype : null,
                 docdtlog_size: req.file ? req.file.size : null,
+                docdtlog_url: docdtlog_url ?? null,
               },
             }),
           );
@@ -337,14 +346,18 @@ module.exports = async (req, res) => {
         receiverCode &&
         (departmentId1.length || departmentId2.length)
       ) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const fetchedUsers = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -364,14 +377,14 @@ module.exports = async (req, res) => {
 
         const fileData = req.file
           ? {
-              docdtlog_original: Buffer.from(
-                req.file.originalname,
-                "latin1",
-              ).toString("utf8"),
-              docdtlog_file: req.file.filename,
-              docdtlog_type: req.file.mimetype,
-              docdtlog_size: req.file.size,
-            }
+            docdtlog_original: Buffer.from(
+              req.file.originalname,
+              "latin1",
+            ).toString("utf8"),
+            docdtlog_file: req.file.filename,
+            docdtlog_type: req.file.mimetype,
+            docdtlog_size: req.file.size,
+          }
           : {};
 
         const createLogAndTrack = (
@@ -399,6 +412,7 @@ module.exports = async (req, res) => {
                 departmentId: deptId,
                 divisionId: divId,
                 ...fileData,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive,
               },
             }),
@@ -413,6 +427,7 @@ module.exports = async (req, res) => {
                 dateline: datelineValue,
                 description: description ?? null,
                 ...fileData,
+                docdtlog_url: docdtlog_url ?? null,
                 departmentactive,
               },
             }),
@@ -437,15 +452,15 @@ module.exports = async (req, res) => {
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
             ? departmentId1.map((id) => ({
-                id: Number(id),
-                departmentactive: 1,
-              }))
+              id: Number(id),
+              departmentactive: 1,
+            }))
             : []),
           ...(Array.isArray(departmentId2) && departmentId2.length
             ? departmentId2.map((id) => ({
-                id: Number(id),
-                departmentactive: 2,
-              }))
+              id: Number(id),
+              departmentactive: 2,
+            }))
             : []),
         ];
 
@@ -473,9 +488,9 @@ module.exports = async (req, res) => {
             ...department,
             employees: department?.employees?.length
               ? department.employees.map((employee) => ({
-                  ...employee,
-                  user: employee.user[0] || null,
-                }))
+                ...employee,
+                user: employee.user[0] || null,
+              }))
               : [],
           };
 
@@ -499,6 +514,23 @@ module.exports = async (req, res) => {
             return res.status(404).json({
               message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
+
+          // ຖ້າ depUser.emp_code ກົງກັບ receiverCode ໃຫ້ບັນທຶກສະເພາະໃນ receiverCode (ບໍ່ຕ້ອງບັນທຶກໃນ department)
+          const isReceiverAlreadyAdded =
+            users.some(
+              (u) =>
+                String(u.username).trim() === String(depUser.emp_code).trim() ||
+                (u.employee?.emp_code &&
+                  String(u.employee.emp_code).trim() ===
+                  String(depUser.emp_code).trim()),
+            ) ||
+            receiverCodes.some(
+              (c) => String(c).trim() === String(depUser.emp_code).trim(),
+            );
+
+          if (isReceiverAlreadyAdded) {
+            continue;
+          }
 
           createLogAndTrack(
             depUser.emp_code,

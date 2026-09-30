@@ -61,6 +61,7 @@ module.exports = async (req, res) => {
         docdtlog_file: true,
         docdtlog_type: true,
         docdtlog_size: true,
+        docdtlog_url: true,
         docstatus: true,
         createdAt: true,
         assigner: {

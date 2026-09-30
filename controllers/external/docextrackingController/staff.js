@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docexId, receiverCode, docstatusId, description, dateline } =
+      const { docexId, receiverCode, docstatusId, description, dateline, docexlog_url } =
         req.body;
 
       if (!docexId) {
@@ -162,6 +162,7 @@ module.exports = async (req, res) => {
                 divisionactive: existingTracking?.divisionactive ?? null,
                 officeactive: existingTracking?.officeactive ?? null,
                 ...docexlogfileData,
+                docexlog_url: docexlog_url ?? null,
               },
             }),
             prisma.docexTracking.create({
@@ -177,6 +178,7 @@ module.exports = async (req, res) => {
                 divisionactive: existingTracking?.divisionactive ?? null,
                 officeactive: existingTracking?.officeactive ?? null,
                 ...docexlogfileData,
+                docexlog_url: docexlog_url ?? null,
               },
             }),
           );
@@ -220,6 +222,7 @@ module.exports = async (req, res) => {
               docexlog_file: req.file ? req.file.filename : null,
               docexlog_type: req.file ? req.file.mimetype : null,
               docexlog_size: req.file ? req.file.size : null,
+              docexlog_url: docexlog_url ?? null,
             },
           }),
         );

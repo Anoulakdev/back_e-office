@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
         .json({ message: "Unknown error", error: err.message });
     }
     try {
-      const { docexId, receiverCode, docstatusId, description, dateline } =
+      const { docexId, receiverCode, docstatusId, description, dateline, docexlog_url } =
         req.body;
 
       if (!docexId) {
@@ -62,20 +62,34 @@ module.exports = async (req, res) => {
         },
       });
 
+      // 🔹 จัดการ receiverCode ให้เป็น Array ของ String (รองรับทั้ง [23456, 45536], JSON string, หรือค่าเดี่ยว)
+      let receiverCodes = [];
       if (receiverCode) {
-        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
-          return res
-            .status(400)
-            .json({ message: "receiverCode must be a non-empty array" });
+        if (Array.isArray(receiverCode)) {
+          receiverCodes = receiverCode;
+        } else if (typeof receiverCode === "string") {
+          try {
+            const parsed = JSON.parse(receiverCode);
+            receiverCodes = Array.isArray(parsed) ? parsed : [receiverCode];
+          } catch {
+            receiverCodes = [receiverCode];
+          }
+        } else {
+          receiverCodes = [receiverCode];
         }
+      }
+      receiverCodes = receiverCodes
+        .map((c) => String(c).trim())
+        .filter(Boolean);
 
+      if (receiverCodes.length > 0) {
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -87,8 +101,8 @@ module.exports = async (req, res) => {
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
-            ? new Date(existingTracking.dateline)
-            : null;
+              ? new Date(existingTracking.dateline)
+              : null;
 
           let docexlogfileData = {
             docexlog_original: null,
@@ -142,18 +156,19 @@ module.exports = async (req, res) => {
                 receiverCode: user.username,
                 rankId: user.rankId ? Number(user.rankId) : null,
                 roleId: user.roleId ? Number(user.roleId) : null,
-                positionId: user.employee.posId
+                positionId: user.employee?.posId
                   ? Number(user.employee.posId)
                   : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                extype: Number(docex.extype) ?? null,
-                departmentId: user.employee.departmentId
+                extype: Number(docex?.extype) ?? null,
+                departmentId: user.employee?.departmentId
                   ? Number(user.employee.departmentId)
                   : null,
                 departmentactive: existingTracking?.departmentactive ?? null,
                 ...docexlogfileData,
+                docexlog_url: docexlog_url ?? null,
               },
             }),
             prisma.docexTracking.create({
@@ -164,8 +179,9 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                extype: Number(docex.extype) ?? null,
+                extype: Number(docex?.extype) ?? null,
                 ...docexlogfileData,
+                docexlog_url: docexlog_url ?? null,
               },
             })
           );
@@ -181,43 +197,48 @@ module.exports = async (req, res) => {
 
         const results = await prisma.$transaction(logTransactions);
 
-        res.status(201).json({
+        return res.status(201).json({
           message: "ມອບໝາຍເອກະສານສຳເລັດ",
           data: results,
         });
       } else {
-        if (existingTracking) {
-          logTransactions.push(
-            prisma.docexLog.create({
-              data: {
-                docexId: Number(docexId),
-                assignerCode: req.user.username,
-                docstatusId: Number(docstatusId),
-                description: description ?? null,
-                viewed: true,
-                extype: Number(docex.extype) ?? null,
-                docexlog_original: req.file
-                  ? Buffer.from(req.file.originalname, "latin1").toString(
-                      "utf8"
-                    )
-                  : null,
-                docexlog_file: req.file ? req.file.filename : null,
-                docexlog_type: req.file ? req.file.mimetype : null,
-                docexlog_size: req.file ? req.file.size : null,
-              },
-            })
-          );
-
-          logTransactions.push(
-            prisma.docexTracking.delete({ where: { id: existingTracking.id } })
-          );
-
-          const results = await prisma.$transaction(logTransactions);
-          return res.status(201).json({
-            message: "updated docstatus success",
-            data: results,
+        if (!existingTracking) {
+          return res.status(404).json({
+            message: "ບໍ່ພົບຂໍ້ມູນການຕິດຕາມເອກະສານ",
           });
         }
+
+        logTransactions.push(
+          prisma.docexLog.create({
+            data: {
+              docexId: Number(docexId),
+              assignerCode: req.user.username,
+              docstatusId: Number(docstatusId),
+              description: description ?? null,
+              viewed: true,
+              extype: Number(docex?.extype) ?? null,
+              docexlog_original: req.file
+                ? Buffer.from(req.file.originalname, "latin1").toString(
+                  "utf8"
+                )
+                : null,
+              docexlog_file: req.file ? req.file.filename : null,
+              docexlog_type: req.file ? req.file.mimetype : null,
+              docexlog_size: req.file ? req.file.size : null,
+              docexlog_url: docexlog_url ?? null,
+            },
+          })
+        );
+
+        logTransactions.push(
+          prisma.docexTracking.delete({ where: { id: existingTracking.id } })
+        );
+
+        const results = await prisma.$transaction(logTransactions);
+        return res.status(201).json({
+          message: "updated docstatus success",
+          data: results,
+        });
       }
     } catch (error) {
       console.error("Error assigning document:", error);
