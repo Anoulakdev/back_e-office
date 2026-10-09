@@ -461,14 +461,18 @@ module.exports = async (req, res) => {
         receiverCode &&
         (departmentId1.length || departmentId2.length)
       ) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const fetchedUsers = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -528,7 +532,7 @@ module.exports = async (req, res) => {
               user.employee?.departmentId ?? null,
               user.employee?.divisionId ?? null,
               Number(docstatusId),
-              (departmentactive = null),
+              null,
             ),
           );
         }
@@ -606,6 +610,23 @@ module.exports = async (req, res) => {
             });
           }
 
+          // ຖ້າ depUser.emp_code ກົງກັບ receiverCode ໃຫ້ບັນທຶກສະເພາະໃນ receiverCode (ບໍ່ຕ້ອງບັນທຶກໃນ department)
+          const isReceiverAlreadyAdded =
+            users.some(
+              (u) =>
+                String(u.username).trim() === String(depUser.emp_code).trim() ||
+                (u.employee?.emp_code &&
+                  String(u.employee.emp_code).trim() ===
+                  String(depUser.emp_code).trim()),
+            ) ||
+            receiverCodes.some(
+              (c) => String(c).trim() === String(depUser.emp_code).trim(),
+            );
+
+          if (isReceiverAlreadyAdded) {
+            continue;
+          }
+
           logTransactions.push(
             ...createLogs(
               depUser.emp_code,
@@ -614,20 +635,24 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2,
+              Number(docstatusId),
               departmentactive,
             ),
           );
         }
       } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const fetchedUsers = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -686,7 +711,7 @@ module.exports = async (req, res) => {
               user.employee?.departmentId ?? null,
               user.employee?.divisionId ?? null,
               Number(docstatusId),
-              (divisionactive = null),
+              null,
             ),
           );
         }
@@ -764,6 +789,23 @@ module.exports = async (req, res) => {
             });
           }
 
+          // ຖ້າ depUser.emp_code ກົງກັບ receiverCode ໃຫ້ບັນທຶກສະເພາະໃນ receiverCode (ບໍ່ຕ້ອງບັນທຶກໃນ division)
+          const isReceiverAlreadyAdded =
+            users.some(
+              (u) =>
+                String(u.username).trim() === String(depUser.emp_code).trim() ||
+                (u.employee?.emp_code &&
+                  String(u.employee.emp_code).trim() ===
+                  String(depUser.emp_code).trim()),
+            ) ||
+            receiverCodes.some(
+              (c) => String(c).trim() === String(depUser.emp_code).trim(),
+            );
+
+          if (isReceiverAlreadyAdded) {
+            continue;
+          }
+
           logTransactions.push(
             ...createLogs(
               depUser.emp_code,
@@ -772,20 +814,24 @@ module.exports = async (req, res) => {
               depUser.posId ?? null,
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
-              2,
+              Number(docstatusId),
               divisionactive,
             ),
           );
         }
       } else if (receiverCode && (officeId1.length || officeId2.length)) {
+        const receiverCodes = Array.isArray(receiverCode)
+          ? receiverCode
+          : [receiverCode];
+
         const fetchedUsers = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(fetchedUsers.map((u) => [u.username, u]));
         const users = [];
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -847,7 +893,7 @@ module.exports = async (req, res) => {
               user.employee?.divisionId ?? null,
               user.employee?.officeId ?? null,
               Number(docstatusId),
-              (officeactive = null),
+              null,
             ),
           );
         }
@@ -925,6 +971,23 @@ module.exports = async (req, res) => {
             });
           }
 
+          // ຖ້າ depUser.emp_code ກົງກັບ receiverCode ໃຫ້ບັນທຶກສະເພາະໃນ receiverCode (ບໍ່ຕ້ອງບັນທຶກໃນ office)
+          const isReceiverAlreadyAdded =
+            users.some(
+              (u) =>
+                String(u.username).trim() === String(depUser.emp_code).trim() ||
+                (u.employee?.emp_code &&
+                  String(u.employee.emp_code).trim() ===
+                  String(depUser.emp_code).trim()),
+            ) ||
+            receiverCodes.some(
+              (c) => String(c).trim() === String(depUser.emp_code).trim(),
+            );
+
+          if (isReceiverAlreadyAdded) {
+            continue;
+          }
+
           logTransactions.push(
             ...createLogs(
               depUser.emp_code,
@@ -934,7 +997,7 @@ module.exports = async (req, res) => {
               depUser.departmentId ?? null,
               depUser.divisionId ?? null,
               depUser.officeId ?? null,
-              2,
+              Number(docstatusId),
               officeactive,
             ),
           );
