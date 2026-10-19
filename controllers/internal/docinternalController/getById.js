@@ -27,6 +27,7 @@ module.exports = async (req, res) => {
       include: {
         priority: true,
         doctype: true,
+        closureStatus: true,
         fromDepartment: true,
         fromDivision: true,
         creator: {

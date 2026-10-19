@@ -46,8 +46,26 @@ module.exports = async (req, res) => {
         },
       });
 
+      if (!docin) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      let receiverCodes = [];
       if (receiverCode) {
-        for (const receiverC of receiverCode) {
+        if (Array.isArray(receiverCode)) {
+          receiverCodes = receiverCode;
+        } else if (typeof receiverCode === "string") {
+          try {
+            const parsed = JSON.parse(receiverCode);
+            receiverCodes = Array.isArray(parsed) ? parsed : [receiverCode];
+          } catch {
+            receiverCodes = [receiverCode];
+          }
+        }
+      }
+
+      if (receiverCodes.length > 0) {
+        for (const receiverC of receiverCodes) {
           const user = await prisma.user.findUnique({
             where: { username: receiverC },
             include: {

@@ -50,10 +50,11 @@ module.exports = async (req, res) => {
           {
             username: process.env.USERNAME_API,
             password: process.env.PASSWORD_API,
-          }
+          },
+          { timeout: 5000 }
         );
 
-        return loginResponse.data.data.accessToken;
+        return loginResponse.data?.data?.accessToken;
       } catch (error) {
         console.error("Error during login:", error.message);
         return null;
@@ -68,6 +69,7 @@ module.exports = async (req, res) => {
           `${process.env.URL_API}/organization-svc/employee/get?search=${username}`,
           {
             headers: { Authorization: `Bearer ${token}` },
+            timeout: 5000,
           }
         );
 
@@ -192,6 +194,6 @@ module.exports = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.json({ message: "Server Error" }).status(500);
+    res.status(500).json({ message: "Server Error" });
   }
 };

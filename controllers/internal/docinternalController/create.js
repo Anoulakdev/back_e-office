@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
           docin_description,
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          closureStatusId: 1,
           departure_type: Number(departure_type),
           fromDepartmentId: fromDepartmentId ? Number(fromDepartmentId) : null,
           fromDivisionId: fromDivisionId ? Number(fromDivisionId) : null,

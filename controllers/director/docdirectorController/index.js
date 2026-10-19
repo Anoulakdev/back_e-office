@@ -7,6 +7,7 @@ const remove = require("./remove");
 const assign = require("./assign");
 const listdepartment = require("./listdepartment");
 const removeall = require("./removeall");
+const updateClosure = require("./updateClosure");
 
 module.exports = {
     create,
@@ -18,4 +19,5 @@ module.exports = {
     getdocument,
     listdepartment,
     removeall,
+    updateClosure,
 };

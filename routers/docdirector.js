@@ -12,6 +12,7 @@ const {
   assign,
   listdepartment,
   removeall,
+  updateClosure,
 } = require("../controllers/director/docdirectorController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -22,6 +23,7 @@ router.get("/docdirectors/:docdirectorId", auth, getById);
 router.get("/docdirectors/getdocument/:docdirectorId", auth, getdocument);
 router.post("/docdirectors", auth, create);
 router.post("/docdirectors/assignto", auth, assign);
+router.put("/docdirectors/updateclosure/:docdirectorId", auth, updateClosure);
 router.put("/docdirectors/:docdirectorId", auth, update);
 router.delete("/docdirectors/removeall", auth, removeall);
 router.delete("/docdirectors/:docdirectorId", auth, remove);

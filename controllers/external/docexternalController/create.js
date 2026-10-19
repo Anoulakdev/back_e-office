@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
           outsiderId: Number(outsiderId),
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          closureStatusId: 1,
           extype: Number(extype),
           creatorCode: req.user.username,
           docex_fileoriginal: req.file

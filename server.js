@@ -50,7 +50,8 @@ app.use(cors());
 
 // File route
 app.get("/upload/user/:filename", auth, (req, res) => {
-  const filePath = path.join(__dirname, "uploads/user", req.params.filename);
+  const safeFilename = path.basename(req.params.filename);
+  const filePath = path.join(__dirname, "uploads/user", safeFilename);
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
   } else {
@@ -59,10 +60,11 @@ app.get("/upload/user/:filename", auth, (req, res) => {
 });
 
 app.get("/upload/document/:filename", auth, (req, res) => {
+  const safeFilename = path.basename(req.params.filename);
   const filePath = path.join(
     __dirname,
     "uploads/document",
-    req.params.filename
+    safeFilename
   );
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
@@ -72,10 +74,11 @@ app.get("/upload/document/:filename", auth, (req, res) => {
 });
 
 app.get("/upload/documentlog/:filename", auth, (req, res) => {
+  const safeFilename = path.basename(req.params.filename);
   const filePath = path.join(
     __dirname,
     "uploads/documentlog",
-    req.params.filename
+    safeFilename
   );
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
@@ -85,10 +88,11 @@ app.get("/upload/documentlog/:filename", auth, (req, res) => {
 });
 
 app.get("/upload/docexport/:filename", auth, (req, res) => {
+  const safeFilename = path.basename(req.params.filename);
   const filePath = path.join(
     __dirname,
     "uploads/docexport",
-    req.params.filename
+    safeFilename
   );
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);

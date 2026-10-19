@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
           docdt_description,
           priorityId: Number(priorityId),
           doctypeId: Number(doctypeId),
+          closureStatusId: 1,
           creatorCode: req.user.username,
           docdt_fileoriginal: req.file
             ? Buffer.from(req.file.originalname, "latin1").toString("utf8")

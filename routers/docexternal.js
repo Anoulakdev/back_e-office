@@ -12,6 +12,7 @@ const {
   assign,
   listdepartment,
   removeall,
+  updateClosure,
 } = require("../controllers/external/docexternalController");
 // middleware
 const { auth } = require("../middleware/auth");
@@ -22,6 +23,7 @@ router.get("/docexternals/:docexternalId", auth, getById);
 router.get("/docexternals/getdocument/:docexternalId", auth, getdocument);
 router.post("/docexternals", auth, create);
 router.post("/docexternals/assignto", auth, assign);
+router.put("/docexternals/updateclosure/:docexternalId", auth, updateClosure);
 router.put("/docexternals/:docexternalId", auth, update);
 router.delete("/docexternals/removeall", auth, removeall);
 router.delete("/docexternals/:docexternalId", auth, remove);

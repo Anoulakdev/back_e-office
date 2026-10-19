@@ -12,17 +12,21 @@ module.exports = async (req, res) => {
       endDate,
     } = { ...req.query, ...req.body };
 
-    // สร้างเงื่อนไข where
-    const where = {};
+    // บังคับต้องระบุ departmentId เพื่อป้องกันการลบเอกสารทั้งหมดในระบบโดยไม่ตั้งใจ
+    if (!departmentId || isNaN(Number(departmentId)) || Number(departmentId) <= 0) {
+      return res.status(400).json({
+        message: "departmentId is required and must be a valid positive number",
+      });
+    }
 
-    // ถ้ามี departmentId ให้ค้นหาจาก department ของ employee
-    if (departmentId && Number(departmentId) > 0) {
-      where.creator = {
+    // สร้างเงื่อนไข where เฉพาะฝ่ายที่ระบุ
+    const where = {
+      creator: {
         employee: {
           departmentId: Number(departmentId),
         },
-      };
-    }
+      },
+    };
 
     if (departure_type && Number(departure_type) > 0) {
       where.departure_type = Number(departure_type);

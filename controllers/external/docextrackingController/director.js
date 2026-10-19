@@ -56,6 +56,10 @@ module.exports = async (req, res) => {
         },
       });
 
+      if (!docex) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
       if (!receiverCode && !departmentId1.length && !departmentId2.length) {
         logTransactions.push(
           prisma.docexLog.create({

@@ -45,6 +45,10 @@ module.exports = async (req, res) => {
         },
       });
 
+      if (!docex) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
       // 🔹 จัดการ receiverCode ให้เป็น Array ของ String (รองรับทั้ง [23456, 45536], JSON string, หรือค่าเดี่ยว)
       let receiverCodes = [];
       if (receiverCode) {

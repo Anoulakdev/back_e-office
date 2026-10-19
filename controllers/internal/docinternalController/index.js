@@ -9,5 +9,19 @@ const departmentremove = require("./departmentremove");
 const listdepartment = require("./listdepartment");
 const removeall = require("./removeall");
 const documentByMe = require("./documentByMe");
+const updateClosure = require("./updateClosure");
 
-module.exports = { create, list, getById, update, remove, assign, getdocument, departmentremove, listdepartment, removeall, documentByMe };
+module.exports = {
+  create,
+  list,
+  getById,
+  update,
+  remove,
+  assign,
+  getdocument,
+  departmentremove,
+  listdepartment,
+  removeall,
+  documentByMe,
+  updateClosure,
+};

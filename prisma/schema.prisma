@@ -228,6 +228,14 @@ model Position {
   @@index([poscodeId])
 }
 
+model ClosureStatus {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(255)
+  docexternals DocExternal[]
+  docinternals DocInternal[]
+  docdirectors DocDirector[]
+}
+
 model DocExport {
   id                  Int         @id @default(autoincrement())
   docexId             Int
@@ -273,6 +281,8 @@ model DocExternal {
   priority           Priority?       @relation(fields: [priorityId], references: [id])
   doctypeId          Int?
   doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  closureStatusId    Int?
+  closureStatus      ClosureStatus?  @relation(fields: [closureStatusId], references: [id])
   extype             Int?            @default(1)
   md                 Boolean?        @default(false)
   createdAt          DateTime        @default(now()) @db.Timestamptz(0)
@@ -288,6 +298,7 @@ model DocExternal {
   @@index([outsiderId])
   @@index([assignto])
   @@index([extype])
+  @@index([closureStatusId])
 }
 
 model DocexTracking {
@@ -399,6 +410,8 @@ model DocInternal {
   priority           Priority?       @relation(fields: [priorityId], references: [id])
   doctypeId          Int?
   doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  closureStatusId    Int?
+  closureStatus      ClosureStatus?  @relation(fields: [closureStatusId], references: [id])
   createdAt          DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
   docintrackings     DocinTracking[]
@@ -412,6 +425,7 @@ model DocInternal {
   @@index([fromDivisionId])
   @@index([departure_type])
   @@index([assignto])
+  @@index([closureStatusId])
 }
 
 model DocinTracking {
@@ -516,6 +530,8 @@ model DocDirector {
   priority           Priority?       @relation(fields: [priorityId], references: [id])
   doctypeId          Int?
   doctype            DocType?        @relation(fields: [doctypeId], references: [id])
+  closureStatusId    Int?
+  closureStatus      ClosureStatus?  @relation(fields: [closureStatusId], references: [id])
   createdAt          DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt          DateTime        @updatedAt @db.Timestamptz(0)
   docdttrackings     DocdtTracking[]
@@ -526,6 +542,7 @@ model DocDirector {
   @@index([priorityId])
   @@index([doctypeId])
   @@index([assignto])
+  @@index([closureStatusId])
 }
 
 model DocdtTracking {

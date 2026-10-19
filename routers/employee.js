@@ -13,7 +13,7 @@ const { auth } = require("../middleware/auth");
 
 router.get("/employees", auth, list);
 router.get("/employees/:emp_code", auth, getById);
-router.post("/employees", create);
-router.put("/employees/:emp_code", update);
+router.post("/employees", auth, create);
+router.put("/employees/:emp_code", auth, update);
 
 module.exports = router;

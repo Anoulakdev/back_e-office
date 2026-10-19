@@ -94,6 +94,7 @@ module.exports = async (req, res) => {
         },
         priority: true,
         doctype: true,
+        closureStatus: true,
         outsider: {
           include: {
             belongto: true,

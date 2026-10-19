@@ -76,6 +76,7 @@ module.exports = async (req, res) => {
         },
         priority: true,
         doctype: true,
+        closureStatus: true,
         creator: {
           select: {
             username: true,
