@@ -569,18 +569,33 @@ module.exports = async (req, res) => {
         break;
     }
 
-    // ดึงข้อมูลจาก Prisma
+    // ดึงข้อมูลจาก Prisma (ไม่รวม roleId = 1, 3, 5)
+    if (Object.keys(filter.where || {}).length > 0) {
+      filter.where = {
+        AND: [
+          filter.where,
+          {
+            roleId: {
+              notIn: [1, 3, 5],
+            },
+          },
+        ],
+      };
+    }
+
     const users =
       Object.keys(filter.where || {}).length > 0
         ? await prisma.user.findMany(filter)
         : [];
 
-    // การฟอร์แมตวันที่
-    const formattedUsers = users.map(({ password, ...user }) => ({
-      ...user,
-      createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
-      updatedAt: moment(user.updatedAt).tz("Asia/Vientiane").format(),
-    }));
+    // การฟอร์แมตวันที่ และกรองไม่ให้มี roleId = 1, 3, 5
+    const formattedUsers = users
+      .filter((user) => ![1, 3, 5].includes(user.roleId))
+      .map(({ password, ...user }) => ({
+        ...user,
+        createdAt: moment(user.createdAt).tz("Asia/Vientiane").format(),
+        updatedAt: moment(user.updatedAt).tz("Asia/Vientiane").format(),
+      }));
 
     res.json(formattedUsers);
   } catch (err) {
