@@ -44,9 +44,11 @@ module.exports = async (req, res) => {
           case 7:
             filter.where.roleId = 6;
             filter.where.status = "A";
-            filter.where.employee = {
-              departmentId: Number(departmentId),
-            };
+            if (Number(departmentId)) {
+              filter.where.employee = {
+                departmentId: Number(departmentId),
+              };
+            }
             break;
         }
         break;
@@ -67,7 +69,9 @@ module.exports = async (req, res) => {
           case 4:
             filter.where.roleId = Number(roleId);
             filter.where.status = "A";
-            filter.where.rankId = { lt: Number(rankId) };
+            if (rankId) {
+              filter.where.rankId = { lt: Number(rankId) };
+            }
             break;
           case 6:
             filter.where.roleId = 4;
@@ -80,7 +84,9 @@ module.exports = async (req, res) => {
           case 4:
             filter.where.roleId = Number(roleId);
             filter.where.status = "A";
-            filter.where.rankId = { gt: Number(rankId) };
+            if (rankId) {
+              filter.where.rankId = { gt: Number(rankId) };
+            }
             break;
         }
         break;
@@ -92,7 +98,7 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { gt: Number(rankId) },
+                  ...(rankId && { rankId: { gt: Number(rankId) } }),
                 },
                 {
                   roleId: 11,
@@ -113,11 +119,15 @@ module.exports = async (req, res) => {
               Number(extype) === 1
             ) {
               filter.where.roleId = Number(roleId);
-              filter.where.rankId = { gt: Number(rankId) };
+              if (rankId) {
+                filter.where.rankId = { gt: Number(rankId) };
+              }
               filter.where.status = "A";
-              filter.where.employee = {
-                departmentId: Number(departmentId),
-              };
+              if (Number(departmentId)) {
+                filter.where.employee = {
+                  departmentId: Number(departmentId),
+                };
+              }
             } else {
               filter.where.OR = [
                 {
@@ -126,87 +136,135 @@ module.exports = async (req, res) => {
                 },
                 {
                   roleId: Number(roleId),
-                  rankId: { lt: Number(rankId) },
+                  ...(rankId && { rankId: { lt: Number(rankId) } }),
                   status: "A",
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
               ];
             }
             break;
           case 7:
-            if (Number(rankId) === 1 && Number(extype) === 2) {
-              filter.where.roleId = 6;
-              filter.where.status = "A";
-              filter.where.employee = {
-                departmentId: Number(departmentId),
+            if (Number(extype) === 2) {
+              filter.where = {
+                OR: [
+                  {
+                    roleId: 6,
+                    status: "A",
+                    ...(Number(departmentId) && {
+                      employee: {
+                        departmentId: Number(departmentId),
+                      },
+                    }),
+                  },
+                  {
+                    roleId: Number(roleId),
+                    status: "A",
+                    ...(rankId && { rankId: { lt: Number(rankId) } }),
+                    ...(Number(divisionId) && {
+                      employee: {
+                        divisionId: Number(divisionId),
+                      },
+                    }),
+                  },
+                ],
               };
             } else {
               filter.where.roleId = Number(roleId);
               filter.where.status = "A";
-              filter.where.rankId =
-                Number(extype) === 2
-                  ? { lt: Number(rankId) }
-                  : { gt: Number(rankId) };
-              filter.where.employee = {
-                divisionId: Number(divisionId),
-              };
+              if (rankId) {
+                filter.where.rankId = { gt: Number(rankId) };
+              }
+              if (Number(divisionId)) {
+                filter.where.employee = {
+                  divisionId: Number(divisionId),
+                };
+              }
             }
             break;
           case 8:
-            if (Number(rankId) === 1 && Number(extype) === 2) {
-              filter.where.roleId = 7;
-              filter.where.status = "A";
-              filter.where.employee = {
-                divisionId: Number(divisionId),
+            if (Number(extype) === 2) {
+              filter.where = {
+                OR: [
+                  {
+                    roleId: 7,
+                    status: "A",
+                    ...(Number(divisionId) && {
+                      employee: {
+                        divisionId: Number(divisionId),
+                      },
+                    }),
+                  },
+                  {
+                    roleId: Number(roleId),
+                    status: "A",
+                    ...(rankId && { rankId: { lt: Number(rankId) } }),
+                    ...(Number(officeId) && {
+                      employee: {
+                        officeId: Number(officeId),
+                      },
+                    }),
+                  },
+                ],
               };
             } else {
               filter.where.roleId = Number(roleId);
               filter.where.status = "A";
-              filter.where.rankId = { gt: Number(rankId) };
-              filter.where.employee = {
-                officeId: Number(officeId),
-              };
+              if (rankId) {
+                filter.where.rankId = { gt: Number(rankId) };
+              }
+              if (Number(officeId)) {
+                filter.where.employee = {
+                  officeId: Number(officeId),
+                };
+              }
             }
             break;
           case 9:
             if (Number(extype) === 2) {
-              if (Number(rankId) > 1) {
-                filter.where = {
-                  roleId: 9,
-                  status: "A",
-                  rankId: { lt: Number(rankId) },
-                  ...(Number(unitId) && {
+              const supervisorCondition = Number(officeId)
+                ? {
+                    roleId: 8,
+                    status: "A",
                     employee: {
-                      unitId: Number(unitId),
+                      officeId: Number(officeId),
                     },
-                  }),
-                };
-              } else if (Number(officeId)) {
-                filter.where = {
-                  roleId: 8,
-                  status: "A",
-                  employee: {
-                    officeId: Number(officeId),
+                  }
+                : Number(divisionId)
+                ? {
+                    roleId: 7,
+                    status: "A",
+                    employee: {
+                      divisionId: Number(divisionId),
+                    },
+                  }
+                : null;
+
+              filter.where = {
+                OR: [
+                  ...(supervisorCondition ? [supervisorCondition] : []),
+                  {
+                    roleId: Number(roleId),
+                    status: "A",
+                    ...(rankId && { rankId: { lt: Number(rankId) } }),
+                    ...(Number(unitId) && {
+                      employee: {
+                        unitId: Number(unitId),
+                      },
+                    }),
                   },
-                };
-              } else if (Number(divisionId)) {
-                filter.where = {
-                  roleId: 7,
-                  status: "A",
-                  employee: {
-                    divisionId: Number(divisionId),
-                  },
-                };
-              }
+                ],
+              };
             } else {
               const baseEmployee = Number(unitId)
                 ? {
-                  employee: {
-                    unitId: Number(unitId),
-                  },
-                }
+                    employee: {
+                      unitId: Number(unitId),
+                    },
+                  }
                 : {};
 
               if (!rankId) {
@@ -267,17 +325,13 @@ module.exports = async (req, res) => {
                 unitId: Number(targetUnitId),
               };
             } else {
-              const branchId = Number(
-                req.user?.employee?.division?.branch_id
-              );
+              const branchId = Number(req.user?.employee?.division?.branch_id);
               const targetDivisionId =
                 req.user?.divisionId ||
                 req.user?.employee?.divisionId ||
                 divisionId;
               const targetOfficeId =
-                req.user?.officeId ||
-                req.user?.employee?.officeId ||
-                officeId;
+                req.user?.officeId || req.user?.employee?.officeId || officeId;
 
               if (branchId === 1) {
                 filter.where.roleId = 7;
@@ -301,6 +355,20 @@ module.exports = async (req, res) => {
                     divisionId: Number(targetDivisionId),
                   };
                 }
+              } else {
+                if (targetOfficeId) {
+                  filter.where.roleId = 8;
+                  filter.where.status = "A";
+                  filter.where.employee = {
+                    officeId: Number(targetOfficeId),
+                  };
+                } else if (targetDivisionId) {
+                  filter.where.roleId = 7;
+                  filter.where.status = "A";
+                  filter.where.employee = {
+                    divisionId: Number(targetDivisionId),
+                  };
+                }
               }
             }
             break;
@@ -312,7 +380,9 @@ module.exports = async (req, res) => {
           case 4:
             filter.where.roleId = Number(roleId);
             filter.where.status = "A";
-            filter.where.rankId = { lt: Number(rankId) };
+            if (rankId) {
+              filter.where.rankId = { lt: Number(rankId) };
+            }
             break;
           case 11:
             filter.where.roleId = 4;
@@ -324,10 +394,12 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { lt: Number(rankId) },
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(rankId && { rankId: { lt: Number(rankId) } }),
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
                 {
                   roleId: 4,
@@ -351,17 +423,21 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { lt: Number(rankId) },
-                  employee: {
-                    divisionId: Number(divisionId),
-                  },
+                  ...(rankId && { rankId: { lt: Number(rankId) } }),
+                  ...(Number(divisionId) && {
+                    employee: {
+                      divisionId: Number(divisionId),
+                    },
+                  }),
                 },
                 {
                   roleId: { lt: Number(roleId) },
                   status: "A",
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
               ],
             };
@@ -374,17 +450,21 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { lt: Number(rankId) },
-                  employee: {
-                    officeId: Number(officeId),
-                  },
+                  ...(rankId && { rankId: { lt: Number(rankId) } }),
+                  ...(Number(officeId) && {
+                    employee: {
+                      officeId: Number(officeId),
+                    },
+                  }),
                 },
                 {
                   roleId: 7,
                   status: "A",
-                  employee: {
-                    divisionId: Number(divisionId),
-                  },
+                  ...(Number(divisionId) && {
+                    employee: {
+                      divisionId: Number(divisionId),
+                    },
+                  }),
                 },
               ],
             };
@@ -396,27 +476,29 @@ module.exports = async (req, res) => {
               {
                 roleId: Number(roleId),
                 status: "A",
-                rankId: { lt: Number(rankId) },
-                employee: {
-                  unitId: Number(unitId),
-                },
+                ...(rankId && { rankId: { lt: Number(rankId) } }),
+                ...(Number(unitId) && {
+                  employee: {
+                    unitId: Number(unitId),
+                  },
+                }),
               },
             ];
 
-            if (divisionId) {
-              conditions.push({
-                roleId: 7,
-                status: "A",
-                employee: {
-                  divisionId: Number(divisionId),
-                },
-              });
-            } else if (officeId) {
+            if (Number(officeId)) {
               conditions.push({
                 roleId: 8,
                 status: "A",
                 employee: {
                   officeId: Number(officeId),
+                },
+              });
+            } else if (Number(divisionId)) {
+              conditions.push({
+                roleId: 7,
+                status: "A",
+                employee: {
+                  divisionId: Number(divisionId),
                 },
               });
             }
@@ -431,9 +513,11 @@ module.exports = async (req, res) => {
           case 10:
             filter.where.roleId = { lt: Number(roleId) };
             filter.where.status = "A";
-            filter.where.employee = {
-              unitId: Number(unitId),
-            };
+            if (Number(unitId)) {
+              filter.where.employee = {
+                unitId: Number(unitId),
+              };
+            }
             break;
         }
         break;
@@ -446,14 +530,16 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { gt: Number(rankId) },
+                  ...(rankId && { rankId: { gt: Number(rankId) } }),
                 },
                 {
                   roleId: 6,
                   status: "A",
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
                 {
                   roleId: 11,
@@ -476,17 +562,21 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { gt: Number(rankId) },
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(rankId && { rankId: { gt: Number(rankId) } }),
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
                 {
                   roleId: 7,
                   status: "A",
-                  employee: {
-                    departmentId: Number(departmentId),
-                  },
+                  ...(Number(departmentId) && {
+                    employee: {
+                      departmentId: Number(departmentId),
+                    },
+                  }),
                 },
               ],
             };
@@ -498,17 +588,21 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { gt: Number(rankId) },
-                  employee: {
-                    divisionId: Number(divisionId),
-                  },
+                  ...(rankId && { rankId: { gt: Number(rankId) } }),
+                  ...(Number(divisionId) && {
+                    employee: {
+                      divisionId: Number(divisionId),
+                    },
+                  }),
                 },
                 {
                   roleId: { in: [8, 9] },
                   status: "A",
-                  employee: {
-                    divisionId: Number(divisionId),
-                  },
+                  ...(Number(divisionId) && {
+                    employee: {
+                      divisionId: Number(divisionId),
+                    },
+                  }),
                 },
               ],
             };
@@ -520,17 +614,21 @@ module.exports = async (req, res) => {
                 {
                   roleId: Number(roleId),
                   status: "A",
-                  rankId: { gt: Number(rankId) },
-                  employee: {
-                    officeId: Number(officeId),
-                  },
+                  ...(rankId && { rankId: { gt: Number(rankId) } }),
+                  ...(Number(officeId) && {
+                    employee: {
+                      officeId: Number(officeId),
+                    },
+                  }),
                 },
                 {
                   roleId: 9,
                   status: "A",
-                  employee: {
-                    officeId: Number(officeId),
-                  },
+                  ...(Number(officeId) && {
+                    employee: {
+                      officeId: Number(officeId),
+                    },
+                  }),
                 },
               ],
             };
@@ -543,16 +641,20 @@ module.exports = async (req, res) => {
                   {
                     roleId: 9,
                     status: "A",
-                    employee: {
-                      unitId: Number(unitId),
-                    },
+                    ...(Number(unitId) && {
+                      employee: {
+                        unitId: Number(unitId),
+                      },
+                    }),
                   },
                   {
                     roleId: 10,
                     status: "A",
-                    employee: {
-                      unitId: Number(unitId),
-                    },
+                    ...(Number(unitId) && {
+                      employee: {
+                        unitId: Number(unitId),
+                      },
+                    }),
                   },
                 ],
               };
@@ -563,16 +665,20 @@ module.exports = async (req, res) => {
                     roleId: Number(roleId),
                     status: "A",
                     rankId: { gt: Number(rankId) },
-                    employee: {
-                      unitId: Number(unitId),
-                    },
+                    ...(Number(unitId) && {
+                      employee: {
+                        unitId: Number(unitId),
+                      },
+                    }),
                   },
                   {
                     roleId: 10,
                     status: "A",
-                    employee: {
-                      unitId: Number(unitId),
-                    },
+                    ...(Number(unitId) && {
+                      employee: {
+                        unitId: Number(unitId),
+                      },
+                    }),
                   },
                 ],
               };

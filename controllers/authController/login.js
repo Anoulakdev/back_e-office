@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    if (user.status !== 'A') {
+    if (user.status !== "A") {
       return res.status(400).json({
         message: "ລະ​ຫັດ​ຂອງ​ທ່ານ​ໄດ້​ຖືກ​ປິດ​ການ​ໃຊ້​ງານ",
       });
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
             username: process.env.USERNAME_API,
             password: process.env.PASSWORD_API,
           },
-          { timeout: 5000 }
+          { timeout: 5000 },
         );
 
         return loginResponse.data?.data?.accessToken;
@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,
-          }
+          },
         );
 
         const usersData = response.data.data.employees;
@@ -90,11 +90,11 @@ module.exports = async (req, res) => {
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              unitId:
-                userData.office.unit_id === 0 ||
-                  userData.office.unit_id === null
-                  ? null
-                  : userData.office?.unit_id,
+              // unitId:
+              //   userData.office.unit_id === 0 ||
+              //     userData.office.unit_id === null
+              //     ? null
+              //     : userData.office?.unit_id,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image
@@ -118,11 +118,11 @@ module.exports = async (req, res) => {
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              unitId:
-                userData.office.unit_id === 0 ||
-                  userData.office.unit_id === null
-                  ? null
-                  : userData.office?.unit_id,
+              // unitId:
+              //   userData.office.unit_id === 0 ||
+              //   userData.office.unit_id === null
+              //     ? null
+              //     : userData.office?.unit_id,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image

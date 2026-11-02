@@ -3,7 +3,7 @@ const prisma = require("../../prisma/prisma");
 module.exports = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { employee_code, rankId, roleId } = req.body;
+    const { employee_code, rankId, roleId, unitId } = req.body;
 
     // Step 1: Find the user to update
     const user = await prisma.user.findUnique({
@@ -16,11 +16,28 @@ module.exports = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const checkEmp = await prisma.employee.findUnique({
-      where: {
-        emp_code: employee_code,
-      },
-    });
+    let checkEmp = null;
+    if (employee_code) {
+      checkEmp = await prisma.employee.findUnique({
+        where: {
+          emp_code: employee_code,
+        },
+      });
+    }
+
+    const empId = checkEmp ? checkEmp.id : user.employeeId;
+
+    // Step 2: อัปเดต unitId ใน employee.unitId
+    if (empId && unitId !== undefined) {
+      await prisma.employee.update({
+        where: {
+          id: empId,
+        },
+        data: {
+          unitId: unitId ? Number(unitId) : null,
+        },
+      });
+    }
 
     // Step 3: Update the user record
     const updated = await prisma.user.update({
@@ -29,12 +46,16 @@ module.exports = async (req, res) => {
       },
       data: {
         employee_code,
-        employeeId: checkEmp ? Number(checkEmp.id) : null,
-        rankId: Number(rankId),
-        roleId: Number(roleId),
+        employeeId: checkEmp ? Number(checkEmp.id) : user.employeeId,
+        rankId: rankId ? Number(rankId) : null,
+        roleId: roleId ? Number(roleId) : null,
       },
       include: {
-        employee: true,
+        employee: {
+          include: {
+            unit: true,
+          },
+        },
       },
     });
 
