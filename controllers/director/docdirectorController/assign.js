@@ -91,6 +91,8 @@ module.exports = async (req, res) => {
                 description,
                 departmentId: user.employee.departmentId ?? null,
                 divisionId: user.employee.divisionId ?? null,
+                officeId: user.employee.officeId ?? null,
+                unitId: user.employee.unitId ?? null,
               },
             }),
             prisma.docdtTracking.create({
@@ -183,8 +185,6 @@ module.exports = async (req, res) => {
               message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຝ່າຍ ${departmentId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
-
-
 
           logTransactions.push(
             prisma.docdtLog.create({
@@ -292,8 +292,6 @@ module.exports = async (req, res) => {
               message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນພະແນກ ${divisionId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
-
-
 
           logTransactions.push(
             prisma.docdtLog.create({
@@ -483,7 +481,7 @@ module.exports = async (req, res) => {
                 String(u.username).trim() === String(depUser.emp_code).trim() ||
                 (u.employee?.emp_code &&
                   String(u.employee.emp_code).trim() ===
-                  String(depUser.emp_code).trim()),
+                    String(depUser.emp_code).trim()),
             ) ||
             receiverCodes.some(
               (c) => String(c).trim() === String(depUser.emp_code).trim(),
@@ -663,7 +661,7 @@ module.exports = async (req, res) => {
                 String(u.username).trim() === String(depUser.emp_code).trim() ||
                 (u.employee?.emp_code &&
                   String(u.employee.emp_code).trim() ===
-                  String(depUser.emp_code).trim()),
+                    String(depUser.emp_code).trim()),
             ) ||
             receiverCodes.some(
               (c) => String(c).trim() === String(depUser.emp_code).trim(),

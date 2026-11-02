@@ -97,6 +97,8 @@ module.exports = async (req, res) => {
                 description,
                 departmentId: user.employee.departmentId ?? null,
                 divisionId: user.employee.divisionId ?? null,
+                officeId: user.employee.officeId ?? null,
+                unitId: user.employee.unitId ?? null,
                 departmentactive: null,
               },
             }),
@@ -222,6 +224,8 @@ module.exports = async (req, res) => {
                 departmentId,
                 departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group
                 divisionId: Number(depUser.divisionId) ?? null,
+                officeId: Number(depUser.officeId) ?? null,
+                unitId: Number(depUser.unitId) ?? null,
               },
             }),
             prisma.docexTracking.create({
