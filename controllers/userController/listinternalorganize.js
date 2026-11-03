@@ -156,12 +156,74 @@ module.exports = async (req, res) => {
 
             break;
           case 10:
-            filter.where.roleId = 9;
-            filter.where.status = "A";
-            if (Number(unitId)) {
+            const targetUnitId = unitId || req.user?.employee?.unitId;
+            let hasUnitUsers = false;
+
+            if (Number(targetUnitId)) {
+              const count = await prisma.user.count({
+                where: {
+                  roleId: 9,
+                  status: "A",
+                  employee: {
+                    unitId: Number(targetUnitId),
+                  },
+                },
+              });
+              hasUnitUsers = count > 0;
+            }
+
+            if (hasUnitUsers) {
+              filter.where.roleId = 9;
+              filter.where.status = "A";
               filter.where.employee = {
-                unitId: Number(unitId),
+                unitId: Number(targetUnitId),
               };
+            } else {
+              const branchId = Number(req.user?.employee?.division?.branch_id);
+              const targetDivisionId =
+                req.user?.divisionId ||
+                req.user?.employee?.divisionId ||
+                divisionId;
+              const targetOfficeId =
+                req.user?.officeId || req.user?.employee?.officeId || officeId;
+
+              if (branchId === 1) {
+                filter.where.roleId = 7;
+                filter.where.status = "A";
+                if (targetDivisionId) {
+                  filter.where.employee = {
+                    divisionId: Number(targetDivisionId),
+                  };
+                }
+              } else if (branchId === 2) {
+                filter.where.roleId = 8;
+                filter.where.status = "A";
+                if (targetOfficeId) {
+                  filter.where.employee = {
+                    officeId: Number(targetOfficeId),
+                  };
+                } else if (targetDivisionId) {
+                  filter.where.roleId = 7;
+                  filter.where.status = "A";
+                  filter.where.employee = {
+                    divisionId: Number(targetDivisionId),
+                  };
+                }
+              } else {
+                if (targetOfficeId) {
+                  filter.where.roleId = 8;
+                  filter.where.status = "A";
+                  filter.where.employee = {
+                    officeId: Number(targetOfficeId),
+                  };
+                } else if (targetDivisionId) {
+                  filter.where.roleId = 7;
+                  filter.where.status = "A";
+                  filter.where.employee = {
+                    divisionId: Number(targetDivisionId),
+                  };
+                }
+              }
             }
             break;
         }
