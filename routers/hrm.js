@@ -7,6 +7,7 @@ const {
   division,
   office,
   unit,
+  subunit,
   positiongroup,
   positioncode,
   position,
@@ -19,6 +20,7 @@ router.post("/syncdepartment", auth, department);
 router.post("/syncdivision", auth, division);
 router.post("/syncoffice", auth, office);
 router.post("/syncunit", auth, unit);
+router.post("/syncsubunit", auth, subunit);
 router.post("/syncpositiongroup", auth, positiongroup);
 router.post("/syncpositioncode", auth, positioncode);
 router.post("/syncposition", auth, position);

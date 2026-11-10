@@ -113,6 +113,7 @@ module.exports = async (req, res) => {
                 divisionId: toId(user.employee?.divisionId),
                 officeId: toId(user.employee?.officeId),
                 unitId: toId(user.employee?.unitId),
+                subunitId: toId(user.employee?.subunitId),
               },
             }),
             prisma.docinTracking.create({
@@ -614,7 +615,7 @@ module.exports = async (req, res) => {
                 String(u.username).trim() === String(depUser.emp_code).trim() ||
                 (u.employee?.emp_code &&
                   String(u.employee.emp_code).trim() ===
-                  String(depUser.emp_code).trim()),
+                    String(depUser.emp_code).trim()),
             ) ||
             receiverCodes.some(
               (c) => String(c).trim() === String(depUser.emp_code).trim(),
@@ -793,7 +794,7 @@ module.exports = async (req, res) => {
                 String(u.username).trim() === String(depUser.emp_code).trim() ||
                 (u.employee?.emp_code &&
                   String(u.employee.emp_code).trim() ===
-                  String(depUser.emp_code).trim()),
+                    String(depUser.emp_code).trim()),
             ) ||
             receiverCodes.some(
               (c) => String(c).trim() === String(depUser.emp_code).trim(),
@@ -975,7 +976,7 @@ module.exports = async (req, res) => {
                 String(u.username).trim() === String(depUser.emp_code).trim() ||
                 (u.employee?.emp_code &&
                   String(u.employee.emp_code).trim() ===
-                  String(depUser.emp_code).trim()),
+                    String(depUser.emp_code).trim()),
             ) ||
             receiverCodes.some(
               (c) => String(c).trim() === String(depUser.emp_code).trim(),

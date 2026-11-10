@@ -72,6 +72,8 @@ model Employee {
   office       Office?     @relation(fields: [officeId], references: [id])
   unitId       Int?
   unit         Unit?       @relation(fields: [unitId], references: [id])
+  subunitId    Int?
+  subunit      Subunit?    @relation(fields: [subunitId], references: [id])
   createdAt    DateTime    @default(now()) @db.Timestamptz(0)
   updatedAt    DateTime    @updatedAt @db.Timestamptz(0)
   user         User[]
@@ -153,6 +155,7 @@ model Division {
   department      Department    @relation(fields: [departmentId], references: [id])
   offices         Office[]
   units           Unit[]
+  subunits        Subunit[]
   employees       Employee[]
   docexlogs       DocexLog[]
   docinlogs       DocinLog[]
@@ -170,6 +173,7 @@ model Office {
   divisionId    Int?
   division      Division?  @relation(fields: [divisionId], references: [id])
   units         Unit[]
+  subunits      Subunit[]
   employees     Employee[]
   docexlogs     DocexLog[]
   docinlogs     DocinLog[]
@@ -192,6 +196,23 @@ model Unit {
   docexlogs   DocexLog[]
   docinlogs   DocinLog[]
   docdtlogs   DocdtLog[]
+
+  @@index([divisionId])
+  @@index([officeId])
+}
+
+model Subunit {
+  id            Int        @id @default(autoincrement())
+  sub_unit_name String?    @db.VarChar(255)
+  sub_unit_code String?    @db.VarChar(50)
+  divisionId    Int?
+  division      Division?  @relation(fields: [divisionId], references: [id])
+  officeId      Int?
+  office        Office?    @relation(fields: [officeId], references: [id])
+  employees     Employee[]
+  docexlogs     DocexLog[]
+  docinlogs     DocinLog[]
+  docdtlogs     DocdtLog[]
 
   @@index([divisionId])
   @@index([officeId])
@@ -356,6 +377,8 @@ model DocexLog {
   office            Office?     @relation(fields: [officeId], references: [id])
   unitId            Int?
   unit              Unit?       @relation(fields: [unitId], references: [id])
+  subunitId         Int?
+  subunit           Subunit?    @relation(fields: [subunitId], references: [id])
   docstatusId       Int?
   docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
   dateline          DateTime?
@@ -482,6 +505,8 @@ model DocinLog {
   office            Office?     @relation(fields: [officeId], references: [id])
   unitId            Int?
   unit              Unit?       @relation(fields: [unitId], references: [id])
+  subunitId         Int?
+  subunit           Subunit?    @relation(fields: [subunitId], references: [id])
   docstatusId       Int?
   docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
   dateline          DateTime?
@@ -599,6 +624,8 @@ model DocdtLog {
   office            Office?     @relation(fields: [officeId], references: [id])
   unitId            Int?
   unit              Unit?       @relation(fields: [unitId], references: [id])
+  subunitId         Int?
+  subunit           Subunit?    @relation(fields: [subunitId], references: [id])
   docstatusId       Int?
   docstatus         DocStatus?  @relation(fields: [docstatusId], references: [id])
   dateline          DateTime?

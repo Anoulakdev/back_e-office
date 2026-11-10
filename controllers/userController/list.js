@@ -11,6 +11,7 @@ module.exports = async (req, res) => {
       divisionId,
       officeId,
       unitId,
+      subunitId,
       page = 1,
       limit = 10,
     } = req.query;
@@ -58,6 +59,11 @@ module.exports = async (req, res) => {
         unitId: Number(unitId),
       };
     }
+    if (subunitId) {
+      where.employee = {
+        subunitId: Number(subunitId),
+      };
+    }
 
     const currentPage = Number(page);
     const take = Number(limit);
@@ -79,6 +85,7 @@ module.exports = async (req, res) => {
               division: true,
               office: true,
               unit: true,
+              subunit: true,
             },
           },
         },

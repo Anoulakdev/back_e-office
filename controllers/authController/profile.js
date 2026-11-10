@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
             division: true,
             office: true,
             unit: true,
+            subunit: true,
           },
         },
       },

@@ -59,13 +59,15 @@ module.exports = async (req, res) => {
     }
 
     // 3. Upsert
-    const [existing, positions, departments, divisions, offices] =
+    const [existing, positions, departments, divisions, offices, units, subunits] =
       await Promise.all([
         prisma.employee.findMany({ select: { id: true } }),
         prisma.position.findMany({ select: { id: true } }),
         prisma.department.findMany({ select: { id: true } }),
         prisma.division.findMany({ select: { id: true } }),
         prisma.office.findMany({ select: { id: true } }),
+        prisma.unit.findMany({ select: { id: true } }),
+        prisma.subunit.findMany({ select: { id: true } }),
       ]);
 
     const existingIds = new Set(existing.map((d) => d.id));
@@ -73,6 +75,8 @@ module.exports = async (req, res) => {
     const departmentIds = new Set(departments.map((d) => d.id));
     const divisionIds = new Set(divisions.map((d) => d.id));
     const officeIds = new Set(offices.map((o) => o.id));
+    const unitIds = new Set(units.map((u) => u.id));
+    const subunitIds = new Set(subunits.map((u) => u.id));
 
     let updated = 0;
     let created = 0;
@@ -98,6 +102,8 @@ module.exports = async (req, res) => {
         const rawDepId = Number(d.office?.department_id);
         const rawDivId = Number(d.office?.division_id);
         const rawOffId = Number(d.office?.office_id);
+        const rawUnitId = Number(d.office?.unit_id);
+        const rawSubUnitId = Number(d.office?.sub_unit_id);
 
         const posId = rawPosId && positionIds.has(rawPosId) ? rawPosId : null;
         const departmentId =
@@ -106,6 +112,10 @@ module.exports = async (req, res) => {
           rawDivId && divisionIds.has(rawDivId) ? rawDivId : null;
         const officeId =
           rawOffId && officeIds.has(rawOffId) ? rawOffId : null;
+        const unitId =
+          rawUnitId && unitIds.has(rawUnitId) ? rawUnitId : null;
+        const subunitId =
+          rawSubUnitId && subunitIds.has(rawSubUnitId) ? rawSubUnitId : null;
 
         const gender = d.gender === "Female" ? "Female" : "Male";
 
@@ -121,6 +131,8 @@ module.exports = async (req, res) => {
             departmentId: departmentId,
             divisionId: divisionId,
             officeId: officeId,
+            unitId: unitId,
+            subunitId: subunitId,
             tel: d.phone || null,
             email: d.email || null,
             empimg: d.image
@@ -140,6 +152,8 @@ module.exports = async (req, res) => {
             departmentId: departmentId,
             divisionId: divisionId,
             officeId: officeId,
+            unitId: unitId,
+            subunitId: subunitId,
             tel: d.phone || null,
             email: d.email || null,
             empimg: d.image

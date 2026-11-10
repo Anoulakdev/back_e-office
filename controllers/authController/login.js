@@ -90,11 +90,16 @@ module.exports = async (req, res) => {
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              // unitId:
-              //   userData.office.unit_id === 0 ||
-              //     userData.office.unit_id === null
-              //     ? null
-              //     : userData.office?.unit_id,
+              unitId:
+                userData.office.unit_id === 0 ||
+                userData.office.unit_id === null
+                  ? null
+                  : userData.office?.unit_id,
+              subunitId:
+                userData.office.sub_unit_id === 0 ||
+                userData.office.sub_unit_id === null
+                  ? null
+                  : userData.office?.sub_unit_id,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image
@@ -118,11 +123,16 @@ module.exports = async (req, res) => {
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              // unitId:
-              //   userData.office.unit_id === 0 ||
-              //   userData.office.unit_id === null
-              //     ? null
-              //     : userData.office?.unit_id,
+              unitId:
+                userData.office.unit_id === 0 ||
+                userData.office.unit_id === null
+                  ? null
+                  : userData.office?.unit_id,
+              subunitId:
+                userData.office.sub_unit_id === 0 ||
+                userData.office.sub_unit_id === null
+                  ? null
+                  : userData.office?.sub_unit_id,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image

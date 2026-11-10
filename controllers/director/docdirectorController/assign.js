@@ -86,13 +86,26 @@ module.exports = async (req, res) => {
                 receiverCode: user.username,
                 rankId: user.rankId ? Number(user.rankId) : null,
                 roleId: user.roleId ? Number(user.roleId) : null,
-                positionId: Number(user.employee.posId) ?? null,
+                positionId: user.employee.posId
+                  ? Number(user.employee.posId)
+                  : null,
                 docstatusId: Number(docstatusId),
                 description,
-                departmentId: user.employee.departmentId ?? null,
-                divisionId: user.employee.divisionId ?? null,
-                officeId: user.employee.officeId ?? null,
-                unitId: user.employee.unitId ?? null,
+                departmentId: user.employee.departmentId
+                  ? Number(user.employee.departmentId)
+                  : null,
+                divisionId: user.employee.divisionId
+                  ? Number(user.employee.divisionId)
+                  : null,
+                officeId: user.employee.officeId
+                  ? Number(user.employee.officeId)
+                  : null,
+                unitId: user.employee.unitId
+                  ? Number(user.employee.unitId)
+                  : null,
+                subunitId: user.employee.subunitId
+                  ? Number(user.employee.subunitId)
+                  : null,
               },
             }),
             prisma.docdtTracking.create({
@@ -192,13 +205,19 @@ module.exports = async (req, res) => {
                 docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
-                rankId: Number(depUser.user.rankId) ?? null,
-                roleId: Number(depUser.user.roleId) ?? null,
-                positionId: Number(depUser.posId) ?? null,
+                rankId: depUser.user.rankId
+                  ? Number(depUser.user.rankId)
+                  : null,
+                roleId: depUser.user.roleId
+                  ? Number(depUser.user.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId) ?? null,
                 description,
                 departmentId,
-                divisionId: Number(depUser.divisionId) ?? null,
+                divisionId: depUser.divisionId
+                  ? Number(depUser.divisionId)
+                  : null,
                 departmentactive,
               },
             }),
@@ -299,12 +318,18 @@ module.exports = async (req, res) => {
                 docdtId: Number(docdtId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
-                rankId: Number(depUser.user.rankId) ?? null,
-                roleId: Number(depUser.user.roleId) ?? null,
-                positionId: Number(depUser.posId) ?? null,
+                rankId: depUser.user.rankId
+                  ? Number(depUser.user.rankId)
+                  : null,
+                roleId: depUser.user.roleId
+                  ? Number(depUser.user.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId) ?? null,
                 description,
-                departmentId: Number(depUser.departmentId) ?? null,
+                departmentId: depUser.departmentId
+                  ? Number(depUser.departmentId)
+                  : null,
                 divisionId,
                 divisionactive,
               },

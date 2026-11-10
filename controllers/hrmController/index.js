@@ -2,6 +2,7 @@ const department = require("./syncDepartment");
 const division = require("./syncDivision");
 const office = require("./syncOffice");
 const unit = require("./syncUnit");
+const subunit = require("./syncSubunit");
 const positiongroup = require("./syncPositionGroup");
 const positioncode = require("./syncPositionCode");
 const position = require("./syncPosition");
@@ -12,6 +13,7 @@ module.exports = {
   division,
   office,
   unit,
+  subunit,
   positiongroup,
   positioncode,
   position,

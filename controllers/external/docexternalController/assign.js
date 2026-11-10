@@ -95,10 +95,21 @@ module.exports = async (req, res) => {
                 docstatusId: Number(docstatusId),
                 extype: Number(docex.extype) ?? null,
                 description,
-                departmentId: user.employee.departmentId ?? null,
-                divisionId: user.employee.divisionId ?? null,
-                officeId: user.employee.officeId ?? null,
-                unitId: user.employee.unitId ?? null,
+                departmentId: user.employee.departmentId
+                  ? Number(user.employee.departmentId)
+                  : null,
+                divisionId: user.employee.divisionId
+                  ? Number(user.employee.divisionId)
+                  : null,
+                officeId: user.employee.officeId
+                  ? Number(user.employee.officeId)
+                  : null,
+                unitId: user.employee.unitId
+                  ? Number(user.employee.unitId)
+                  : null,
+                subunitId: user.employee.subunitId
+                  ? Number(user.employee.subunitId)
+                  : null,
                 departmentactive: null,
               },
             }),
@@ -215,15 +226,21 @@ module.exports = async (req, res) => {
                 docexId: Number(docexId),
                 assignerCode: req.user.username,
                 receiverCode: depUser.emp_code,
-                rankId: Number(depUser.user.rankId) ?? null,
-                roleId: Number(depUser.user.roleId) ?? null,
-                positionId: Number(depUser.posId) ?? null,
+                rankId: depUser.user.rankId
+                  ? Number(depUser.user.rankId)
+                  : null,
+                roleId: depUser.user.roleId
+                  ? Number(depUser.user.roleId)
+                  : null,
+                positionId: depUser.posId ? Number(depUser.posId) : null,
                 docstatusId: Number(docstatusId) ?? null,
                 extype: Number(docex.extype) ?? null,
                 description,
                 departmentId,
                 departmentactive, // 🔸 กำหนดค่า departmentactive ตาม group
-                divisionId: Number(depUser.divisionId) ?? null,
+                divisionId: depUser.divisionId
+                  ? Number(depUser.divisionId)
+                  : null,
               },
             }),
             prisma.docexTracking.create({
