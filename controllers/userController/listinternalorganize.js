@@ -331,6 +331,25 @@ module.exports = async (req, res) => {
                 divisionId: Number(divisionId),
               };
             }
+
+            if (Number(divisionId) === 121) {
+              const projectDivisionIds = [
+                158, 159, 256, 161, 162, 163, 164, 165, 231, 232, 233, 234,
+                154, 157,
+              ];
+              filter.where = {
+                OR: [
+                  { ...filter.where },
+                  {
+                    roleId: 7,
+                    status: "A",
+                    employee: {
+                      divisionId: { in: projectDivisionIds },
+                    },
+                  },
+                ],
+              };
+            }
             break;
           case 8:
             filter.where.roleId = Number(roleId);
