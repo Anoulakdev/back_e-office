@@ -148,6 +148,11 @@ module.exports = async (req, res) => {
             }
             break;
           case 7:
+            const projectDivisionIds = [
+              158, 159, 256, 161, 162, 163, 164, 165, 231, 232, 233, 234,
+              154, 157,
+            ];
+
             if (Number(extype) === 2) {
               filter.where = {
                 OR: [
@@ -172,6 +177,16 @@ module.exports = async (req, res) => {
                   },
                 ],
               };
+
+              if (projectDivisionIds.includes(Number(divisionId))) {
+                filter.where.OR.push({
+                  roleId: 7,
+                  status: "A",
+                  employee: {
+                    divisionId: 121,
+                  },
+                });
+              }
             } else {
               filter.where.roleId = Number(roleId);
               filter.where.status = "A";
@@ -185,10 +200,6 @@ module.exports = async (req, res) => {
               }
 
               if (Number(divisionId) === 121) {
-                const projectDivisionIds = [
-                  158, 159, 256, 161, 162, 163, 164, 165, 231, 232, 233, 234,
-                  154, 157,
-                ];
                 filter.where = {
                   OR: [
                     { ...filter.where },

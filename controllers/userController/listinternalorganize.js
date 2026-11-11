@@ -63,6 +63,11 @@ module.exports = async (req, res) => {
             }
             break;
           case 7:
+            const projectDivisionIds = [
+              158, 159, 256, 161, 162, 163, 164, 165, 231, 232, 233, 234,
+              154, 157,
+            ];
+
             filter.where = {
               OR: [
                 {
@@ -86,6 +91,16 @@ module.exports = async (req, res) => {
                 },
               ],
             };
+
+            if (projectDivisionIds.includes(Number(divisionId))) {
+              filter.where.OR.push({
+                roleId: 7,
+                status: "A",
+                employee: {
+                  divisionId: 121,
+                },
+              });
+            }
 
             filter.orderBy = [{ roleId: "asc" }, { rankId: "asc" }];
             break;
