@@ -44,6 +44,24 @@ module.exports = async (req, res) => {
     let employeesData = [];
     const largeDepartmentIds = [10, 11, 12]; // ຝ່າຍຂະໜາດໃຫຍ່ (ພາກກາງ, ພາກເໜືອ, ພາກໃຕ້)
 
+    // Helper ດຶງຂໍ້ມູນພະນັກງານຕາມ division ແບບ reusable
+    const fetchByDivision = async (divId) => {
+      try {
+        const res = await axios.get(
+          `${process.env.URL_API}/organization-svc/employee/get?division_id=${divId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 60000,
+          },
+        );
+        const data = res.data?.data?.employees || res.data?.data;
+        return Array.isArray(data) ? data : [];
+      } catch (divErr) {
+        console.error(`Fetch division ${divId} error:`, divErr.message);
+        return [];
+      }
+    };
+
     if (division_id) {
       // ກໍລະນີສົ່ງ division_id ມາໂດຍກົງ
       const response = await axios.get(
@@ -60,32 +78,21 @@ module.exports = async (req, res) => {
     } else if (department_id) {
       const depIdNum = Number(department_id);
 
-      // ຖ້າເປັນຝ່າຍຂະໜາດໃຫຍ່ (10, 11, 12) ໃຫ້ດຶງທີລະ division ເພື່ອປ້ອງກັນ 504 Gateway Time-out
+      // ຖ້າເປັນຝ່າຍຂະໜາດໃຫຍ່ (10, 11, 12) ໃຫ້ດຶງພ້ອມກັນແບບ Parallel (Promise.all) ເພື່ອປ້ອງກັນ 504 Gateway Time-out
       if (largeDepartmentIds.includes(depIdNum)) {
         const divisions = await prisma.division.findMany({
           where: { departmentId: depIdNum },
           select: { id: true, division_name: true },
         });
 
-        for (const div of divisions) {
-          try {
-            const res = await axios.get(
-              `${process.env.URL_API}/organization-svc/employee/get?division_id=${div.id}`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-                timeout: 60000,
-              },
-            );
-            const data = res.data?.data?.employees || res.data?.data;
-            if (Array.isArray(data)) {
-              employeesData.push(...data);
-            }
-          } catch (divErr) {
-            console.error(`Fetch division ${div.id} error:`, divErr.message);
-          }
+        const divisionResults = await Promise.all(
+          divisions.map((div) => fetchByDivision(div.id)),
+        );
+        for (const data of divisionResults) {
+          employeesData.push(...data);
         }
       } else {
-        // ຝ່າຍທົ່ວໄປ: ດຶງໂດຍກົງ, ຖ້າເກີດ timeout ໃຫ້ fallback ມາດຶງທີລະ division
+        // ຝ່າຍທົ່ວໄປ: ດຶງໂດຍກົງ, ຖ້າເກີດ timeout ໃຫ້ fallback ມາດຶງທີລະ division ແບບ Parallel
         try {
           const response = await axios.get(
             `${process.env.URL_API}/organization-svc/employee/get?department_id=${depIdNum}`,
@@ -105,25 +112,11 @@ module.exports = async (req, res) => {
           });
 
           if (divisions.length > 0) {
-            for (const div of divisions) {
-              try {
-                const res = await axios.get(
-                  `${process.env.URL_API}/organization-svc/employee/get?division_id=${div.id}`,
-                  {
-                    headers: { Authorization: `Bearer ${token}` },
-                    timeout: 60000,
-                  },
-                );
-                const data = res.data?.data?.employees || res.data?.data;
-                if (Array.isArray(data)) {
-                  employeesData.push(...data);
-                }
-              } catch (divErr) {
-                console.error(
-                  `Fallback fetch division ${div.id} error:`,
-                  divErr.message,
-                );
-              }
+            const divisionResults = await Promise.all(
+              divisions.map((div) => fetchByDivision(div.id)),
+            );
+            for (const data of divisionResults) {
+              employeesData.push(...data);
             }
           } else {
             throw fetchErr;
@@ -142,22 +135,11 @@ module.exports = async (req, res) => {
             where: { departmentId: dep.id },
             select: { id: true },
           });
-          for (const div of divisions) {
-            try {
-              const res = await axios.get(
-                `${process.env.URL_API}/organization-svc/employee/get?division_id=${div.id}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                  timeout: 60000,
-                },
-              );
-              const data = res.data?.data?.employees || res.data?.data;
-              if (Array.isArray(data)) {
-                employeesData.push(...data);
-              }
-            } catch (err) {
-              console.error(`Fetch division ${div.id} error:`, err.message);
-            }
+          const divisionResults = await Promise.all(
+            divisions.map((div) => fetchByDivision(div.id)),
+          );
+          for (const data of divisionResults) {
+            employeesData.push(...data);
           }
         } else {
           try {
