@@ -84,22 +84,13 @@ module.exports = async (req, res) => {
               first_name: userData.first_name_la,
               last_name: userData.last_name_la,
               emp_code: userData.emp_code,
-              status: userData.status,
               gender: userData.gender,
               posId: Number(userData.office?.pos_id) || null,
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              unitId:
-                userData.office.unit_id === 0 ||
-                userData.office.unit_id === null
-                  ? null
-                  : userData.office?.unit_id,
-              subunitId:
-                userData.office.sub_unit_id === 0 ||
-                userData.office.sub_unit_id === null
-                  ? null
-                  : userData.office?.sub_unit_id,
+              unitId: Number(userData.office?.unit_id) || null,
+              subunitId: Number(userData.office?.sub_unit_id) || null,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image
@@ -117,22 +108,13 @@ module.exports = async (req, res) => {
               first_name: userData.first_name_la,
               last_name: userData.last_name_la,
               emp_code: userData.emp_code,
-              status: userData.status,
               gender: userData.gender,
               posId: Number(userData.office?.pos_id) || null,
               departmentId: Number(userData.office?.department_id) || null,
               divisionId: Number(userData.office?.division_id) || null,
               officeId: Number(userData.office?.office_id) || null,
-              unitId:
-                userData.office.unit_id === 0 ||
-                userData.office.unit_id === null
-                  ? null
-                  : userData.office?.unit_id,
-              subunitId:
-                userData.office.sub_unit_id === 0 ||
-                userData.office.sub_unit_id === null
-                  ? null
-                  : userData.office?.sub_unit_id,
+              unitId: Number(userData.office?.unit_id) || null,
+              subunitId: Number(userData.office?.sub_unit_id) || null,
               tel: userData.phone || null,
               email: userData.email || null,
               empimg: userData.image
@@ -171,6 +153,7 @@ module.exports = async (req, res) => {
             division: true,
             office: true,
             unit: true,
+            subunit: true,
           },
         },
         // department: true,
