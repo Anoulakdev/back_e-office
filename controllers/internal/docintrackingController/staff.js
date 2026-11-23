@@ -1,3 +1,4 @@
+const fs = require("fs");
 const prisma = require("../../../prisma/prisma");
 const multer = require("multer");
 const path = require("path");
@@ -58,6 +59,42 @@ module.exports = async (req, res) => {
       receiverCodes = receiverCodes
         .map((c) => String(c).trim())
         .filter(Boolean);
+
+      // ກວດສອບ docinLog: ຖ້າມີ docinId, docstatusId in [1, 2] ແລະ receiverCode ຢູ່ແລ້ວ ໃຫ້ແຈ້ງເຕືອນ
+      if (receiverCodes.length > 0) {
+        const users = await prisma.user.findMany({
+          where: {
+            OR: [
+              { username: { in: receiverCodes } },
+              { employee: { emp_code: { in: receiverCodes } } },
+            ],
+          },
+          include: { employee: true },
+        });
+
+        const allCandidateCodes = new Set(receiverCodes);
+        for (const u of users) {
+          if (u.username) allCandidateCodes.add(u.username);
+          if (u.employee?.emp_code) allCandidateCodes.add(u.employee.emp_code);
+        }
+
+        const existingDocinLog = await prisma.docinLog.findFirst({
+          where: {
+            docinId: Number(docinId),
+            docstatusId: { in: [1, 2] },
+            receiverCode: { in: Array.from(allCandidateCodes) },
+          },
+        });
+
+        if (existingDocinLog) {
+          if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(400).json({
+            message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+          });
+        }
+      }
 
       if (receiverCodes.length > 0) {
         const users = await prisma.user.findMany({

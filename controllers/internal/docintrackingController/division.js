@@ -47,6 +47,60 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: "docinId is required" });
       }
 
+      // Normalize receiverCode (ຮອງຮັບ array, string, ຫຼື JSON string)
+      let receiverCodes = [];
+      if (receiverCode) {
+        if (Array.isArray(receiverCode)) {
+          receiverCodes = receiverCode;
+        } else if (typeof receiverCode === "string") {
+          try {
+            const parsed = JSON.parse(receiverCode);
+            receiverCodes = Array.isArray(parsed) ? parsed : [receiverCode];
+          } catch {
+            receiverCodes = [receiverCode];
+          }
+        }
+        receiverCodes = receiverCodes
+          .map((c) => String(c).trim())
+          .filter(Boolean);
+      }
+
+      // ກວດສອບ docinLog: ຖ້າມີ docinId, docstatusId in [1, 2] ແລະ receiverCode ຢູ່ແລ້ວ ໃຫ້ແຈ້ງເຕືອນ
+      if (receiverCodes.length > 0) {
+        const users = await prisma.user.findMany({
+          where: {
+            OR: [
+              { username: { in: receiverCodes } },
+              { employee: { emp_code: { in: receiverCodes } } },
+            ],
+          },
+          include: { employee: true },
+        });
+
+        const allCandidateCodes = new Set(receiverCodes);
+        for (const u of users) {
+          if (u.username) allCandidateCodes.add(u.username);
+          if (u.employee?.emp_code) allCandidateCodes.add(u.employee.emp_code);
+        }
+
+        const existingDocinLog = await prisma.docinLog.findFirst({
+          where: {
+            docinId: Number(docinId),
+            docstatusId: { in: [1, 2] },
+            receiverCode: { in: Array.from(allCandidateCodes) },
+          },
+        });
+
+        if (existingDocinLog) {
+          if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(400).json({
+            message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+          });
+        }
+      }
+
       let logTransactions = [];
 
       const existingTracking = await prisma.docinTracking.findFirst({
@@ -60,7 +114,7 @@ module.exports = async (req, res) => {
       });
 
       if (
-        !receiverCode &&
+        !receiverCodes.length &&
         !divisionId1.length &&
         !divisionId2.length &&
         !officeId1.length &&
@@ -91,7 +145,7 @@ module.exports = async (req, res) => {
           );
         }
       } else if (
-        receiverCode &&
+        receiverCodes.length > 0 &&
         !divisionId1.length &&
         !divisionId2.length &&
         !officeId1.length &&
@@ -99,12 +153,12 @@ module.exports = async (req, res) => {
         !unitId
       ) {
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -185,8 +239,8 @@ module.exports = async (req, res) => {
                   : null,
                 ...docinlogfileData,
                 docinlog_url: docinlog_url ?? null,
-                departmentactive: existingTracking.departmentactive,
-                divisionactive: existingTracking.divisionactive,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
               },
             }),
             prisma.docinTracking.create({
@@ -199,8 +253,8 @@ module.exports = async (req, res) => {
                 description: description ?? null,
                 ...docinlogfileData,
                 docinlog_url: docinlog_url ?? null,
-                departmentactive: existingTracking.departmentactive,
-                divisionactive: existingTracking.divisionactive,
+                departmentactive: existingTracking?.departmentactive,
+                divisionactive: existingTracking?.divisionactive,
               },
             }),
           );
@@ -214,7 +268,7 @@ module.exports = async (req, res) => {
         }
       } else if (
         (divisionId1.length || divisionId2.length) &&
-        !receiverCode &&
+        !receiverCodes.length &&
         !officeId1.length &&
         !officeId2.length &&
         !unitId
@@ -292,6 +346,23 @@ module.exports = async (req, res) => {
             });
           }
 
+          const existingDivDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingDivDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
+          }
+
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
@@ -365,7 +436,7 @@ module.exports = async (req, res) => {
         }
       } else if (
         (officeId1.length || officeId2.length) &&
-        !receiverCode &&
+        !receiverCodes.length &&
         !divisionId1.length &&
         !divisionId2.length &&
         !unitId
@@ -411,6 +482,8 @@ module.exports = async (req, res) => {
             },
           });
 
+          const officeName = office?.office_name || officeId;
+
           const officeWithUser = {
             ...office,
             employees: office?.employees?.length
@@ -422,8 +495,11 @@ module.exports = async (req, res) => {
           };
 
           if (!officeWithUser || !officeWithUser.employees.length) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຫ້ອງການ ${officeId}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຫ້ອງການ ${officeName}`,
             });
           }
 
@@ -438,8 +514,28 @@ module.exports = async (req, res) => {
           }
 
           if (!depUser) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຫ້ອງການ ${officeId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຫ້ອງການ ${officeName} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+            });
+          }
+
+          const existingOfficeDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingOfficeDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
             });
           }
 
@@ -519,7 +615,7 @@ module.exports = async (req, res) => {
         }
       } else if (
         unitId &&
-        !receiverCode &&
+        !receiverCodes.length &&
         !divisionId1.length &&
         !divisionId2.length &&
         !officeId1.length &&
@@ -571,8 +667,11 @@ module.exports = async (req, res) => {
 
           // ❌ ถ้าไม่มี user เลย → block ทันที
           if (!employeesWithUser.length) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(400).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unitId}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unit.unit_name}`,
             });
           }
 
@@ -586,8 +685,28 @@ module.exports = async (req, res) => {
 
           // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(400).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unitId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unit.unit_name} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+            });
+          }
+
+          const existingUnitDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingUnitDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
             });
           }
 
@@ -667,10 +786,7 @@ module.exports = async (req, res) => {
             }),
           );
         }
-      } else if (receiverCode && (divisionId1.length || divisionId2.length)) {
-        const receiverCodes = Array.isArray(receiverCode)
-          ? receiverCode
-          : [receiverCode];
+      } else if (receiverCodes.length > 0 && (divisionId1.length || divisionId2.length)) {
 
         const fetchedUsers = await prisma.user.findMany({
           where: { username: { in: receiverCodes } },
@@ -868,6 +984,23 @@ module.exports = async (req, res) => {
             continue;
           }
 
+          const existingDivDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingDivDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
+          }
+
           createLogAndTrack(
             depUser.emp_code,
             depUser.user?.rankId ?? null,
@@ -888,10 +1021,7 @@ module.exports = async (req, res) => {
             prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
-      } else if (receiverCode && (officeId1.length || officeId2.length)) {
-        const receiverCodes = Array.isArray(receiverCode)
-          ? receiverCode
-          : [receiverCode];
+      } else if (receiverCodes.length > 0 && (officeId1.length || officeId2.length)) {
 
         const fetchedUsers = await prisma.user.findMany({
           where: { username: { in: receiverCodes } },
@@ -1047,6 +1177,8 @@ module.exports = async (req, res) => {
             },
           });
 
+          const officeName = office?.office_name || officeId;
+
           const officeWithUser = {
             ...office,
             employees: office?.employees?.length
@@ -1058,8 +1190,11 @@ module.exports = async (req, res) => {
           };
 
           if (!officeWithUser || !officeWithUser.employees.length) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຫ້ອງການ ${officeId}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນຫ້ອງການ ${officeName}`,
             });
           }
 
@@ -1074,8 +1209,11 @@ module.exports = async (req, res) => {
           }
 
           if (!depUser) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(404).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຫ້ອງການ ${officeId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນຫ້ອງການ ${officeName} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -1094,6 +1232,23 @@ module.exports = async (req, res) => {
 
           if (isReceiverAlreadyAdded) {
             continue;
+          }
+
+          const existingOfficeDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingOfficeDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
           }
 
           createLogAndTrack(
@@ -1118,10 +1273,7 @@ module.exports = async (req, res) => {
             prisma.docinTracking.delete({ where: { id: existingTracking.id } }),
           );
         }
-      } else if (receiverCode && unitId) {
-        const receiverCodes = Array.isArray(receiverCode)
-          ? receiverCode
-          : [receiverCode];
+      } else if (receiverCodes.length > 0 && unitId) {
 
         const fetchedUsers = await prisma.user.findMany({
           where: { username: { in: receiverCodes } },
@@ -1280,8 +1432,11 @@ module.exports = async (req, res) => {
 
           // ❌ ถ้าไม่มี user เลย → block ทันที
           if (!employeesWithUser.length) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(400).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unitId}`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານໃນໜ່ວຍງານ ${unit.unit_name}`,
             });
           }
 
@@ -1295,8 +1450,11 @@ module.exports = async (req, res) => {
 
           // ❌ ถ้ามี user แต่ rank ไม่ตรง
           if (!depUser) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
             return res.status(400).json({
-              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unitId} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
+              message: `ບໍ່ພົບເຫັນພະນັກງານທີ່ກົງກັນໃນໜ່ວຍງານ ${unit.unit_name} ທີ່ມີລະດັບແລະບົດບາດที่ລະບຸ`,
             });
           }
 
@@ -1315,6 +1473,23 @@ module.exports = async (req, res) => {
 
           if (isReceiverAlreadyAdded) {
             continue;
+          }
+
+          const existingUnitDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingUnitDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
           }
 
           createLogAndTrack(

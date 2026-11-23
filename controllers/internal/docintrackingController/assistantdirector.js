@@ -43,6 +43,59 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: "docinId is required" });
       }
 
+      let receiverCodes = [];
+      if (receiverCode) {
+        if (Array.isArray(receiverCode)) {
+          receiverCodes = receiverCode;
+        } else if (typeof receiverCode === "string") {
+          try {
+            const parsed = JSON.parse(receiverCode);
+            receiverCodes = Array.isArray(parsed) ? parsed : [receiverCode];
+          } catch {
+            receiverCodes = [receiverCode];
+          }
+        }
+        receiverCodes = receiverCodes
+          .map((c) => String(c).trim())
+          .filter(Boolean);
+      }
+
+      // ກວດສອບ docinLog: ຖ້າມີ docinId, docstatusId in [1, 2] ແລະ receiverCode ຢູ່ແລ້ວ ໃຫ້ແຈ້ງເຕືອນ
+      if (receiverCodes.length > 0) {
+        const users = await prisma.user.findMany({
+          where: {
+            OR: [
+              { username: { in: receiverCodes } },
+              { employee: { emp_code: { in: receiverCodes } } },
+            ],
+          },
+          include: { employee: true },
+        });
+
+        const allCandidateCodes = new Set(receiverCodes);
+        for (const u of users) {
+          if (u.username) allCandidateCodes.add(u.username);
+          if (u.employee?.emp_code) allCandidateCodes.add(u.employee.emp_code);
+        }
+
+        const existingDocinLog = await prisma.docinLog.findFirst({
+          where: {
+            docinId: Number(docinId),
+            docstatusId: { in: [1, 2] },
+            receiverCode: { in: Array.from(allCandidateCodes) },
+          },
+        });
+
+        if (existingDocinLog) {
+          if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(400).json({
+            message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+          });
+        }
+      }
+
       let logTransactions = [];
 
       const existingTracking = await prisma.docinTracking.findFirst({
@@ -55,7 +108,7 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (!receiverCode && !departmentId1.length && !departmentId2.length) {
+      if (!receiverCodes.length && !departmentId1.length && !departmentId2.length) {
         logTransactions.push(
           prisma.docinLog.create({
             data: {
@@ -80,17 +133,17 @@ module.exports = async (req, res) => {
           );
         }
       } else if (
-        receiverCode &&
+        receiverCodes.length &&
         !departmentId1.length &&
         !departmentId2.length
       ) {
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
@@ -157,22 +210,22 @@ module.exports = async (req, res) => {
                 receiverCode: user.username,
                 rankId: user.rankId ? Number(user.rankId) : null,
                 roleId: user.roleId ? Number(user.roleId) : null,
-                positionId: user.employee.posId
+                positionId: user.employee?.posId
                   ? Number(user.employee.posId)
                   : null,
                 docstatusId: Number(docstatusId),
                 dateline: datelineValue,
                 description: description ?? null,
-                departmentId: user.employee.departmentId
+                departmentId: user.employee?.departmentId
                   ? Number(user.employee.departmentId)
                   : null,
-                divisionId: user.employee.divisionId
+                divisionId: user.employee?.divisionId
                   ? Number(user.employee.divisionId)
                   : null,
-                officeId: user.employee.officeId
+                officeId: user.employee?.officeId
                   ? Number(user.employee.officeId)
                   : null,
-                unitId: user.employee.unitId
+                unitId: user.employee?.unitId
                   ? Number(user.employee.unitId)
                   : null,
                 ...docinlogfileData,
@@ -203,7 +256,7 @@ module.exports = async (req, res) => {
         }
       } else if (
         (departmentId1.length || departmentId2.length) &&
-        !receiverCode
+        !receiverCodes.length
       ) {
         const allDepartments = [
           ...(Array.isArray(departmentId1) && departmentId1.length
@@ -278,6 +331,24 @@ module.exports = async (req, res) => {
             });
           }
 
+          // ກວດສອບว่า depUser ຂອງ department ນີ້ ໄດ້ຮັບມອບໝາຍເອກະສານນີ້ແລ້ວຫຼືບໍ່
+          const existingDeptDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingDeptDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
+          }
+
           const datelineValue = dateline
             ? new Date(dateline)
             : existingTracking?.dateline
@@ -349,12 +420,9 @@ module.exports = async (req, res) => {
           );
         }
       } else if (
-        receiverCode &&
+        receiverCodes.length &&
         (departmentId1.length || departmentId2.length)
       ) {
-        const receiverCodes = Array.isArray(receiverCode)
-          ? receiverCode
-          : [receiverCode];
 
         const fetchedUsers = await prisma.user.findMany({
           where: { username: { in: receiverCodes } },
@@ -536,6 +604,24 @@ module.exports = async (req, res) => {
 
           if (isReceiverAlreadyAdded) {
             continue;
+          }
+
+          // ກວດສອບว่า depUser ຂອງ department ນີ້ ໄດ້ຮັບມອບໝາຍເອກະສານນີ້ແລ້ວຫຼືບໍ່
+          const existingDeptDocinLog = await prisma.docinLog.findFirst({
+            where: {
+              docinId: Number(docinId),
+              docstatusId: { in: [1, 2] },
+              receiverCode: depUser.emp_code,
+            },
+          });
+
+          if (existingDeptDocinLog) {
+            if (req.file && fs.existsSync(req.file.path)) {
+              fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+              message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+            });
           }
 
           createLogAndTrack(

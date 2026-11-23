@@ -35,6 +35,60 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: "docinId is required" });
       }
 
+      // Normalize receiverCode (ຮອງຮັບ array, string, ຫຼື JSON string)
+      let receiverCodes = [];
+      if (receiverCode) {
+        if (Array.isArray(receiverCode)) {
+          receiverCodes = receiverCode;
+        } else if (typeof receiverCode === "string") {
+          try {
+            const parsed = JSON.parse(receiverCode);
+            receiverCodes = Array.isArray(parsed) ? parsed : [receiverCode];
+          } catch {
+            receiverCodes = [receiverCode];
+          }
+        }
+        receiverCodes = receiverCodes
+          .map((c) => String(c).trim())
+          .filter(Boolean);
+      }
+
+      // ກວດສອບ docinLog: ຖ້າມີ docinId, docstatusId in [1, 2] ແລະ receiverCode ຢູ່ແລ້ວ ໃຫ້ແຈ້ງເຕືອນ
+      if (receiverCodes.length > 0) {
+        const users = await prisma.user.findMany({
+          where: {
+            OR: [
+              { username: { in: receiverCodes } },
+              { employee: { emp_code: { in: receiverCodes } } },
+            ],
+          },
+          include: { employee: true },
+        });
+
+        const allCandidateCodes = new Set(receiverCodes);
+        for (const u of users) {
+          if (u.username) allCandidateCodes.add(u.username);
+          if (u.employee?.emp_code) allCandidateCodes.add(u.employee.emp_code);
+        }
+
+        const existingDocinLog = await prisma.docinLog.findFirst({
+          where: {
+            docinId: Number(docinId),
+            docstatusId: { in: [1, 2] },
+            receiverCode: { in: Array.from(allCandidateCodes) },
+          },
+        });
+
+        if (existingDocinLog) {
+          if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(400).json({
+            message: "ເອກະສານໄດ້ມອບໝາຍໃຫ້ທ່ານນີ້ແລ້ວ",
+          });
+        }
+      }
+
       let logTransactions = [];
       let existingTracking = null;
 
@@ -62,20 +116,14 @@ module.exports = async (req, res) => {
         },
       });
 
-      if (receiverCode) {
-        if (!Array.isArray(receiverCode) || receiverCode.length === 0) {
-          return res
-            .status(400)
-            .json({ message: "receiverCode must be a non-empty array" });
-        }
-
+      if (receiverCodes.length > 0) {
         const users = await prisma.user.findMany({
-          where: { username: { in: receiverCode } },
+          where: { username: { in: receiverCodes } },
           include: { employee: true },
         });
         const userMap = new Map(users.map((u) => [u.username, u]));
 
-        for (const receiverC of receiverCode) {
+        for (const receiverC of receiverCodes) {
           const user = userMap.get(receiverC);
 
           if (!user) {
