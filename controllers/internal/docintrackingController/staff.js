@@ -60,8 +60,8 @@ module.exports = async (req, res) => {
         .map((c) => String(c).trim())
         .filter(Boolean);
 
-      // ກວດສອບ docinLog: ຖ້າມີ docinId, docstatusId in [1, 2] ແລະ receiverCode ຢູ່ແລ້ວ ໃຫ້ແຈ້ງເຕືອນ
-      if (receiverCodes.length > 0) {
+      // ກວດສອບ docinTracking: ເຊັກສະເພາະກໍລະນີສົ່ງ docstatusId in [1, 2] ແລະ ຜູ້ຮັບມີເອກະສານຢູ່ໃນ tracking ແລ້ວ
+      if ([1, 2].includes(Number(docstatusId)) && receiverCodes.length > 0) {
         const users = await prisma.user.findMany({
           where: {
             OR: [
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
           if (u.employee?.emp_code) allCandidateCodes.add(u.employee.emp_code);
         }
 
-        const existingDocinLog = await prisma.docinLog.findFirst({
+        const existingInTracking = await prisma.docinTracking.findFirst({
           where: {
             docinId: Number(docinId),
             docstatusId: { in: [1, 2] },
@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
           },
         });
 
-        if (existingDocinLog) {
+        if (existingInTracking) {
           if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
           }
